@@ -29,7 +29,7 @@ POST /jobs + Idempotency-Key
 
 ## Run locally
 
-Requires .NET 10 SDK and Docker. PostgreSQL uses **demo-only credentials** bound to localhost.
+Requires .NET 10 SDK and Docker. PostgreSQL uses **demo-only credentials** bound to localhost on the host; inside the shared development Docker network it is reachable as `demo-outbox-postgres`. This service uses its own Compose project and database, never ChatPilot tables.
 
 ```bash
 docker compose up -d
@@ -87,3 +87,22 @@ dotnet test tests/ReliableJobs.Tests.csproj --filter "Category=PostgreSQL"
 ```
 
 Without `JOBS_TEST_CONNECTION`, this explicitly selected integration suite **fails fast** instead of silently passing; a green unit-test run is not evidence of integration coverage. The API-level concurrent request check remains `tests/smoke.py` and requires the service to be running.
+
+## Running integration tests from the RDC workstation
+
+The RDC container is connected to the external Docker network `knowledge-pilot-dev` but does **not** have a Docker socket. Run the following once **on the Docker host** (Windows PowerShell):
+
+```powershell
+cd D:\projects\ChatPilotGroup\demo\dotnet-outbox
+docker compose -p demo-outbox up -d --wait
+```
+
+The Compose service joins `knowledge-pilot-dev` under the isolated DNS name `demo-outbox-postgres` and retains a host-only `127.0.0.1:55432` port binding. From **rdc-project**:
+
+```bash
+cd /workspace/demo/dotnet-outbox
+export JOBS_TEST_CONNECTION='Host=demo-outbox-postgres;Port=5432;Database=reliable_jobs;Username=demo;Password=demo'
+dotnet test tests/ReliableJobs.Tests.csproj --filter 'Category=PostgreSQL'
+```
+
+The database is intentionally disposable; never reuse the ChatPilot main database or its secrets. `docker compose -p demo-outbox down -v` on the host destroys this demo-only database.

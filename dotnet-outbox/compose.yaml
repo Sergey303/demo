@@ -7,6 +7,10 @@ services:
       POSTGRES_DB: reliable_jobs
     ports:
       - "127.0.0.1:55432:5432"
+    networks:
+      knowledge-pilot-dev:
+        aliases:
+          - demo-outbox-postgres
     volumes:
       - ./sql/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
     healthcheck:
@@ -14,3 +18,8 @@ services:
       interval: 3s
       retries: 15
 # For local demonstration only. Never use these credentials in shared infrastructure.
+
+networks:
+  knowledge-pilot-dev:
+    external: true
+    name: knowledge-pilot-dev
