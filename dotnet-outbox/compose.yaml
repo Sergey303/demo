@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: reliable_jobs
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - ./sql/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo -d reliable_jobs"]
+      interval: 3s
+      retries: 15
+# For local demonstration only. Never use these credentials in shared infrastructure.
