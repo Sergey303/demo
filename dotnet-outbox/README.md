@@ -54,7 +54,7 @@ curl -i http://127.0.0.1:5077/jobs/REPLACE-WITH-ID
 Run unit tests and, **with the API + PostgreSQL running**, the optional concurrent end-to-end smoke test:
 
 ```bash
-dotnet test tests/ReliableJobs.Tests.csproj
+dotnet test tests/ReliableJobs.Tests.csproj --filter "Category!=PostgreSQL"
 python3 tests/smoke.py
 ```
 
@@ -71,3 +71,19 @@ The smoke test sends 20 concurrent identical requests and verifies one shared jo
 - **Product semantics:** the demo computes a word count and SHA-256 digest to make effects deterministic and verifiable. No proprietary signing or financial processing logic is present.
 
 **Why this is in the portfolio:** a recruiter or tech lead can read the transaction boundary, duplicate-key behavior and failure assumptions directly in working C# and SQL code. This is an illustrative implementation, not a copy of any employer's product.
+
+## Real PostgreSQL concurrency checks
+
+The xUnit project contains **opt-in database integration scenarios** that use unique, disposable tables to exercise actual PostgreSQL behavior:
+
+- two transactions claim different rows with `FOR UPDATE SKIP LOCKED`; the rolled-back claim is available again;
+- twenty concurrent inserts with the same unique key produce exactly one winning insert.
+
+They validate important database primitives, not an end-to-end crash of the full API process. Run against a **disposable development database**, never production:
+
+```bash
+export JOBS_TEST_CONNECTION='Host=127.0.0.1;Port=55432;Database=reliable_jobs;Username=demo;Password=demo'
+dotnet test tests/ReliableJobs.Tests.csproj --filter "Category=PostgreSQL"
+```
+
+Without `JOBS_TEST_CONNECTION`, this explicitly selected integration suite **fails fast** instead of silently passing; a green unit-test run is not evidence of integration coverage. The API-level concurrent request check remains `tests/smoke.py` and requires the service to be running.
