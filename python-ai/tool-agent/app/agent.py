@@ -46,5 +46,7 @@ class Agent:
                     'preview': action.arguments['text'][:200]}
         # Demonstrate an approved write but keep it in a controlled local directory.
         target = self.documents / 'agent_draft.txt'
+        if target.is_symlink():
+            raise ValueError('Draft path must not be a symlink')
         target.write_text(action.arguments['text'], encoding='utf8')
         return {'status': 'written', 'file': target.name}

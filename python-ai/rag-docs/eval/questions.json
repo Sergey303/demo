@@ -1,5 +1,14 @@
 [
-  {"question":"How long do I have to request a refund?","source":"sample.md"},
-  {"question":"How can I reset my password?","source":"sample.md"},
-  {"question":"When will my order arrive?","source":"sample.md"}
+  {
+    "question": "How can I request a refund?",
+    "source": "refunds.txt"
+  },
+  {
+    "question": "How do I reset my password?",
+    "source": "security.txt"
+  },
+  {
+    "question": "How long does shipping take?",
+    "source": "shipping.txt"
+  }
 ]
