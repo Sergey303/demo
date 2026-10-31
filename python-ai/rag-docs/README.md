@@ -1,0 +1,20 @@
+# Neural RAG: knowledge-base question answering
+
+A **real neural embedding model** indexes local Markdown/text documents, ranks passages by cosine similarity and returns source attribution. Optional local Ollama generates a grounded answer. No credentials are required.
+
+## Run
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+curl -s localhost:8000/ask -H 'content-type: application/json' -d '{"question":"How do I get a refund?"}'
+pytest -q
+```
+
+First execution downloads a multilingual sentence-transformer model; subsequent starts use its local cache. Configure `DOCS_DIR` to index your own .md/.txt files; restart server to reindex. To generate an answer, start local Ollama with `llama3.2` (or set `OLLAMA_MODEL`), then send `{"question":"...","generate":true}`.
+
+**Engineering trade-offs:** in-memory exact vector search is deliberate for a small demo; use a vector index and incremental reindexing at scale. Retrieved documents are untrusted; no prompt can guarantee absence of prompt injection. Citations are passage references, not verification of generated claims. Production would need access-control filtering, PII handling, retrieval/answer evaluation, tracing, rate limits, latency/cost dashboards and security tests.
+
+**Interview demo:** compare top-k hits and scores; explain chunk size, vector similarity, offline local inference, when RAG is preferable to model fine-tuning, and why tests inject a fake encoder to avoid network/model downloads.

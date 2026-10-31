@@ -1,0 +1,25 @@
+text,label
+I was charged twice for my order,billing
+Please refund the invoice,billing
+My subscription payment failed,billing
+There is a wrong amount on my bill,billing
+Can you send me a receipt,billing
+I want a refund for the payment,billing
+The credit card charge is incorrect,billing
+Where can I download my invoice,billing
+The app crashes when I open it,technical
+The website gives a server error,technical
+Notifications are not working,technical
+The page is loading forever,technical
+The mobile application freezes,technical
+My upload fails with an error,technical
+The API returns a timeout,technical
+Video playback is broken,technical
+I forgot my account password,account
+Please change my email address,account
+I cannot sign into my profile,account
+My account has been locked,account
+How do I enable two factor authentication,account
+I need to reset my password,account
+I want to delete my account,account
+The login verification code expired,account

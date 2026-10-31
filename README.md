@@ -1,6 +1,6 @@
 # Demo projects
 
-Three independent portfolio demos: two frontend applications and a runnable C#/.NET backend reliability sample. Each has its own dependencies and build.
+Independent portfolio demos: two frontend applications, a runnable C#/.NET backend reliability sample, and two Python neural-network projects. Each has its own dependencies and build.
 
 ## Bootstrap 5 Dashboard Shell
 
@@ -44,6 +44,13 @@ dotnet test tests/ReliableJobs.Tests.csproj
 # See dotnet-outbox/README.md for Docker/PostgreSQL execution.
 ```
 
+## Python AI / Neural Networks
+
+- [Neural RAG document assistant](python-ai/rag-docs/README.md): multilingual neural embeddings, semantic search, source references and optional local Ollama generation.
+- [PyTorch ticket classifier](python-ai/ticket-classifier/README.md): train an embedding + MLP neural network, evaluate on held-out toy samples and serve inference through FastAPI.
+
+See [Python AI portfolio overview](python-ai/README.md). Python dependencies and tests are isolated per example.
+
 ## Layout
 
 ```text
@@ -51,7 +58,8 @@ demo/
   bootstrap5/     # Bootstrap 5 dashboard
   GosVet/         # Veterinary clinic application
   dotnet-outbox/  # ASP.NET Core, PostgreSQL and tests
+  python-ai/     # Neural RAG and PyTorch classification
   README.md
 ```
 
-All three projects are standalone. Run npm commands in the corresponding project directory rather than the repository root. The original GosVet repository is kept unchanged. Note that all committed files under `demo/GosVet/` are public because this repository is public.
+All projects are standalone. Run npm commands in the corresponding project directory rather than the repository root. The original GosVet repository is kept unchanged. Note that all committed files under `demo/GosVet/` are public because this repository is public.
