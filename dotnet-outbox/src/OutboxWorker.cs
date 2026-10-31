@@ -36,18 +36,28 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
         await using var conn = await db.OpenConnectionAsync(ct);
         await using var tx = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
 
-        Guid eventId, jobId;
-        int attempts;
+        Guid eventId = default, jobId = default;
+        int attempts = 0;
+        bool found;
         await using (var select = new NpgsqlCommand(
             "SELECT id, job_id, attempts FROM outbox " +
             "WHERE processed_at IS NULL AND next_attempt_at <= now() " +
             "ORDER BY next_attempt_at, created_at FOR UPDATE SKIP LOCKED LIMIT 1", conn, tx))
         await using (var reader = await select.ExecuteReaderAsync(ct))
         {
-            if (!await reader.ReadAsync(ct)) { await tx.CommitAsync(ct); return false; }
-            eventId = reader.GetGuid(0);
-            jobId = reader.GetGuid(1);
-            attempts = reader.GetInt32(2);
+            found = await reader.ReadAsync(ct);
+            if (found)
+            {
+                eventId = reader.GetGuid(0);
+                jobId = reader.GetGuid(1);
+                attempts = reader.GetInt32(2);
+            }
+        }
+        // Npgsql requires the reader to be disposed before committing even an empty claim.
+        if (!found)
+        {
+            await tx.CommitAsync(ct);
+            return false;
         }
 
         try
