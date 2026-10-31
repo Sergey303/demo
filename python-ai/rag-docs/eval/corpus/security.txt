@@ -1,0 +1,1 @@
+For a password reset open account Settings, select Security and choose Reset password.
