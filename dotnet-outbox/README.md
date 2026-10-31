@@ -106,3 +106,7 @@ dotnet test tests/ReliableJobs.Tests.csproj --filter 'Category=PostgreSQL'
 ```
 
 The database is intentionally disposable; never reuse the ChatPilot main database or its secrets. `docker compose -p demo-outbox down -v` on the host destroys this demo-only database.
+
+## End-to-end benchmark (disposable local DB)
+
+`python3 tests/benchmark.py --count 100 --concurrency 10` submits **distinct** jobs, verifies their SHA-256 results, and measures accepted/completed throughput and p50/p95/p99 HTTP submission latency. These figures are specific to the local machine, test payload and polling implementation; they are **not** production capacity guarantees. Run against the separately isolated demo database only.
