@@ -21,6 +21,6 @@ Do not claim professional ML experience or production-grade accuracy based solel
 
 ## Continuous integration
 
-[GitHub Actions](../../.github/workflows/python-ai.yml) tests each isolated project on Python 3.12 and builds all three container images. Large neural-model downloads may make the RAG image expensive; model weights are not packaged into Git.
+A GitHub Actions workflow for Python 3.12 unit tests and Docker builds is prepared locally under `.github/workflows/python-ai.yml`, but is not yet published: the Git credential cannot push workflow files without the `workflow` OAuth scope. Large neural-model downloads may make the RAG image expensive; model weights are not packaged into Git.
 
 Run locally from each project directory: `python -m venv .venv`, activate it, `pip install -r requirements.txt`, then `python -m pytest -q tests`.
