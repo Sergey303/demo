@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 import re
+import math
+import heapq
 
 class Embedder(Protocol):
     def encode(self, texts: list[str]) -> list[list[float]]: ...
@@ -43,22 +45,56 @@ def cosine(a: list[float], b: list[float]) -> float:
     return dot / (na * nb) if na and nb else 0.0
 
 class KnowledgeBase:
-    def __init__(self, passages: list[Passage], embedder: Embedder):
+    """Exact top-k cosine retrieval; pre-normalize corpus once, keep stable tie order.
+
+    Indexing O(N*d); query O(N*d + N log k), memory O(N*d).
+    Exact search is a useful baseline against which ANN indexes can be verified.
+    """
+    def __init__(self, passages: list[Passage], embedder: Embedder, batch_size: int = 32):
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
         self.passages = passages
         self.embedder = embedder
-        self.vectors = [list(map(float, v)) for v in embedder.encode([p.text for p in passages])] if passages else []
+        self.vectors: list[list[float]] = []
+        self.dimension = 0
+        for start in range(0, len(passages), batch_size):
+            batch = passages[start:start + batch_size]
+            encoded = embedder.encode([p.text for p in batch])
+            if len(encoded) != len(batch):
+                raise ValueError("Encoder returned the wrong number of vectors")
+            for raw in encoded:
+                vector = list(map(float, raw))
+                if not vector or any(not math.isfinite(v) for v in vector):
+                    raise ValueError("Encoder returned invalid embedding")
+                if self.dimension and len(vector) != self.dimension:
+                    raise ValueError("Inconsistent embedding dimensions")
+                self.dimension = len(vector)
+                norm = math.sqrt(sum(v * v for v in vector))
+                self.vectors.append([v / norm for v in vector] if norm else [0.0] * len(vector))
 
     def search(self, query: str, top_k: int = 3) -> list[dict]:
         if not query.strip():
             raise ValueError("Question must not be empty")
+        if top_k < 1:
+            raise ValueError("top_k must be positive")
         if not self.passages:
             return []
-        vector = list(map(float, self.embedder.encode([query])[0]))
-        ranked = sorted(enumerate(self.vectors), key=lambda x: cosine(vector, x[1]), reverse=True)
+        encoded = self.embedder.encode([query])
+        if len(encoded) != 1:
+            raise ValueError("Encoder returned the wrong number of vectors")
+        vector = list(map(float, encoded[0]))
+        if len(vector) != self.dimension or any(not math.isfinite(v) for v in vector):
+            raise ValueError("Invalid query embedding")
+        norm = math.sqrt(sum(v * v for v in vector))
+        query_unit = [v / norm for v in vector] if norm else [0.0] * len(vector)
+        # An index with a lower insertion order wins when scores tie.
+        scored = ((sum(a * b for a, b in zip(query_unit, v)), -i, i)
+                  for i, v in enumerate(self.vectors))
+        top = heapq.nlargest(min(top_k, len(self.vectors)), scored)
         return [
             {"source": self.passages[i].source, "passage": self.passages[i].text,
-             "score": round(cosine(vector, v), 4)}
-            for i, v in ranked[:max(1, top_k)]
+             "score": round(score, 4)}
+            for score, _, i in top
         ]
 
 def build_prompt(question: str, hits: list[dict]) -> str:

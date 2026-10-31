@@ -25,3 +25,35 @@ def test_untrusted_context_instruction():
 def test_bad_dimensions():
     with pytest.raises(ValueError):
         cosine([1.], [1., 2.])
+
+class CountingEmbedder:
+    def __init__(self):
+        self.calls = []
+    def encode(self, texts):
+        self.calls.append(list(texts))
+        return [[1., 0.] if 'a' in t else [0., 1.] for t in texts]
+
+
+def test_index_uses_bounded_batches_and_stable_top_k():
+    embedder = CountingEmbedder()
+    passages = [Passage(str(i), 'a') for i in range(7)]
+    kb = KnowledgeBase(passages, embedder, batch_size=3)
+    assert list(map(len, embedder.calls)) == [3, 3, 1]
+    assert [h['source'] for h in kb.search('a', top_k=2)] == ['0', '1']
+    assert kb.search('a', top_k=20)[-1]['source'] == '6'
+
+
+def test_encoder_rejects_invalid_or_wrong_dimension():
+    class Broken:
+        def encode(self, texts):
+            return [[float('nan')]] * len(texts)
+    with pytest.raises(ValueError):
+        KnowledgeBase([Passage('a', 'a')], Broken())
+    class DimChange:
+        def encode(self, texts):
+            return [[1., 0.]] if texts[0] == 'doc' else [[1.]]
+    kb = KnowledgeBase([Passage('a', 'doc')], DimChange())
+    with pytest.raises(ValueError):
+        kb.search('query')
+    with pytest.raises(ValueError):
+        kb.search('doc', top_k=0)

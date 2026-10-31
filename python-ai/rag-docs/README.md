@@ -22,3 +22,7 @@ First execution downloads a multilingual sentence-transformer model; subsequent 
 ## Evidence-oriented retrieval comparison
 
 `python evaluate.py` compares real sentence-transformer ranking against an inspectable TF-IDF cosine baseline on the same small, separated evaluation corpus. It reports **Recall@1**, **MRR@1**, and per-question disagreements. A one-document or Recall@3-on-three-documents evaluation cannot meaningfully distinguish rankers; this evaluation avoids that particular false positive. The included corpus is still illustrative; a representative blind dataset is required before claiming model superiority.
+
+## Exact retrieval implementation
+
+`app/core.py` constructs the index in bounded encoding batches, normalizes each stored vector once, and uses a bounded heap for exact top-k (rather than sorting every document). Query ranking costs **O(N × d + N log k)**, index storage **O(N × d)**, where N is passage count and d is embedding width. It deterministically resolves tied scores using document order and rejects malformed embeddings. This is deliberately **exact search**, suitable as a correctness reference for future approximate nearest-neighbor indexes; it is not an ANN or distributed search service.
