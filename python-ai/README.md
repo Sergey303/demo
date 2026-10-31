@@ -18,3 +18,9 @@ Each project has its own installation, runbook and unit tests. Models are downlo
 4. Add Docker, CI, structured telemetry, monitoring, versioned model release and safe rollback.
 
 Do not claim professional ML experience or production-grade accuracy based solely on demo code.
+
+## Continuous integration
+
+[GitHub Actions](../../.github/workflows/python-ai.yml) tests each isolated project on Python 3.12 and builds all three container images. Large neural-model downloads may make the RAG image expensive; model weights are not packaged into Git.
+
+Run locally from each project directory: `python -m venv .venv`, activate it, `pip install -r requirements.txt`, then `python -m pytest -q tests`.
