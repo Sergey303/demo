@@ -16,16 +16,22 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            try { await ProcessOneAsync(stoppingToken); }
+            var processed = false;
+            try { processed = await ProcessOneAsync(stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
             catch (Exception ex) { log.LogWarning(ex, "Outbox poll failed; will retry"); }
 
-            try { await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken); }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
+            // Do not impose a 500 ms latency after every processed event.
+            // Pause only when idle or after an infrastructure/transaction error.
+            if (!processed)
+            {
+                try { await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken); }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
+            }
         }
     }
 
-    private async Task ProcessOneAsync(CancellationToken ct)
+    private async Task<bool> ProcessOneAsync(CancellationToken ct)
     {
         await using var conn = await db.OpenConnectionAsync(ct);
         await using var tx = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
@@ -38,7 +44,7 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
             "ORDER BY next_attempt_at, created_at FOR UPDATE SKIP LOCKED LIMIT 1", conn, tx))
         await using (var reader = await select.ExecuteReaderAsync(ct))
         {
-            if (!await reader.ReadAsync(ct)) { await tx.CommitAsync(ct); return; }
+            if (!await reader.ReadAsync(ct)) { await tx.CommitAsync(ct); return false; }
             eventId = reader.GetGuid(0);
             jobId = reader.GetGuid(1);
             attempts = reader.GetInt32(2);
@@ -103,5 +109,6 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
             }
             await tx.CommitAsync(ct);
         }
+        return true;
     }
 }

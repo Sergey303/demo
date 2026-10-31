@@ -64,6 +64,7 @@ The smoke test sends 20 concurrent identical requests and verifies one shared jo
 
 - **Idempotency:** unique constraint in PostgreSQL, not check-then-insert (which races).
 - **Durability:** the jobs row and event are written transactionally; worker uses row-level locks and commit. No Redis or in-memory event queue for correctness.
+- **Throughput:** workers drain ready rows without an artificial 500 ms delay between successful claims; they sleep only while idle or after a polling error. This eliminates a per-worker polling throttle, but **no throughput benchmark or scale claim** is implied.
 - **Retry:** backoff is bounded; the example marks a job failed after five *handler* failures, retaining the outbox record for diagnosis. DB connection failures rely on the next poll without consuming attempts.
 - **Security:** intentionally **not** production-ready: no user authentication, authorization, per-tenant isolation, HTTPS termination, quotas, secrets manager, input privacy policy or data retention. Do not deploy it to the public Internet.
 - **Operational concerns not implemented:** jitter, metrics/tracing, alerting on dead-letter jobs, cleanup/archival, external idempotent consumers, end-to-end integration/load tests, migration orchestration. These are intentional extension points, not features claimed as implemented.
