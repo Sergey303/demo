@@ -1,6 +1,6 @@
 # Demo projects
 
-Independent portfolio demos: two frontend applications, a runnable C#/.NET backend reliability sample, and two Python neural-network projects. Each has its own dependencies and build.
+Independent portfolio demos: two frontend applications, a runnable C#/.NET backend reliability sample, and Python AI/ML engineering projects. Each has its own dependencies and build.
 
 ## Bootstrap 5 Dashboard Shell
 
@@ -49,6 +49,8 @@ dotnet test tests/ReliableJobs.Tests.csproj
 - [Neural RAG document assistant](python-ai/rag-docs/README.md): multilingual neural embeddings, semantic search, source references and optional local Ollama generation.
 - [PyTorch ticket classifier](python-ai/ticket-classifier/README.md): train an embedding + MLP neural network, evaluate on held-out toy samples and serve inference through FastAPI.
 
+- [Safe tool-calling agent](python-ai/tool-agent/README.md): restricted tools, validation and approval gate (deterministic groundwork for an LLM planner).
+
 See [Python AI portfolio overview](python-ai/README.md). Python dependencies and tests are isolated per example.
 
 ## Layout
@@ -58,7 +60,7 @@ demo/
   bootstrap5/     # Bootstrap 5 dashboard
   GosVet/         # Veterinary clinic application
   dotnet-outbox/  # ASP.NET Core, PostgreSQL and tests
-  python-ai/     # Neural RAG and PyTorch classification
+  python-ai/     # Neural RAG, PyTorch classification and tool agent
   README.md
 ```
 

@@ -5,6 +5,7 @@ import random
 from pathlib import Path
 import torch
 from app.model import IntentNet, LABELS, encode
+from evaluate import classification_metrics
 
 ROOT = Path(__file__).resolve().parent
 
@@ -34,12 +35,13 @@ def train(output: Path, epochs: int = 70):
         predictions = model(torch.tensor([encode(t) for t, _ in test_rows], dtype=torch.long)).argmax(1).tolist()
     correct = sum(pred == label for pred, (_, label) in zip(predictions, test_rows))
     accuracy = correct / len(test_rows)
+    metrics = classification_metrics([label for _, label in test_rows], predictions)
     output.mkdir(parents=True, exist_ok=True)
     # Save weights only, not arbitrary pickle objects.
     torch.save(model.state_dict(), output / "intent_weights.pt")
     (output / "metrics.json").write_text(json.dumps({
         "labels": LABELS, "train_samples": len(train_rows), "test_samples": len(test_rows),
-        "heldout_accuracy": accuracy, "seed": 42, "epochs": epochs,
+        "heldout_accuracy": accuracy, "metrics": metrics, "seed": 42, "epochs": epochs,
         "warning": "Toy dataset; accuracy is not representative of real-world performance."
     }, indent=2), encoding="utf8")
     print(f"Held-out toy accuracy: {accuracy:.1%}; test size: {len(test_rows)}")
