@@ -40,3 +40,7 @@ Example measurements in RDC (single HNSW query/build thread; 128 dimensions, 300
 | 50,000 | 256 | 0.7063 | 1.231 ms | 0.509 ms | 16.284 s |
 
 **Trade-off:** at 10k vectors, tighter recall made HNSW slower than exact search in this run; at 50k vectors, HNSW was faster but sacrificed substantial recall. Results can vary by CPU, BLAS, build parameters and corpus distribution. `input_vector_bytes` is a storage lower bound for the float32 array, **not** peak RSS or HNSW memory use. The benchmark must not be presented as proof that approximate retrieval improves RAG answer quality.
+
+### Actual neural-document index experiment
+
+`OPENBLAS_NUM_THREADS=1 python benchmark_real.py --k 1 --ef 32` embeds the **real text passages** in `eval/corpus` with the CPU ONNX model `BAAI/bge-small-en-v1.5`, then compares exact cosine ranking with HNSW on exactly the same embeddings. It separately reports **ANN recall against exact neighbors** and **source relevance against manually labeled questions**. Model inference is excluded from per-search timings; the small corpus is illustrative, **not** a representative benchmark or evidence of scalable ANN performance. Model weights download on first execution. The older `benchmark_index.py` remains a distinct synthetic scalability microbenchmark.
