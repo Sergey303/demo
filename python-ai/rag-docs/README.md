@@ -44,3 +44,7 @@ Example measurements in RDC (single HNSW query/build thread; 128 dimensions, 300
 ### Actual neural-document index experiment
 
 `OPENBLAS_NUM_THREADS=1 python benchmark_real.py --k 1 --ef 32` embeds the **real text passages** in `eval/corpus` with the CPU ONNX model `BAAI/bge-small-en-v1.5`, then compares exact cosine ranking with HNSW on exactly the same embeddings. It separately reports **ANN recall against exact neighbors** and **source relevance against manually labeled questions**. Model inference is excluded from per-search timings; the small corpus is illustrative, **not** a representative benchmark or evidence of scalable ANN performance. Model weights download on first execution. The older `benchmark_index.py` remains a distinct synthetic scalability microbenchmark.
+
+### Token-budgeted chunking (tiktoken)
+
+`app/token_chunks.py` provides an alternative tokenizer-aware document splitter with configurable token budget and overlap (`pip install tiktoken`). Chunks retain source attribution; token boundaries are based on `cl100k_base`, **not** the embedding model's tokenizer. For Unicode, decoding arbitrary BPE windows may split UTF-8 boundaries, so this is a demonstrator rather than a lossless byte-preserving tokenizer-aware splitter.
