@@ -8,6 +8,8 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 | --- | --- | --- |
 | Concurrent durable jobs / idempotency (.NET + PostgreSQL) | `dotnet-outbox/README.md` | `src/Program.cs`, `src/OutboxWorker.cs`, `sql/001_init.sql`, `tests/` |
 | Neural retrieval / RAG (Python) | `python-ai/rag-docs/README.md` | `app/core.py`, `app/main.py`, `evaluate.py`, `tests/` |
+| Whisper audio transcript indexing (Python) | `python-ai/audio-search/README.md` | `core.py`, `tests/` |
+| Triton GPU cosine kernel (GPU-required) | `python-ai/gpu-cosine/README.md` | `kernel.py`, `benchmark.py` |
 | Neural classifier / training (Python) | `python-ai/ticket-classifier/README.md` | `app/model.py`, `train.py`, `evaluate.py`, `tests/` |
 | Constrained tool execution (Python) | `python-ai/tool-agent/README.md` | `app/agent.py`, `app/main.py`, `tests/` |
 | React/TypeScript dashboard | `bootstrap5/README.md` | `src/`, Playwright tests |
