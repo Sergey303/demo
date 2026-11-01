@@ -26,3 +26,17 @@ First execution downloads a multilingual sentence-transformer model; subsequent 
 ## Exact retrieval implementation
 
 `app/core.py` constructs the index in bounded encoding batches, normalizes each stored vector once, and uses a bounded heap for exact top-k (rather than sorting every document). Query ranking costs **O(N × d + N log k)**, index storage **O(N × d)**, where N is passage count and d is embedding width. It deterministically resolves tied scores using document order and rejects malformed embeddings. This is deliberately **exact search**, suitable as a correctness reference for future approximate nearest-neighbor indexes; it is not an ANN or distributed search service.
+
+## Reproducible vector-index benchmark
+
+Install `pip install -r requirements-benchmark.txt`, then run `OPENBLAS_NUM_THREADS=1 python benchmark_index.py --n 10000 --queries 300 --k 10 --ef 64`. This compares exact NumPy cosine dot-product (including partial top-k selection) and `hnswlib` cosine search on **identical seeded random unit vectors**. It reports HNSW recall@10 versus exact neighbors, p50/p95/p99 search latency and HNSW index construction time; these numbers exclude neural model inference and do not represent relevance to human queries.
+
+Example measurements in RDC (single HNSW query/build thread; 128 dimensions, 300 queries; individual non-warmed/OS noisy runs):
+
+| N | ef_search | HNSW recall@10 | Exact p50 | HNSW p50 | HNSW build |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 10,000 | 64 | 0.6287 | 0.149 ms | 0.087 ms | 1.623 s |
+| 10,000 | 256 | 0.9543 | 0.200 ms | 0.284 ms | 1.637 s |
+| 50,000 | 256 | 0.7063 | 1.231 ms | 0.509 ms | 16.284 s |
+
+**Trade-off:** at 10k vectors, tighter recall made HNSW slower than exact search in this run; at 50k vectors, HNSW was faster but sacrificed substantial recall. Results can vary by CPU, BLAS, build parameters and corpus distribution. `input_vector_bytes` is a storage lower bound for the float32 array, **not** peak RSS or HNSW memory use. The benchmark must not be presented as proof that approximate retrieval improves RAG answer quality.
