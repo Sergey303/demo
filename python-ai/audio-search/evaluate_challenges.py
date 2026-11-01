@@ -11,6 +11,7 @@ from time import perf_counter
 from pipeline import OnnxEncoder, recognize
 from search import TranscriptIndex
 from semantic_chunks import split_records
+from hybrid import HybridIndex
 
 SPEECH = {
  'meeting_a': 'We should revise the return policy next month. The warehouse has received a delayed shipment. The customer may request a refund for damaged items.',
@@ -66,6 +67,8 @@ def main():
         split=split_records(records)
         split_index=TranscriptIndex(split,encoder)
         split_report=metrics(split_index,CASES,ABSENT)
+        report['hybrid'] = metrics(HybridIndex(index),CASES,ABSENT)
+        report['hybrid_sentence'] = metrics(HybridIndex(split_index),CASES,ABSENT)
         report['sentence_chunking']={'passages':len(split), 'metrics':split_report}
         report.update({'recordings':len(SPEECH),'segments':len(records),'transcription_seconds':round(seconds,3),
                        'limits':'Four generated single-speaker recordings; no independent human audio. Source-level labels only; unknown-answer test has no abstention support.'})
