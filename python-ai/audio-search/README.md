@@ -9,3 +9,17 @@ A small independent building block for audio-search RAG: `core.transcribe()` run
 `search.TranscriptIndex` connects timestamp-attributed Whisper records with an injected text embedding model, builds normalized exact-search vectors in bounded batches, and returns the original file, start/end seconds, text and similarity score. It supports multiple files, an optional source filter, and deterministic ties. Search costs O(Nd + N log k), without an approximate-index recall penalty. Use an embedding adapter with `encode(list[str])` (for example Sentence Transformers or a local ONNX embedding model). Tests inject a deterministic encoder to check indexing and timestamps without implying that a speech model ran.
 
 For a standalone local query, install `fastembed` and run `python search_cli.py transcripts.json 'Where was the refund discussed?'`. The input is a JSON list of `core.transcribe()` records. The ONNX embedding model is downloaded on first run and is **not** verified end-to-end in the unit tests; inference and disk indexing are intentionally outside the demonstrated core. No remote paid API is required. The CLI indexes in memory on each invocation, so this is intended for small local datasets.
+
+## End-to-end local speech-to-search pipeline
+
+`pipeline.py` connects audio decoding and **real Whisper weights** (via the CPU-friendly `faster-whisper` CTranslate2 runtime) with ONNX semantic embeddings (`fastembed`), exact cosine retrieval and timestamped results. It handles multiple audio files, including files with zero speech segments, and reports separate transcription/index/search times. No paid API is needed; model weights are downloaded on first use.
+
+```bash
+python -m pip install faster-whisper fastembed numpy
+# ffmpeg with libflite installed: deterministic synthetic speech, no third-party audio assets
+ffmpeg -f lavfi -i "flite=text='The refund policy allows customers to return their purchase within thirty days':voice=slt" -ar 16000 -ac 1 sample.wav
+python pipeline.py sample.wav --question 'What is the refund policy?' --k 1
+pytest -q tests
+```
+
+This is **speech transcription + vector search**, not diarization or word-level timestamp alignment. For retrieval quality claims, evaluate with a larger labeled audio corpus and holdout queries. The test suite uses injected encoder/transcriber boundaries; a genuine end-to-end model check additionally requires the model weights and audio above.
