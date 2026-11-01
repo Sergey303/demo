@@ -2,6 +2,7 @@
 import argparse
 from dataclasses import asdict
 import json
+import subprocess
 from pathlib import Path
 from time import perf_counter
 
@@ -24,7 +25,14 @@ def recognize(audio: Path, model_name='tiny.en'):
         raise FileNotFoundError(audio)
     from faster_whisper import WhisperModel
     model = WhisperModel(model_name, device='cpu', compute_type='int8')
-    segments, _ = model.transcribe(str(audio), language='en', beam_size=1)
+    # Decode explicitly via FFmpeg: avoids PyAV version-specific API differences.
+    import numpy as np
+    decoded = subprocess.run(
+        ['ffmpeg', '-nostdin', '-v', 'error', '-i', str(audio), '-f', 'f32le',
+         '-ac', '1', '-ar', '16000', 'pipe:1'],
+        capture_output=True, check=True, timeout=180)
+    pcm = np.frombuffer(decoded.stdout, dtype=np.float32).copy()
+    segments, _ = model.transcribe(pcm, language='en', beam_size=1)
     return passages([Segment(float(s.start), float(s.end), s.text) for s in segments], audio.name)
 
 
