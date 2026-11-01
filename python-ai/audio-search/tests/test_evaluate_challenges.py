@@ -1,6 +1,7 @@
 from evaluate_challenges import CASES, ABSENT, SPEECH, metrics
 
 class FakeIndex:
+    records = [None] * 4
     def search(self, question, k=3):
         from types import SimpleNamespace
         expected=next((label for q,label in CASES if q==question),'meeting_a')

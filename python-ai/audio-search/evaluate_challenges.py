@@ -10,6 +10,7 @@ import tempfile
 from time import perf_counter
 from pipeline import OnnxEncoder, recognize
 from search import TranscriptIndex
+from semantic_chunks import split_records
 
 SPEECH = {
  'meeting_a': 'We should revise the return policy next month. The warehouse has received a delayed shipment. The customer may request a refund for damaged items.',
@@ -34,8 +35,8 @@ ABSENT = 'Which meeting explains how to apply for a driver license?'
 def metrics(index, cases, absent):
     results = []
     for question, label in cases:
-        hits = index.search(question, k=3)
-        filenames = [h.source for h in hits]
+        hits = index.search(question, k=len(index.records))
+        filenames = list(dict.fromkeys(h.source for h in hits))[:3]
         expected = label+'.wav'
         results.append({'question':question,'expected':expected,'rank':next((i+1 for i,f in enumerate(filenames) if f==expected),None), 'top':filenames[0], 'top_score':hits[0].score})
     unknown = index.search(absent, k=1)[0]
@@ -62,6 +63,10 @@ def main():
         encoder=OnnxEncoder()
         index=TranscriptIndex(records,encoder)
         report=metrics(index,CASES,ABSENT)
+        split=split_records(records)
+        split_index=TranscriptIndex(split,encoder)
+        split_report=metrics(split_index,CASES,ABSENT)
+        report['sentence_chunking']={'passages':len(split), 'metrics':split_report}
         report.update({'recordings':len(SPEECH),'segments':len(records),'transcription_seconds':round(seconds,3),
                        'limits':'Four generated single-speaker recordings; no independent human audio. Source-level labels only; unknown-answer test has no abstention support.'})
         print(json.dumps(report,indent=2))
