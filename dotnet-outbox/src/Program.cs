@@ -13,9 +13,9 @@ builder.Services.AddHostedService<OutboxWorker>();
 var app = builder.Build();
 app.MapGet("/health", () => Results.Ok(new { status = "running" }));
 
-app.MapPost("/jobs", async (JobRequest body, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
+app.MapPost("/jobs", async (JobRequest? body, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
 {
-    if (body.Text is not { Length: > 0 and <= 2000 } || string.IsNullOrWhiteSpace(body.Text))
+    if (body?.Text is not { Length: > 0 and <= 2000 } || string.IsNullOrWhiteSpace(body.Text))
         return Results.BadRequest(new { error = "Text must be 1–2000 nonempty characters." });
     if (!request.Headers.TryGetValue("Idempotency-Key", out var header) ||
         header.Count != 1 || header.ToString() is not { Length: >= 10 and <= 128 } key ||

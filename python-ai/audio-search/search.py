@@ -26,7 +26,9 @@ def unit(vector, dimension=None):
     if not v or (dimension is not None and len(v) != dimension) or not all(map(math.isfinite, v)):
         raise ValueError('Invalid embedding dimensions or values')
     magnitude = math.sqrt(sum(x*x for x in v))
-    return [x/magnitude for x in v] if magnitude else [0.0 for _ in v]
+    if magnitude == 0 or not math.isfinite(magnitude):
+        raise ValueError('Embedding must have a finite nonzero norm')
+    return [x/magnitude for x in v]
 
 
 class TranscriptIndex:

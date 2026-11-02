@@ -35,3 +35,17 @@ def test_empty_index_and_invalid_query():
     assert index.search('refund') == []
     with pytest.raises(ValueError): index.search(' ')
     with pytest.raises(ValueError): index.search('refund', k=0)
+
+
+def test_reject_zero_embeddings_in_index_and_query():
+    class Zero:
+        def encode(self, texts): return [[0.,0.] for _ in texts]
+    rows = passages([Segment(0,1,'refund')], 'a.wav')
+    with pytest.raises(ValueError, match='nonzero norm'):
+        TranscriptIndex(rows, Zero())
+    class QueryZero:
+        def encode(self, texts):
+            return [[0.,0.] if x == 'question' else [1.,0.] for x in texts]
+    index = TranscriptIndex(rows, QueryZero())
+    with pytest.raises(ValueError, match='nonzero norm'):
+        index.search('question')
