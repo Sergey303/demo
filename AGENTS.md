@@ -2,13 +2,19 @@
 
 This is a **public engineering portfolio**. Evaluate engineering decisions from the code, not from marketing claims. All examples are original, self-contained, and intentionally scoped: routine UI, deployment, and surrounding product plumbing may be omitted to concentrate on technically interesting mechanisms. **Omitted does not mean implemented or production-proven.**
 
+## Fast evidence scan
+
+1. **AI inference:** [`python-ai/audio-search/pipeline.py`](python-ai/audio-search/pipeline.py) runs Whisper → timestamped transcripts → ONNX retrieval. [`rerank.py`](python-ai/audio-search/rerank.py) is opt-in. [`evaluate_holdout.py`](python-ai/audio-search/evaluate_holdout.py) reproduces the small holdout test; the reranked result was 9/12 versus 7/12 top-1 at considerably higher latency. **Not** a benchmark on independent human speech.
+2. **Backend correctness:** [`dotnet-outbox/src/Program.cs`](dotnet-outbox/src/Program.cs) and [`dotnet-outbox/src/OutboxWorker.cs`](dotnet-outbox/src/OutboxWorker.cs) show transactional idempotency and outbox claiming. Check [`dotnet-outbox/tests`](dotnet-outbox/tests) for database and HTTP verification. External side effects require their own idempotency protocol.
+3. **Algorithmic trade-offs:** [`python-ai/rag-docs/app/core.py`](python-ai/rag-docs/app/core.py) implements normalized exact retrieval; [`benchmark_index.py`](python-ai/rag-docs/benchmark_index.py) compares HNSW. GPU Triton code is **not GPU-validated**.
+
 ## Fast navigation (read the relevant files, not the whole tree)
 
 | Topic | Start here | Deep inspection |
 | --- | --- | --- |
 | Concurrent durable jobs / idempotency (.NET + PostgreSQL) | `dotnet-outbox/README.md` | `src/Program.cs`, `src/OutboxWorker.cs`, `sql/001_init.sql`, `tests/` |
-| Neural retrieval / RAG (Python) | `python-ai/rag-docs/README.md` | `app/core.py`, `app/main.py`, `evaluate.py`, `tests/` |
-| Whisper audio transcript indexing (Python) | `python-ai/audio-search/README.md` | `core.py`, `tests/` |
+| Neural retrieval / RAG (Python) | `python-ai/rag-docs/README.md` | `app/core.py`, `benchmark_index.py`, `benchmark_real.py`, `tests/` |
+| Whisper neural audio search + reranking (Python) | `python-ai/audio-search/README.md` | `pipeline.py`, `search.py`, `rerank.py`, `evaluate_holdout.py`, `tests/` |
 | Triton GPU cosine kernel (GPU-required) | `python-ai/gpu-cosine/README.md` | `kernel.py`, `benchmark.py` |
 | Neural classifier / training (Python) | `python-ai/ticket-classifier/README.md` | `app/model.py`, `train.py`, `evaluate.py`, `tests/` |
 | Constrained tool execution (Python) | `python-ai/tool-agent/README.md` | `app/agent.py`, `app/main.py`, `tests/` |
