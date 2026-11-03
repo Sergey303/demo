@@ -60,41 +60,25 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
             return false;
         }
 
+        // Database operations stay outside the handler catch. If PostgreSQL fails,
+        // disposing this transaction rolls back the claim; retry attempts are not consumed.
+        string input;
+        await using (var read = new NpgsqlCommand(
+            "SELECT input FROM jobs WHERE id = @id FOR UPDATE", conn, tx))
+        {
+            read.Parameters.AddWithValue("id", jobId);
+            input = (string)(await read.ExecuteScalarAsync(ct)
+                ?? throw new InvalidOperationException("Outbox points to a missing job."));
+        }
+
+        JobResult result;
         try
         {
-            string input;
-            await using (var read = new NpgsqlCommand(
-                "SELECT input FROM jobs WHERE id = @id FOR UPDATE", conn, tx))
-            {
-                read.Parameters.AddWithValue("id", jobId);
-                input = (string)(await read.ExecuteScalarAsync(ct)
-                    ?? throw new InvalidOperationException("Outbox points to a missing job."));
-            }
-
-            var result = JobLogic.Process(input);
-            await using (var save = new NpgsqlCommand(
-                "UPDATE jobs SET status = 'done', result = @result::jsonb, updated_at = now() " +
-                "WHERE id = @id", conn, tx))
-            {
-                save.Parameters.AddWithValue("result", JsonSerializer.Serialize(result));
-                save.Parameters.AddWithValue("id", jobId);
-                await save.ExecuteNonQueryAsync(ct);
-            }
-
-            await using (var mark = new NpgsqlCommand(
-                "UPDATE outbox SET processed_at = now(), last_error = NULL WHERE id = @id", conn, tx))
-            {
-                mark.Parameters.AddWithValue("id", eventId);
-                await mark.ExecuteNonQueryAsync(ct);
-            }
-
-            await tx.CommitAsync(ct);
-            log.LogInformation("Processed event {EventId} for job {JobId}", eventId, jobId);
+            result = JobLogic.Process(input);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // This recovery path is for *application handler* failures. A failed DB
-            // connection/transaction will roll back and the row stays visible for retry.
+            // Only handler failures consume the bounded retry budget.
             log.LogWarning(ex, "Handler failed for event {EventId}", eventId);
             var nextAttempt = attempts + 1;
             await using (var retry = new NpgsqlCommand(
@@ -118,7 +102,27 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
                 await fail.ExecuteNonQueryAsync(ct);
             }
             await tx.CommitAsync(ct);
+            return true;
         }
+
+        await using (var save = new NpgsqlCommand(
+            "UPDATE jobs SET status = 'done', result = @result::jsonb, updated_at = now() " +
+            "WHERE id = @id", conn, tx))
+        {
+            save.Parameters.AddWithValue("result", JsonSerializer.Serialize(result));
+            save.Parameters.AddWithValue("id", jobId);
+            await save.ExecuteNonQueryAsync(ct);
+        }
+
+        await using (var mark = new NpgsqlCommand(
+            "UPDATE outbox SET processed_at = now(), last_error = NULL WHERE id = @id", conn, tx))
+        {
+            mark.Parameters.AddWithValue("id", eventId);
+            await mark.ExecuteNonQueryAsync(ct);
+        }
+
+        await tx.CommitAsync(ct);
+        log.LogInformation("Processed event {EventId} for job {JobId}", eventId, jobId);
         return true;
     }
 }
