@@ -11,7 +11,40 @@ builder.Services.AddSingleton(NpgsqlDataSource.Create(cs));
 builder.Services.AddHostedService<OutboxWorker>();
 
 var app = builder.Build();
+// Liveness only checks that the HTTP process is responding; it does not claim DB availability.
 app.MapGet("/health", () => Results.Ok(new { status = "running" }));
+
+// Readiness fails closed on a missing/unreachable database without leaking connection details.
+app.MapGet("/ready", async (NpgsqlDataSource db, CancellationToken ct) =>
+{
+    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+    timeout.CancelAfter(TimeSpan.FromSeconds(3));
+    try
+    {
+        await using var conn = await db.OpenConnectionAsync(timeout.Token);
+        await using var cmd = new NpgsqlCommand("SELECT 1", conn);
+        var value = await cmd.ExecuteScalarAsync(timeout.Token);
+        return value is int ready && ready == 1
+            ? Results.Ok(new { status = "ready" })
+            : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (NpgsqlException)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (TimeoutException)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (InvalidOperationException)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+});
 
 app.MapPost("/jobs", async (JobRequest? body, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
 {

@@ -1,6 +1,7 @@
 """Local end-to-end audio transcription and semantic search (CPU-capable)."""
 import argparse
 from dataclasses import asdict
+from functools import lru_cache
 import json
 import subprocess
 from pathlib import Path
@@ -19,12 +20,17 @@ class OnnxEncoder:
         return list(self.model.embed(texts))
 
 
+@lru_cache(maxsize=2)
+def _whisper_model(model_name):
+    from faster_whisper import WhisperModel
+    return WhisperModel(model_name, device='cpu', compute_type='int8')
+
+
 def recognize(audio: Path, model_name='tiny.en'):
     """OpenAI Whisper weights via CPU-friendly faster-whisper (CTranslate2)."""
     if not audio.is_file():
         raise FileNotFoundError(audio)
-    from faster_whisper import WhisperModel
-    model = WhisperModel(model_name, device='cpu', compute_type='int8')
+    model = _whisper_model(model_name)
     # Decode explicitly via FFmpeg: avoids PyAV version-specific API differences.
     import numpy as np
     decoded = subprocess.run(

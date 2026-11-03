@@ -37,6 +37,8 @@ export ConnectionStrings__Jobs='Host=127.0.0.1;Port=55432;Database=reliable_jobs
 dotnet run --project src/ReliableJobs.csproj --urls http://127.0.0.1:5077
 ```
 
+Liveness is `GET /health` (process only); readiness is `GET /ready` (runs a short PostgreSQL query and returns HTTP 503 when the DB is unavailable). A healthy HTTP process alone does not prove durable job processing is operational.
+
 Then in another terminal:
 
 ```bash

@@ -22,3 +22,30 @@ def test_empty_transcript():
     result = execute([Path('silence.wav')], 'anything',
                      transcriber=lambda _: [], encoder=FakeEncoder())
     assert result['hits'] == [] and result['segments'] == 0
+
+
+def test_whisper_model_is_loaded_once_for_multiple_files(monkeypatch, tmp_path):
+    import sys
+    from types import SimpleNamespace
+    import numpy as np
+    import pipeline
+
+    calls = []
+    class Model:
+        def transcribe(self, pcm, **kwargs):
+            assert pcm.dtype == np.float32
+            return [SimpleNamespace(start=0., end=1., text='spoken')], None
+    def create(name, device, compute_type):
+        calls.append((name, device, compute_type))
+        return Model()
+    monkeypatch.setitem(sys.modules, 'faster_whisper', SimpleNamespace(WhisperModel=create))
+    monkeypatch.setattr(pipeline.subprocess, 'run', lambda *args, **kwargs: SimpleNamespace(stdout=np.zeros(16000,dtype=np.float32).tobytes()))
+    for name in ('a.wav','b.wav'):
+        (tmp_path/name).write_bytes(b'dummy')
+    pipeline._whisper_model.cache_clear()
+    try:
+        pipeline.recognize(tmp_path/'a.wav', model_name='test-local')
+        pipeline.recognize(tmp_path/'b.wav', model_name='test-local')
+        assert calls == [('test-local','cpu','int8')]
+    finally:
+        pipeline._whisper_model.cache_clear()
