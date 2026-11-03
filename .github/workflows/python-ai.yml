@@ -1,0 +1,43 @@
+name: Python AI demos
+on:
+  push:
+    paths:
+      - 'python-ai/**'
+      - '.github/workflows/python-ai.yml'
+  pull_request:
+    paths:
+      - 'python-ai/**'
+      - '.github/workflows/python-ai.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [rag-docs, ticket-classifier, tool-agent]
+    defaults:
+      run:
+        working-directory: python-ai/${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: python-ai/${{ matrix.project }}/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run unit tests
+        run: python -m pytest -q tests
+      - name: Verify source compilation
+        run: python -m compileall -q app
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [rag-docs, ticket-classifier, tool-agent]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build container
+        run: docker build -t demo-ai-${{ matrix.project }} python-ai/${{ matrix.project }}
