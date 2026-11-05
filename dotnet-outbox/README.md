@@ -60,14 +60,14 @@ dotnet test tests/ReliableJobs.Tests.csproj --filter "Category!=PostgreSQL"
 python3 tests/smoke.py
 ```
 
-The smoke test sends 20 concurrent identical requests and verifies one shared job ID, 409 for conflicting payload and the committed worker result. It was not executed in the original authoring session because the demonstration database was not running.
+The smoke test sends 20 concurrent identical requests and verifies one shared job ID, 409 for conflicting payload and the committed worker result. **Verified on 2026-11-05** with the isolated PostgreSQL 16.15 container and actual HTTP worker, after the infrastructure-versus-handler error-boundary change.
 
 ## Design notes, trade-offs, and limitations
 
 - **Idempotency:** unique constraint in PostgreSQL, not check-then-insert (which races).
 - **Durability:** the jobs row and event are written transactionally; worker uses row-level locks and commit. No Redis or in-memory event queue for correctness.
 - **Throughput:** workers drain ready rows without an artificial 500 ms delay between successful claims; they sleep only while idle or after a polling error. This eliminates a per-worker polling throttle, but **no throughput benchmark or scale claim** is implied.
-- **Retry:** backoff is bounded; the example marks a job failed after five *handler* failures, retaining the outbox record for diagnosis. Only `JobLogic.Process` failures enter the handler-retry branch. SQL/read/update/commit failures escape to the polling loop and roll back the claim instead of consuming handler attempts. This error-boundary change requires a fresh PostgreSQL integration run before it can be considered verified.
+- **Retry:** backoff is bounded; the example marks a job failed after five *handler* failures, retaining the outbox record for diagnosis. Only `JobLogic.Process` failures enter the handler-retry branch. SQL/read/update/commit failures escape to the polling loop and roll back the claim instead of consuming handler attempts. The updated code compiled and passed PostgreSQL primitive integration checks plus end-to-end HTTP smoke on 2026-11-05. Targeted fault injection of DB failure during an in-flight transaction and handler-failure exhaustion remains untested.
 - **Security:** intentionally **not** production-ready: no user authentication, authorization, per-tenant isolation, HTTPS termination, quotas, secrets manager, input privacy policy or data retention. Do not deploy it to the public Internet.
 - **Operational concerns not implemented:** jitter, metrics/tracing, alerting on dead-letter jobs, cleanup/archival, external idempotent consumers, end-to-end integration/load tests, migration orchestration. These are intentional extension points, not features claimed as implemented.
 - **Product semantics:** the demo computes a word count and SHA-256 digest to make effects deterministic and verifiable. No proprietary signing or financial processing logic is present.
@@ -112,3 +112,14 @@ The database is intentionally disposable; never reuse the ChatPilot main databas
 ## End-to-end benchmark (disposable local DB)
 
 `python3 tests/benchmark.py --count 100 --concurrency 10` submits **distinct** jobs, verifies their SHA-256 results, and measures accepted/completed throughput and p50/p95/p99 HTTP submission latency. These figures are specific to the local machine, test payload and polling implementation; they are **not** production capacity guarantees. Run against the separately isolated demo database only.
+
+## Verified local end-to-end run (2026-11-05)
+
+On the isolated `demo-outbox-postgres` PostgreSQL 16.15 database, after the outbox error-boundary change:
+
+- **10/10** xUnit tests passed, including **2 real PostgreSQL integration scenarios** for `SKIP LOCKED` rollback/reclaim and unique-key contention; .NET build reported zero errors and warnings.
+- `/ready` returned HTTP 200 when the database was connected.
+- `python3 tests/smoke.py` **PASS**: 20 concurrent identical idempotency-key submissions, a 409 for different payload, and verified durable processed result.
+- `python3 tests/benchmark.py --count 30 --concurrency 6` **PASS** with **30/30 verified results**. One local run: 440.58 accepted/s, 66.43 completed/s including polling, HTTP submission p50 **12.03 ms**, p95 **18.12 ms**, p99 **19.06 ms**. This is a tiny machine-dependent smoke/load probe, not a throughput or SLO guarantee.
+
+**Not yet proven:** service-process crash injection between claim and commit, mid-transaction PostgreSQL disconnection, terminal handler-retry exhaustion, and external side-effect deduplication. These are distinct from testing PostgreSQL primitives and require dedicated failure-injection tests.
