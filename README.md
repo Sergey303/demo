@@ -14,9 +14,9 @@ The examples below are intentionally scoped engineering demos, **not production 
 
 **Read first:** [`AGENTS.md`](AGENTS.md) gives automated reviewers the code paths, invariants, checks and honest evidence boundaries. Each example is self-contained; model weights, hardware and optional services are described in its own README.
 
-## Other examples
+## Frontend examples
 
-## Bootstrap 5 Dashboard Shell
+### Bootstrap 5 Dashboard Shell
 
 React, TypeScript, Vite and Bootstrap 5. Responsive dashboard with six routes, workspace switching, editable profile and Playwright tests.
 
@@ -30,7 +30,7 @@ npm ci
 npm run dev
 ```
 
-## GosVet
+### GosVet
 
 Veterinary-clinic demo, React and PrimeReact, with single-file build. Copied from the original [GosVet](https://github.com/Sergey303/GosVet) repository into [GosVet/](GosVet/) as regular versioned files. This directory is **not** a Git submodule.
 
@@ -43,22 +43,7 @@ npm run build
 
 See [GosVet/README.md](GosVet/README.md) for application routes and its portable `dist/index.html` build.
 
-## Reliable Jobs — .NET 10, ASP.NET Core, PostgreSQL
-
-A small original backend demo of transactional outbox, idempotency keys, concurrent workers via PostgreSQL `SKIP LOCKED`, and bounded retry. Standalone, no code from past employers. Includes unit tests. **Database integration requires a running local PostgreSQL instance.**
-
-- [Source, runbook and failure guarantees](dotnet-outbox/README.md)
-- [HTTP endpoint and transaction](dotnet-outbox/src/Program.cs)
-- [Outbox worker](dotnet-outbox/src/OutboxWorker.cs)
-- [Schema and indexes](dotnet-outbox/sql/001_init.sql)
-
-```bash
-cd dotnet-outbox
-dotnet test tests/ReliableJobs.Tests.csproj
-# See dotnet-outbox/README.md for Docker/PostgreSQL execution.
-```
-
-## Python AI / Neural Networks
+## Additional Python AI examples
 
 - [Neural RAG document assistant](python-ai/rag-docs/README.md): multilingual neural embeddings, semantic search, source references and optional local Ollama generation.
 - [PyTorch ticket classifier](python-ai/ticket-classifier/README.md): train an embedding + MLP neural network, evaluate on held-out toy samples and serve inference through FastAPI.
@@ -74,7 +59,7 @@ demo/
   bootstrap5/     # Bootstrap 5 dashboard
   GosVet/         # Veterinary clinic application
   dotnet-outbox/  # ASP.NET Core, PostgreSQL and tests
-  python-ai/     # Neural RAG, PyTorch classification and tool agent
+  python-ai/     # Audio search, Neural RAG, classification and tool agent
   README.md
 ```
 

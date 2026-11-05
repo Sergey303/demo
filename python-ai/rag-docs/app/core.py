@@ -70,7 +70,9 @@ class KnowledgeBase:
                     raise ValueError("Inconsistent embedding dimensions")
                 self.dimension = len(vector)
                 norm = math.sqrt(sum(v * v for v in vector))
-                self.vectors.append([v / norm for v in vector] if norm else [0.0] * len(vector))
+                if not math.isfinite(norm) or norm == 0:
+                    raise ValueError("Encoder returned zero or non-finite norm")
+                self.vectors.append([v / norm for v in vector])
 
     def search(self, query: str, top_k: int = 3) -> list[dict]:
         if not query.strip():
@@ -86,7 +88,9 @@ class KnowledgeBase:
         if len(vector) != self.dimension or any(not math.isfinite(v) for v in vector):
             raise ValueError("Invalid query embedding")
         norm = math.sqrt(sum(v * v for v in vector))
-        query_unit = [v / norm for v in vector] if norm else [0.0] * len(vector)
+        if not math.isfinite(norm) or norm == 0:
+            raise ValueError("Invalid query embedding norm")
+        query_unit = [v / norm for v in vector]
         # An index with a lower insertion order wins when scores tie.
         scored = ((sum(a * b for a, b in zip(query_unit, v)), -i, i)
                   for i, v in enumerate(self.vectors))

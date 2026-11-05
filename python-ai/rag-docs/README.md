@@ -25,7 +25,7 @@ First execution downloads a multilingual sentence-transformer model; subsequent 
 
 ## Exact retrieval implementation
 
-`app/core.py` constructs the index in bounded encoding batches, normalizes each stored vector once, and uses a bounded heap for exact top-k (rather than sorting every document). Query ranking costs **O(N × d + N log k)**, index storage **O(N × d)**, where N is passage count and d is embedding width. It deterministically resolves tied scores using document order and rejects malformed embeddings. This is deliberately **exact search**, suitable as a correctness reference for future approximate nearest-neighbor indexes; it is not an ANN or distributed search service.
+`app/core.py` constructs the index in bounded encoding batches, normalizes each stored vector once, and uses a bounded heap for exact top-k (rather than sorting every document). Query ranking costs **O(N × d + N log k)**, index storage **O(N × d)**, where N is passage count and d is embedding width. It deterministically resolves tied scores using document order and rejects malformed, zero-norm and overflowed embeddings (for both index and query). This is deliberately **exact search**, suitable as a correctness reference for future approximate nearest-neighbor indexes; it is not an ANN or distributed search service.
 
 ## Reproducible vector-index benchmark
 

@@ -21,6 +21,12 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 | React/TypeScript dashboard | `bootstrap5/README.md` | `src/`, Playwright tests |
 | React veterinary UI | `GosVet/README.md` | `src/` |
 
+## Security review starting points
+
+- `python-ai/tool-agent/app/main.py`: HTTP clients cannot set a trusted approval flag; writes are not exposed by this route. `Agent.execute(..., approved=True)` is an in-process test capability, **not** a production authorization workflow.
+- `python-ai/rag-docs/app/core.py`: invalid, zero-norm and overflowed embeddings fail closed. Prompt instructions are **not** a substitute for document access controls or groundedness checks.
+- `dotnet-outbox/src/OutboxWorker.cs`: handler errors consume retry budget; connection/SQL/commit errors must roll back. Confirm these guarantees with a reachable PostgreSQL before reporting integration PASS.
+
 ## Review procedure
 
 1. Inspect the actual algorithm and the invariants it is intended to preserve. Follow the data flow and concurrency/error paths.

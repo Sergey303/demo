@@ -4,6 +4,7 @@ Independent, deliberately scoped demonstrations of neural retrieval, model train
 
 | Project | Skills shown | API |
 | --- | --- | --- |
+| [Audio Search](audio-search/) | Whisper, ONNX embeddings, cross-encoder reranking, reproducible holdout evaluation; timestamped retrieval, not proof of real-world precision | CLI |
 | [Neural RAG](rag-docs/) | Sentence Transformers, multilingual embeddings, semantic search, source attribution, optional local Ollama | `POST /ask` |
 | [Constrained tool-agent](tool-agent/) | Allowlisted tools, human approval, controlled writes, FastAPI; deterministic foundation, not yet an LLM planner | `POST /execute` |
 | [Ticket classification](ticket-classifier/) | PyTorch, supervised neural training, checkpointing, evaluation, classification, FastAPI inference | `POST /predict` |
@@ -12,6 +13,7 @@ Each project has its own installation, runbook and unit tests. Models are downlo
 
 ## What is demonstrated (and what is not)
 
+- **Audio Search**: CPU local recognition and reranking; independently authored synthetic queries only, not representative speech evaluation.
 - **RAG**: neural embeddings and exact cosine ranking; the optional Ollama answer path depends on a locally installed model. Included evaluation data is illustrative, not a real-world benchmark.
 - **Classifier**: an actual PyTorch train/infer code path. The small synthetic data does not support real-world accuracy claims.
 - **Tool agent**: a constrained tool execution boundary, **not** an LLM planner or authenticated approval service.

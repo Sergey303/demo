@@ -57,3 +57,25 @@ def test_encoder_rejects_invalid_or_wrong_dimension():
         kb.search('query')
     with pytest.raises(ValueError):
         kb.search('doc', top_k=0)
+
+
+def test_zero_norm_embeddings_fail_closed():
+    class ZeroIndex:
+        def encode(self, texts):
+            return [[0.0, 0.0] for _ in texts]
+    with pytest.raises(ValueError, match="zero or non-finite norm"):
+        KnowledgeBase([Passage("a", "one")], ZeroIndex())
+
+    class ZeroQuery:
+        def encode(self, texts):
+            return [[1.0, 0.0]] if texts == ["one"] else [[0.0, 0.0]]
+    kb = KnowledgeBase([Passage("a", "one")], ZeroQuery())
+    with pytest.raises(ValueError, match="Invalid query embedding norm"):
+        kb.search("question")
+
+def test_overflowed_norm_rejected():
+    class Huge:
+        def encode(self, texts):
+            return [[1e308, 1e308] for _ in texts]
+    with pytest.raises(ValueError, match="zero or non-finite norm"):
+        KnowledgeBase([Passage("a", "one")], Huge())
