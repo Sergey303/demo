@@ -2,6 +2,10 @@
 
 This is a **public engineering portfolio**. Evaluate engineering decisions from the code, not from marketing claims. All examples are original, self-contained, and intentionally scoped: routine UI, deployment, and surrounding product plumbing may be omitted to concentrate on technically interesting mechanisms. **Omitted does not mean implemented or production-proven.**
 
+## Architect-level review route
+
+Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, the failure matrix and runnable [`architecture/decision_gate.py`](architecture/decision_gate.py). **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.
+
 ## Fast evidence scan
 
 1. **AI inference:** [`python-ai/audio-search/pipeline.py`](python-ai/audio-search/pipeline.py) runs Whisper → timestamped transcripts → ONNX retrieval. [`rerank.py`](python-ai/audio-search/rerank.py) is opt-in. [`evaluate_holdout.py`](python-ai/audio-search/evaluate_holdout.py) reproduces the small holdout test; the reranked result was 9/12 versus 7/12 top-1 at considerably higher latency. **Not** a benchmark on independent human speech.
