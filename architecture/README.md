@@ -69,6 +69,26 @@ python -m pytest -q architecture/tests
 
 The generated JSON is intentionally local and should not be committed as authoritative evidence without recording environment, dates and model versions. `ELIGIBLE_FOR_FURTHER_REVIEW` means **not yet approved**: statistical uncertainty, security, per-tenant access, cost and end-to-end user outcomes are additional gates. See [ADR-003](adr/003-retrieval-quality-cost.md).
 
+## Runnable cross-project slice: actual ASR → durable text receipt → semantic search
+
+[`evidence_flow.py`](evidence_flow.py) connects **existing actual interfaces**, rather than simulating the architecture on slides. It locally runs `faster-whisper` on an audio file, sends the timestamped transcript to `POST /jobs` with a stable SHA-256-derived idempotency key, waits for the .NET outbox worker's persisted digest to match, then retrieves timestamped semantic hits with `fastembed` neural embeddings. The runner rejects empty/oversized transcripts and refuses remote API destinations. [Contract tests](tests/test_evidence_flow.py) cover deterministic repeat submission, no-speech rejection, digest mismatch, URL restrictions and request bounds.
+
+```bash
+# In one terminal, from dotnet-outbox/, with the demo-only PostgreSQL available:
+export ConnectionStrings__Jobs='Host=demo-outbox-postgres;Port=5432;Database=reliable_jobs;Username=demo;Password=demo'
+dotnet run --project src/ReliableJobs.csproj --urls http://127.0.0.1:5077
+
+# In another terminal, from repository root, after installing faster-whisper,
+# fastembed, numpy and the FFmpeg executable, run a real local audio case:
+ffmpeg -f lavfi -i "flite=text='The refund policy allows thirty days for a return':voice=slt" -ar 16000 -ac 1 /tmp/evidence-sample.wav
+python architecture/evidence_flow.py /tmp/evidence-sample.wav --question 'How long can I return a purchase?'
+python -m pytest -q architecture/tests
+```
+
+**Critical trust/durability boundary:** ASR is performed **before** acceptance into the durable job. If the process dies during ASR, the accepted-work guarantee does not apply to that audio. The .NET worker verifies/persists the *transcript text* as its existing deterministic word-count/SHA job; it does **not** run Whisper, maintain a shared index, or commit vector embeddings transactionally. The transient search index exists only during this CLI invocation. This slice demonstrates real interface interoperability, not end-to-end durable AI ingestion, multi-tenant authorization, or production SLOs.
+
+**Evidence status (2026-11-06):** 10/10 contract/decision tests passed. A new live PostgreSQL + model run was **blocked** by temporary DNS failure for `demo-outbox-postgres` in RDC; do not count the cross-project E2E as validated until the database is reachable again. The individual PostgreSQL Outbox E2E was previously validated on 2026-11-05 (separate run).
+
 ## Architecture review questions
 
 1. What must be true to promise *at-least-once* handling vs exactly-once external effects? Where is deduplication enforced?

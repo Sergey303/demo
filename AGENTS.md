@@ -4,7 +4,7 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 
 ## Architect-level review route
 
-Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, the failure matrix and runnable [`architecture/decision_gate.py`](architecture/decision_gate.py). **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.
+Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, failure matrix, runnable [`architecture/decision_gate.py`](architecture/decision_gate.py) and [`architecture/evidence_flow.py`](architecture/evidence_flow.py) cross-project orchestration. The latter accepts a transcript *after* ASR; it is not a durable ASR worker. **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.
 
 ## Fast evidence scan
 
