@@ -42,11 +42,10 @@ def run(files, question, *, base='http://127.0.0.1:5077', transcriber=None, enco
     base = local_url(base)
     if not files or not question.strip() or deadline_seconds <= 0:
         raise ValueError('Provide files, nonempty question and positive deadline')
-    if transcriber is None or encoder is None:
-        sys.path.insert(0, str(AUDIO))
-        from pipeline import recognize, OnnxEncoder
-        transcriber = transcriber or recognize
-        encoder = encoder or OnnxEncoder()
+    sys.path.insert(0, str(AUDIO))
+    if transcriber is None:
+        from pipeline import recognize
+        transcriber = recognize
     sys.path.insert(0, str(AUDIO))
     from search import TranscriptIndex
     rows = []
@@ -76,6 +75,11 @@ def run(files, question, *, base='http://127.0.0.1:5077', transcriber=None, enco
             result = job.get('result') or {}
             if result.get('Sha256') != expected_hash or result.get('WordCount') != expected_words:
                 raise RuntimeError('Persisted digest/word count do not match submitted transcript')
+            # Avoid embedding-model initialization/download on silence, rejected
+            # submissions, or an unfinished/invalid durable job.
+            if encoder is None:
+                from pipeline import OnnxEncoder
+                encoder = OnnxEncoder()
             index = TranscriptIndex(rows, encoder)
             hits = index.search(question, k=3)
             return {'job_id': job_id, 'job_status': 'done', 'source_count': len(files),

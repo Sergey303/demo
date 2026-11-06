@@ -69,3 +69,12 @@ def test_rejects_oversized_transcript_before_post():
     with pytest.raises(ValueError,match='2000'):
         run([Path('a.wav')],'refund',transcriber=lambda p:[{'source':p.name,'start':0,'end':1,'text':'x'*2000}],encoder=Encoder(),transport=api)
     assert api.posts == 0
+
+
+def test_silent_recording_does_not_initialize_embedding_model(monkeypatch):
+    import pipeline
+    def must_not_initialize():
+        raise AssertionError('Embedding model loaded before durable acceptance')
+    monkeypatch.setattr(pipeline, 'OnnxEncoder', must_not_initialize)
+    with pytest.raises(ValueError, match='No speech'):
+        run([Path('silence.wav')], 'refund', transcriber=lambda _: [])
