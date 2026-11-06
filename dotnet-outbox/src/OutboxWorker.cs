@@ -40,9 +40,10 @@ public sealed class OutboxWorker(NpgsqlDataSource db, ILogger<OutboxWorker> log)
         int attempts = 0;
         bool found;
         await using (var select = new NpgsqlCommand(
-            "SELECT id, job_id, attempts FROM outbox " +
-            "WHERE processed_at IS NULL AND next_attempt_at <= now() " +
-            "ORDER BY next_attempt_at, created_at FOR UPDATE SKIP LOCKED LIMIT 1", conn, tx))
+            "SELECT o.id, o.job_id, o.attempts FROM outbox o " +
+            "JOIN jobs j ON j.id = o.job_id AND j.kind = 'text' " +
+            "WHERE o.processed_at IS NULL AND o.next_attempt_at <= now() " +
+            "ORDER BY o.next_attempt_at, o.created_at FOR UPDATE OF o SKIP LOCKED LIMIT 1", conn, tx))
         await using (var reader = await select.ExecuteReaderAsync(ct))
         {
             found = await reader.ReadAsync(ct);

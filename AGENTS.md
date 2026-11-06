@@ -6,6 +6,8 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 
 Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, failure matrix, runnable [`architecture/decision_gate.py`](architecture/decision_gate.py) and [`architecture/evidence_flow.py`](architecture/evidence_flow.py) cross-project orchestration. The latter accepts a transcript *after* ASR; it is not a durable ASR worker. **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.
 
+For the new audio-before-inference extension read [`architecture/DURABLE-AUDIO.md`](architecture/DURABLE-AUDIO.md), [`dotnet-outbox/sql/002_audio_jobs.sql`](dotnet-outbox/sql/002_audio_jobs.sql), and [`architecture/audio_worker.py`](architecture/audio_worker.py). The separate Python DB worker is intentionally a small demonstration and holds a transaction during ASR; do not infer production scaling or live verification from unit tests.
+
 ## Fast evidence scan
 
 1. **AI inference:** [`python-ai/audio-search/pipeline.py`](python-ai/audio-search/pipeline.py) runs Whisper → timestamped transcripts → ONNX retrieval. [`rerank.py`](python-ai/audio-search/rerank.py) is opt-in. [`evaluate_holdout.py`](python-ai/audio-search/evaluate_holdout.py) reproduces the small holdout test; the reranked result was 9/12 versus 7/12 top-1 at considerably higher latency. **Not** a benchmark on independent human speech.

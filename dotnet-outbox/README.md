@@ -123,3 +123,7 @@ On the isolated `demo-outbox-postgres` PostgreSQL 16.15 database, after the outb
 - `python3 tests/benchmark.py --count 30 --concurrency 6` **PASS** with **30/30 verified results**. One local run: 440.58 accepted/s, 66.43 completed/s including polling, HTTP submission p50 **12.03 ms**, p95 **18.12 ms**, p99 **19.06 ms**. This is a tiny machine-dependent smoke/load probe, not a throughput or SLO guarantee.
 
 **Not yet proven:** service-process crash injection between claim and commit, mid-transaction PostgreSQL disconnection, terminal handler-retry exhaustion, and external side-effect deduplication. These are distinct from testing PostgreSQL primitives and require dedicated failure-injection tests.
+
+## Durable audio extension (opt-in)
+
+See [Durable audio runbook](../architecture/DURABLE-AUDIO.md) for the required `002_audio_jobs.sql` migration, WAV-only API contract, Python `SKIP LOCKED` worker, model dependencies and separate DB connection-string syntax. **Apply migration before starting the updated C# worker.** This extension is not production ready and its live integration check is separate from the earlier verified text-job E2E.

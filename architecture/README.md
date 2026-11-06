@@ -89,6 +89,10 @@ python -m pytest -q architecture/tests
 
 **Evidence status (2026-11-06):** 10/10 contract/decision tests passed. A new live PostgreSQL + model run was **blocked** by temporary DNS failure for `demo-outbox-postgres` in RDC; do not count the cross-project E2E as validated until the database is reachable again. The individual PostgreSQL Outbox E2E was previously validated on 2026-11-05 (separate run).
 
+## Durable audio before inference
+
+The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, not yet a proven live end-to-end run in the current environment. It intentionally holds the transaction during inference and documents why that is unsuitable at scale.
+
 ## Architecture review questions
 
 1. What must be true to promise *at-least-once* handling vs exactly-once external effects? Where is deduplication enforced?
