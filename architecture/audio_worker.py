@@ -58,41 +58,76 @@ def search_result(result, question, encoder, k=3):
             for score,_,i in nlargest(k,scores)]
 
 
-def process_one(connection_string, *, processor=process_audio):
-    """Single atomic claim→AI result→completion. Only handler failures cost attempts."""
+def process_one(connection_string, *, processor=process_audio, lease_seconds=180, on_event=None):
+    """Short claim and finalize transactions; token prevents stale result writes."""
     import psycopg
+    from uuid import uuid4
+    started = time.perf_counter()
+
+    def emit(stage, job=None):
+        if on_event is not None:
+            try:
+                on_event({'event': stage, 'job_id': str(job) if job else None,
+                          'elapsed_ms': round((time.perf_counter() - started) * 1000, 2)})
+            except Exception:
+                pass  # Telemetry cannot change durable processing semantics.
+    if not isinstance(lease_seconds, int) or not 1 <= lease_seconds <= 3600:
+        raise ValueError('lease_seconds must be between 1 and 3600')
+    token = uuid4()
     with psycopg.connect(connection_string) as conn:
         with conn.transaction():
             with conn.cursor() as cur:
-                cur.execute('''SELECT o.id, o.job_id, o.attempts, j.audio_payload, j.audio_name
+                cur.execute("""SELECT o.id, o.job_id, j.audio_payload, j.audio_name
                                FROM outbox o JOIN jobs j ON j.id=o.job_id
                                WHERE j.kind='audio' AND o.processed_at IS NULL
-                                 AND o.next_attempt_at <= now()
-                               ORDER BY o.next_attempt_at, o.created_at
-                               FOR UPDATE OF o SKIP LOCKED LIMIT 1''')
+                               AND o.next_attempt_at <= now()
+                               AND (o.lease_until IS NULL OR o.lease_until <= now())
+                               ORDER BY o.next_attempt_at,o.created_at
+                               FOR UPDATE OF o SKIP LOCKED LIMIT 1""")
                 row = cur.fetchone()
                 if row is None:
                     return False
-                event_id, job_id, attempts, blob, name = row
-                # This is the only handler exception boundary. Database faults
-                # intentionally escape and roll back without incrementing attempts.
-                try:
-                    outcome = processor(bytes(blob), name)
-                except Exception as exc:
-                    n = attempts + 1
-                    delay_seconds = min(60, 2 ** min(n - 1, 30))
-                    cur.execute('''UPDATE outbox SET attempts=%s,
-                                   next_attempt_at=CASE WHEN %s >= %s THEN 'infinity'::timestamptz
-                                   ELSE now() + (%s * interval '1 second') END,
-                                   last_error=%s WHERE id=%s''',
-                                (n, n, MAX_ATTEMPTS, delay_seconds, type(exc).__name__, event_id))
-                    if n >= MAX_ATTEMPTS:
+                event_id, job_id, blob, name = row
+                cur.execute("""UPDATE outbox SET lease_token=%s,
+                               lease_until=now()+(%s*interval '1 second') WHERE id=%s""",
+                            (token, lease_seconds, event_id))
+    emit('lease_acquired', job_id)
+    try:
+        result = processor(bytes(blob), name)
+        error = None
+    except Exception as exc:
+        result = None
+        error = type(exc).__name__
+    with psycopg.connect(connection_string) as conn:
+        with conn.transaction():
+            with conn.cursor() as cur:
+                cur.execute("""SELECT attempts FROM outbox WHERE id=%s AND
+                               lease_token=%s AND lease_until > now()
+                               AND processed_at IS NULL FOR UPDATE""", (event_id, token))
+                owned = cur.fetchone()
+                if owned is None:
+                    emit('lease_lost', job_id)
+                    return False  # Lease expired or another worker reclaimed it.
+                if error is not None:
+                    attempt = owned[0] + 1
+                    delay = min(60, 2 ** min(attempt - 1, 30))
+                    cur.execute("""UPDATE outbox SET attempts=%s,
+                                   next_attempt_at=CASE WHEN %s >= %s
+                                   THEN 'infinity'::timestamptz
+                                   ELSE now()+(%s*interval '1 second') END,
+                                   last_error=%s,lease_token=NULL,lease_until=NULL
+                                   WHERE id=%s""",
+                                (attempt, attempt, MAX_ATTEMPTS, delay, error, event_id))
+                    if attempt >= MAX_ATTEMPTS:
                         cur.execute("UPDATE jobs SET status='failed',updated_at=now() WHERE id=%s", (job_id,))
-                    return True
-                cur.execute("UPDATE jobs SET status='done',result=%s::jsonb,updated_at=now() WHERE id=%s",
-                            (json.dumps(outcome, ensure_ascii=False, allow_nan=False), job_id))
-                cur.execute('UPDATE outbox SET processed_at=now(),last_error=NULL WHERE id=%s', (event_id,))
-                return True
+                else:
+                    payload = json.dumps(result, ensure_ascii=False, allow_nan=False)
+                    cur.execute("UPDATE jobs SET status='done',result=%s::jsonb,updated_at=now() WHERE id=%s",
+                                (payload, job_id))
+                    cur.execute("""UPDATE outbox SET processed_at=now(),last_error=NULL,
+                                   lease_token=NULL,lease_until=NULL WHERE id=%s""", (event_id,))
+    emit('handler_failure' if error else 'completed', job_id)
+    return True
 
 
 def fetch_and_search(connection_string, job_id, question, k=3, *, encoder=None):
@@ -123,9 +158,12 @@ def main():
     if not cs:
         parser.error('Set JOBS_TEST_CONNECTION to a disposable demo PostgreSQL database')
     if args.command == 'worker':
+        def log_event(item):
+            # No transcripts or media bytes in diagnostic events.
+            print(json.dumps(item), file=sys.stderr, flush=True)
         while True:
             try:
-                processed = process_one(cs)
+                processed = process_one(cs, on_event=log_event)
             except KeyboardInterrupt:
                 break
             except Exception as exc:

@@ -42,7 +42,7 @@ flowchart TB
 | Contract | Target acceptance check | Present evidence |
 | --- | --- | --- |
 | Accepted jobs are durable | POST returns accepted only after job + outbox are committed; duplicate keys do not create another job | [HTTP smoke + PostgreSQL tests](../dotnet-outbox/tests); [verified local run](../dotnet-outbox/README.md) |
-| Worker crash does not lose accepted work | Kill process after claim but before commit; restart and check same job eventually completes | PostgreSQL transaction rollback/reclaim primitive tested; **process-level chaos not tested** |
+| Worker crash does not lose accepted work | Kill process after claim but before commit; restart and check same job eventually completes | Audio worker child-process termination, lease reclaim and fencing tested; text worker process crash remains untested |
 | Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [Audio hits](../python-ai/audio-search/search.py), [document hits](../python-ai/rag-docs/app/core.py); **authorization filtering not implemented** |
 | AI quality change is gated | Frozen labeled queries; compare paired errors and latency; reject tiny datasets | [Executable quality/latency gate](decision_gate.py) + [tests](tests/test_decision_gate.py); present datasets are tiny and synthetic |
 | No unauthorized writes through public agent API | HTTP clients cannot self-approve actions | [Tool API](../python-ai/tool-agent/app/main.py) and [tests](../python-ai/tool-agent/tests/test_agent.py); authenticated approval workflow **not implemented** |
@@ -91,7 +91,7 @@ python -m pytest -q architecture/tests
 
 ## Durable audio before inference
 
-The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It intentionally holds the transaction during inference and documents why that is unsuitable at scale.
+The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It now uses short claim/finalize transactions and a fenced expiring lease, with inference outside PostgreSQL transactions; lease renewal and high-load behavior remain unimplemented.
 
 ## Architecture review questions
 

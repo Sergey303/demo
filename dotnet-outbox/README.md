@@ -126,4 +126,4 @@ On the isolated `demo-outbox-postgres` PostgreSQL 16.15 database, after the outb
 
 ## Durable audio extension (opt-in)
 
-See [Durable audio runbook](../architecture/DURABLE-AUDIO.md) for the required `002_audio_jobs.sql` migration, WAV-only API contract, Python `SKIP LOCKED` worker, model dependencies and separate DB connection-string syntax. **Apply migration before starting the updated C# worker.** The extension passed a separate live audio integration smoke on 2026-11-07; see the verification record in the linked runbook. It is not production ready.
+See [Durable audio runbook](../architecture/DURABLE-AUDIO.md) for the required `002_audio_jobs.sql` and `003_audio_leases.sql` migrations, WAV-only API contract, Python `SKIP LOCKED` worker, model dependencies and separate DB connection-string syntax. **Apply migration before starting the updated C# worker.** The extension passed a separate live audio integration smoke on 2026-11-07; see the verification record in the linked runbook. It is not production ready.

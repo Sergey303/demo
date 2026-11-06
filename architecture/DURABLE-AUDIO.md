@@ -15,10 +15,11 @@ job/outbox transaction, rather than adding a second queue or broker.
 2. The existing [C# outbox worker](../dotnet-outbox/src/OutboxWorker.cs) claims
    only `kind='text'`. The separate [Python worker](audio_worker.py) claims only
    `kind='audio'` using `FOR UPDATE SKIP LOCKED`.
-3. Inside one PostgreSQL transaction, the Python worker runs the local
-   faster-whisper model, creates timestamped transcript passages and BGE-small
-   embeddings, writes them into the `jobs.result` JSONB, and marks the event
-   processed. A worker crash before commit rolls back the changes and lock.
+3. The Python worker claims a lease in a short transaction, runs local
+   faster-whisper and BGE-small embeddings **without holding a database lock**,
+   then writes passages/vectors and marks the event processed in a second short
+   transaction, conditional on retaining the lease token. A crashed worker's
+   lease expires; stale workers cannot overwrite the new owner's result.
 4. `audio_worker.py search JOB_ID 'refund period'` reads **persisted vectors**
    and embeds only the query. A [live smoke](live_audio_smoke.py) generates
    original synthetic speech, submits twice, runs worker, verifies the durable
@@ -28,12 +29,13 @@ job/outbox transaction, rather than adding a second queue or broker.
 
 A pre-existing Compose database was initialized with `001_init.sql`; Docker
 will **not** rerun initialization files when a database volume already exists.
-Run migration `002_audio_jobs.sql` **before starting the updated .NET worker**.
+Run migrations `002_audio_jobs.sql` and `003_audio_leases.sql` **before starting the updated workers**.
 On the Windows Docker host from `D:\projects\ChatPilotGroup\demo\dotnet-outbox`:
 
 ```powershell
 docker compose -p demo-outbox up -d --wait
-Get-Content -Raw .\sql\002_audio_jobs.sql | docker exec -i demo-outbox-postgres-1 psql -U demo -d reliable_jobs
+Get-Content -Raw .\sql\002_audio_jobs.sql | docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
+Get-Content -Raw .\sql\003_audio_leases.sql | docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
 ```
 
 Then in RDC, from the repository root:
@@ -64,18 +66,21 @@ use Npgsql syntax. Run the suites separately or set the variable accordingly.
 
 - The initial API is unauthenticated and restricted to local demo deployment.
   RIFF/WAVE magic and byte-size checks are **not** a full codec/security audit.
-- Python holds a PostgreSQL transaction and row lock throughout CPU inference.
-  This demonstrates atomicity but causes long locks, connection usage and poor
-  scalability. Production needs leases/heartbeats, object storage, transaction
-  boundaries around state transitions, worker isolation and backpressure.
+- Inference runs outside database transactions using a **180-second lease**
+  by default. A short `claim` transaction and a short conditional `finish`
+  transaction protect persistence. No heartbeat is implemented; work that
+  exceeds the lease can be duplicated and the stale result must be discarded.
+  Production needs heartbeat/lease renewal, appropriate lease sizing, durable
+  object storage, worker isolation, backpressure and cancellation.
 - Only one short WAV is accepted per task; results and audio bytes remain in the
   same database without retention, deletion, access controls or PII filtering.
 - Query search is a local CLI, not a multi-tenant authenticated retrieval API.
 - A failure of handler inference consumes a bounded retry; connection and SQL
   faults roll back. [Optional real PostgreSQL tests](tests/test_audio_postgres.py)
   exercise rollback/claim and terminal retries when the database is available.
-- Unit/contract tests do **not** prove a process-kill recovery. A chaos test
-  that terminates the worker inside the transaction remains outstanding.
+- An actual child-process termination during inference and re-claim after
+  lease expiry is covered by an opt-in PostgreSQL integration test. It is not a
+  network-partition, full-host crash or high-concurrency stress test.
 
 **Verification status:** compilation and unit/contract tests can pass without
 PostgreSQL. The Python worker's actual PostgreSQL and model-backed live E2E
@@ -113,7 +118,10 @@ with migration `002_audio_jobs.sql` applied:
 
 This is a tiny synthetic single-speaker sample; it cannot establish
 production ASR relevance, latency SLOs, capacity or security guarantees.
-**Still open:** actual OS-level termination of the worker after locking a
-row but before commit; DB disconnection during model inference; behavior
-under multiple active AI workers and tenant-level authorization. The database
-rollback/reclaim test validates the primitive, not process-crash recovery.
+**Additional verification (2026-11-07):** five PostgreSQL audio integration
+checks now pass, including actual OS-level termination of a child during
+inference, lease expiry/reclaim, confirmation that inference holds no database
+row lock, and stale-lease fencing. The full model-backed HTTP smoke was
+repeated successfully with the new lease implementation. **Still open:**
+renewable leases/heartbeat, DB outage during inference, multi-worker load and
+tenant authorization.
