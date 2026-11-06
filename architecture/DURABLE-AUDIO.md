@@ -15,11 +15,12 @@ job/outbox transaction, rather than adding a second queue or broker.
 2. The existing [C# outbox worker](../dotnet-outbox/src/OutboxWorker.cs) claims
    only `kind='text'`. The separate [Python worker](audio_worker.py) claims only
    `kind='audio'` using `FOR UPDATE SKIP LOCKED`.
-3. The Python worker claims a lease in a short transaction, runs local
-   faster-whisper and BGE-small embeddings **without holding a database lock**,
-   then writes passages/vectors and marks the event processed in a second short
-   transaction, conditional on retaining the lease token. A crashed worker's
-   lease expires; stale workers cannot overwrite the new owner's result.
+3. The Python worker claims a lease in a short transaction. A background
+   heartbeat extends the lease using independent short PostgreSQL transactions
+   while local faster-whisper and BGE-small inference runs **without holding a
+   database lock**. The final transaction conditionally writes passages/vectors
+   and the processed marker only for the current lease token. A crashed worker's
+   lease expires; a stale worker cannot overwrite the new owner's result.
 4. `audio_worker.py search JOB_ID 'refund period'` reads **persisted vectors**
    and embeds only the query. A [live smoke](live_audio_smoke.py) generates
    original synthetic speech, submits twice, runs worker, verifies the durable
@@ -67,11 +68,13 @@ use Npgsql syntax. Run the suites separately or set the variable accordingly.
 - The initial API is unauthenticated and restricted to local demo deployment.
   RIFF/WAVE magic and byte-size checks are **not** a full codec/security audit.
 - Inference runs outside database transactions using a **180-second lease**
-  by default. A short `claim` transaction and a short conditional `finish`
-  transaction protect persistence. No heartbeat is implemented; work that
-  exceeds the lease can be duplicated and the stale result must be discarded.
-  Production needs heartbeat/lease renewal, appropriate lease sizing, durable
-  object storage, worker isolation, backpressure and cancellation.
+  by default. Heartbeat attempts renewal every `min(20s, lease/3)` (at least
+  200 ms) through a separate short database connection; the final transaction
+  checks the lease token and expiry. An unavailable database or stopped heartbeat
+  can allow a duplicate inference after expiry, but the stale worker must not
+  commit a result. No cancellation of a running model is implemented.
+  Production needs heartbeat health monitoring, tailored expiry thresholds,
+  durable object storage, worker isolation, backpressure and cancellation.
 - Only one short WAV is accepted per task; results and audio bytes remain in the
   same database without retention, deletion, access controls or PII filtering.
 - Query search is a local CLI, not a multi-tenant authenticated retrieval API.
@@ -123,5 +126,27 @@ checks now pass, including actual OS-level termination of a child during
 inference, lease expiry/reclaim, confirmation that inference holds no database
 row lock, and stale-lease fencing. The full model-backed HTTP smoke was
 repeated successfully with the new lease implementation. **Still open:**
-renewable leases/heartbeat, DB outage during inference, multi-worker load and
-tenant authorization.
+DB outage during actual model inference, larger-scale/multi-host load,
+model cancellation after lease loss and tenant authorization.
+
+### Heartbeat and competing-worker verification (2026-11-07)
+
+After adding [`lease_heartbeat.py`](lease_heartbeat.py), **8/8 PostgreSQL
+audio integration tests passed**. The added evidence includes:
+
+- A 3.2-second handler completes with a 2-second initial lease because the
+  heartbeat renews it without keeping a PostgreSQL transaction open.
+- Four concurrent worker threads processed eight independent audio jobs, each
+  exactly once, with no attempts consumed and no retained lease tokens. This
+  is a controlled, small concurrency test, **not** a capacity benchmark.
+- A simulated heartbeat connection failure lets a one-second lease expire;
+  the old owner is fenced from commit, the job remains queued, and a subsequent
+  worker completes it.
+- Existing child-process termination, retry exhaustion and stale-owner fencing
+  cases also pass. The real Whisper/ONNX HTTP-to-search smoke passed again.
+
+The demo emits `lease_acquired`, `lease_renewed`, `heartbeat_error`,
+`heartbeat_lost`, `lease_lost`, `handler_failure` and `completed` as structured
+JSON diagnostic events with job ID and elapsed milliseconds. It does not log
+audio contents or transcripts. These events are **not** a substitute for
+OpenTelemetry traces, durable job age metrics, or production alerts.

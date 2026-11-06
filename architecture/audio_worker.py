@@ -58,7 +58,7 @@ def search_result(result, question, encoder, k=3):
             for score,_,i in nlargest(k,scores)]
 
 
-def process_one(connection_string, *, processor=process_audio, lease_seconds=180, on_event=None):
+def process_one(connection_string, *, processor=process_audio, lease_seconds=180, on_event=None, heartbeat=True):
     """Short claim and finalize transactions; token prevents stale result writes."""
     import psycopg
     from uuid import uuid4
@@ -92,12 +92,21 @@ def process_one(connection_string, *, processor=process_audio, lease_seconds=180
                                lease_until=now()+(%s*interval '1 second') WHERE id=%s""",
                             (token, lease_seconds, event_id))
     emit('lease_acquired', job_id)
+    from lease_heartbeat import LeaseHeartbeat
+    renewal = LeaseHeartbeat(connection_string, event_id, token, lease_seconds,
+                             lambda stage: emit(stage, job_id)) if heartbeat else None
+    if renewal is not None:
+        renewal.start()
     try:
-        result = processor(bytes(blob), name)
-        error = None
-    except Exception as exc:
-        result = None
-        error = type(exc).__name__
+        try:
+            result = processor(bytes(blob), name)
+            error = None
+        except Exception as exc:
+            result = None
+            error = type(exc).__name__
+    finally:
+        if renewal is not None:
+            renewal.stop()
     with psycopg.connect(connection_string) as conn:
         with conn.transaction():
             with conn.cursor() as cur:

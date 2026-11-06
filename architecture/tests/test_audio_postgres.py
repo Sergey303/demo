@@ -185,7 +185,7 @@ def test_expired_lease_fences_stale_result():
             # A new owner reclaims and commits after the prior lease expired.
             assert process_one(cs, processor=lambda *_: {'winner': 'new'}) is True
             return {'winner': 'stale'}
-        assert process_one(cs, processor=old_processor) is False
+        assert process_one(cs, processor=old_processor, heartbeat=False) is False
         with psycopg.connect(cs) as db:
             with db.cursor() as cur:
                 cur.execute('SELECT result,status FROM jobs WHERE id=%s', (jid,))
@@ -193,5 +193,114 @@ def test_expired_lease_fences_stale_result():
                 cur.execute('SELECT attempts,processed_at FROM outbox WHERE id=%s', (eid,))
                 attempts, finished = cur.fetchone()
                 assert attempts == 0 and finished is not None
+    finally:
+        cleanup(cs, jid)
+
+
+def test_heartbeat_renews_lease_during_slow_inference():
+    import time
+    import psycopg
+    cs = connection()
+    jid, eid = sample_job(cs)
+    events = []
+    try:
+        def slow(*_):
+            time.sleep(3.2)  # Longer than the initial two-second lease.
+            with psycopg.connect(cs) as db:
+                with db.cursor() as cur:
+                    cur.execute('SELECT lease_until>now() FROM outbox WHERE id=%s', (eid,))
+                    assert cur.fetchone()[0] is True
+            return {'segments': [], 'duration': 'long'}
+        assert process_one(cs, processor=slow, lease_seconds=2,
+                           on_event=events.append) is True
+        assert any(e['event'] == 'lease_renewed' for e in events)
+        assert events[-1]['event'] == 'completed'
+        with psycopg.connect(cs) as db:
+            with db.cursor() as cur:
+                cur.execute('SELECT status,result FROM jobs WHERE id=%s', (jid,))
+                assert cur.fetchone() == ('done', {'segments': [], 'duration': 'long'})
+    finally:
+        cleanup(cs, jid)
+
+
+def test_competing_workers_complete_distinct_jobs_once():
+    import time
+    import psycopg
+    from collections import Counter
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Lock
+    cs = connection()
+    jobs = [sample_job(cs) for _ in range(8)]
+    seen = []
+    lock = Lock()
+    try:
+        with psycopg.connect(cs) as db:
+            with db.cursor() as cur:
+                for i, (jid, _) in enumerate(jobs):
+                    cur.execute('UPDATE jobs SET audio_name=%s WHERE id=%s',
+                                (f'concurrent-{i}.wav', jid))
+            db.commit()
+        def process(blob, name):
+            time.sleep(0.04)
+            with lock:
+                seen.append(name)
+            return {'source': name}
+
+        def consumer():
+            count = 0
+            until = time.monotonic() + 10
+            while time.monotonic() < until:
+                if process_one(cs, processor=process, lease_seconds=3):
+                    count += 1
+                else:
+                    break
+            return count
+
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            totals = list(pool.map(lambda _: consumer(), range(4)))
+        assert sum(totals) == 8
+        assert Counter(seen) == Counter({f'concurrent-{i}.wav': 1 for i in range(8)})
+        with psycopg.connect(cs) as db:
+            with db.cursor() as cur:
+                for jid, eid in jobs:
+                    cur.execute('SELECT status FROM jobs WHERE id=%s', (jid,))
+                    assert cur.fetchone()[0] == 'done'
+                    cur.execute('SELECT attempts,processed_at,lease_token FROM outbox WHERE id=%s', (eid,))
+                    attempts, done, token = cur.fetchone()
+                    assert attempts == 0 and done is not None and token is None
+    finally:
+        for jid, _ in jobs:
+            cleanup(cs, jid)
+
+
+def test_failed_heartbeat_does_not_commit_stale_result(monkeypatch):
+    import time
+    import psycopg
+    from lease_heartbeat import LeaseHeartbeat
+
+    cs = connection()
+    jid, eid = sample_job(cs)
+    events = []
+    def simulate_heartbeat_outage(self):
+        raise ConnectionError('simulated heartbeat outage')
+    monkeypatch.setattr(LeaseHeartbeat, 'renew_once', simulate_heartbeat_outage)
+    try:
+        def slow(*_):
+            time.sleep(1.7)
+            return {'winner': 'stale'}
+        assert process_one(cs, processor=slow, lease_seconds=1,
+                           on_event=events.append) is False
+        assert any(event['event'] == 'heartbeat_error' for event in events)
+        assert events[-1]['event'] == 'lease_lost'
+        with psycopg.connect(cs) as db:
+            with db.cursor() as cur:
+                cur.execute('SELECT status,result FROM jobs WHERE id=%s', (jid,))
+                assert cur.fetchone() == ('queued', None)
+        assert process_one(cs, processor=lambda *_: {'winner': 'replayed'},
+                           lease_seconds=2) is True
+        with psycopg.connect(cs) as db:
+            with db.cursor() as cur:
+                cur.execute('SELECT status,result FROM jobs WHERE id=%s', (jid,))
+                assert cur.fetchone() == ('done', {'winner': 'replayed'})
     finally:
         cleanup(cs, jid)

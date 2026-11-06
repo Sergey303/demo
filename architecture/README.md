@@ -91,7 +91,7 @@ python -m pytest -q architecture/tests
 
 ## Durable audio before inference
 
-The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It now uses short claim/finalize transactions and a fenced expiring lease, with inference outside PostgreSQL transactions; lease renewal and high-load behavior remain unimplemented.
+The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It now uses short claim/finalize transactions and a fenced expiring lease, with inference outside PostgreSQL transactions; heartbeat renewal is implemented and verified with synthetic slow handlers and small concurrent-worker tests; production load/monitoring remain unverified.
 
 ## Architecture review questions
 
@@ -101,4 +101,4 @@ The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the exist
 4. Does the increased query latency of a cross-encoder justify the measured gain for *held-out real users*? When would the gate prohibit rollout?
 5. Which telemetry and failure drills prove service recovery rather than just unit-level correctness?
 
-These are genuine open decisions rather than implemented claims. The next highest-value coding increment is a **single working Jobs→Audio adapter with contract tests and failure injection**, not another diagram.
+These are genuine open decisions rather than implemented claims. The next highest-value increment is **tenant-aware authorization and access revocation in retrieval**, plus representative evaluation data, rather than another architecture diagram.
