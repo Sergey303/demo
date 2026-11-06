@@ -79,7 +79,7 @@ use Npgsql syntax. Run the suites separately or set the variable accordingly.
 
 **Verification status:** compilation and unit/contract tests can pass without
 PostgreSQL. The Python worker's actual PostgreSQL and model-backed live E2E
-must be reported separately; never present an unrun smoke as passed.
+must be reported separately; see the 2026-11-07 verification record below.
 
 ### Observed real-model check (2026-11-06)
 
@@ -90,3 +90,30 @@ models, produced **one passage** (`0.0–2.56 s`, 384-dimensional vector), and
 (cosine **0.807466**). This validates local inference/vector serialization
 and retrieval *without* PostgreSQL. It does not prove queued transaction
 recovery, query relevance on real speech or workload capacity.
+
+## Verification record — 2026-11-07
+
+Verified against the isolated `demo-outbox-postgres` PostgreSQL 16 database
+with migration `002_audio_jobs.sql` applied:
+
+- Database schema check confirmed all three new columns (`kind`,
+  `audio_payload`, `audio_name`).
+- **16/16 Python tests passed** including the two real PostgreSQL cases:
+  rollback and re-claim after a row lock, plus five handler failures leading
+  to terminal `failed`.
+- **10/10 .NET tests passed**, including the existing PostgreSQL concurrency
+  tests; .NET built without warnings or errors.
+- **Live end-to-end smoke passed** using a locally synthesized WAV:
+  `POST /audio-jobs` returned 202; repeat with identical key returned the
+  existing job (200); the Python worker ran real local Whisper + ONNX models
+  and committed `done` with timestamped evidence and embeddings in PostgreSQL.
+  Retrieval from persisted vectors returned `sample.wav` at **0.0–3.0 s**,
+  text `Customers can request a refund within 30 days.`, cosine **0.804107**.
+  The smoke independently verified the stored media SHA-256.
+
+This is a tiny synthetic single-speaker sample; it cannot establish
+production ASR relevance, latency SLOs, capacity or security guarantees.
+**Still open:** actual OS-level termination of the worker after locking a
+row but before commit; DB disconnection during model inference; behavior
+under multiple active AI workers and tenant-level authorization. The database
+rollback/reclaim test validates the primitive, not process-crash recovery.

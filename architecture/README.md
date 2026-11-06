@@ -91,7 +91,7 @@ python -m pytest -q architecture/tests
 
 ## Durable audio before inference
 
-The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, not yet a proven live end-to-end run in the current environment. It intentionally holds the transaction during inference and documents why that is unsuitable at scale.
+The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It intentionally holds the transaction during inference and documents why that is unsuitable at scale.
 
 ## Architecture review questions
 
