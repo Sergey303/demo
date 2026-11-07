@@ -1,0 +1,340 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "synthetic-capture-01",
+      "question": "Where is the amber spare key stored?",
+      "tenant": "amber",
+      "permissions": [
+        "amber-key"
+      ],
+      "evidence": [
+        {
+          "id": "amber-key",
+          "tenant": "amber",
+          "version": "synthetic-v1",
+          "text": "The amber spare key is stored in locker K4."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "amber-key"
+        ],
+        "spans": [
+          {
+            "source": "amber-key",
+            "start": 0,
+            "end": 43,
+            "quote": "The amber spare key is stored in locker K4."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-02",
+      "question": "Which day is the amber lab inspection?",
+      "tenant": "amber",
+      "permissions": [
+        "amber-inspection"
+      ],
+      "evidence": [
+        {
+          "id": "amber-inspection",
+          "tenant": "amber",
+          "version": "synthetic-v1",
+          "text": "The amber lab inspection is on Tuesday."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "amber-inspection"
+        ],
+        "spans": [
+          {
+            "source": "amber-inspection",
+            "start": 0,
+            "end": 39,
+            "quote": "The amber lab inspection is on Tuesday."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-03",
+      "question": "What is the amber sample label prefix?",
+      "tenant": "amber",
+      "permissions": [
+        "amber-labels"
+      ],
+      "evidence": [
+        {
+          "id": "amber-labels",
+          "tenant": "amber",
+          "version": "synthetic-v1",
+          "text": "Amber sample labels begin with AX."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "amber-labels"
+        ],
+        "spans": [
+          {
+            "source": "amber-labels",
+            "start": 0,
+            "end": 34,
+            "quote": "Amber sample labels begin with AX."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-04",
+      "question": "Where is the violet spare key stored?",
+      "tenant": "violet",
+      "permissions": [
+        "violet-key"
+      ],
+      "evidence": [
+        {
+          "id": "violet-key",
+          "tenant": "violet",
+          "version": "synthetic-v1",
+          "text": "The violet spare key is stored in cabinet V9."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "violet-key"
+        ],
+        "spans": [
+          {
+            "source": "violet-key",
+            "start": 0,
+            "end": 45,
+            "quote": "The violet spare key is stored in cabinet V9."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-05",
+      "question": "Which day is the violet lab inspection?",
+      "tenant": "violet",
+      "permissions": [
+        "violet-inspection"
+      ],
+      "evidence": [
+        {
+          "id": "violet-inspection",
+          "tenant": "violet",
+          "version": "synthetic-v1",
+          "text": "The violet lab inspection is on Friday."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "violet-inspection"
+        ],
+        "spans": [
+          {
+            "source": "violet-inspection",
+            "start": 0,
+            "end": 39,
+            "quote": "The violet lab inspection is on Friday."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-06",
+      "question": "What is the violet sample label prefix?",
+      "tenant": "violet",
+      "permissions": [
+        "violet-labels"
+      ],
+      "evidence": [
+        {
+          "id": "violet-labels",
+          "tenant": "violet",
+          "version": "synthetic-v1",
+          "text": "Violet sample labels begin with VZ."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "violet-labels"
+        ],
+        "spans": [
+          {
+            "source": "violet-labels",
+            "start": 0,
+            "end": 35,
+            "quote": "Violet sample labels begin with VZ."
+          }
+        ]
+      }
+    },
+    {
+      "id": "synthetic-capture-07",
+      "question": "Who may copy the amber spare key?",
+      "tenant": "amber",
+      "permissions": [
+        "amber-key"
+      ],
+      "evidence": [
+        {
+          "id": "amber-key",
+          "tenant": "amber",
+          "version": "synthetic-v1",
+          "text": "The amber spare key is stored in locker K4."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": false,
+        "abstain": true,
+        "allowed_source_ids": [],
+        "spans": []
+      }
+    },
+    {
+      "id": "synthetic-capture-08",
+      "question": "How much does a violet lab inspection cost?",
+      "tenant": "violet",
+      "permissions": [
+        "violet-inspection"
+      ],
+      "evidence": [
+        {
+          "id": "violet-inspection",
+          "tenant": "violet",
+          "version": "synthetic-v1",
+          "text": "The violet lab inspection is on Friday."
+        }
+      ],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": false,
+        "abstain": true,
+        "allowed_source_ids": [],
+        "spans": []
+      }
+    },
+    {
+      "id": "synthetic-capture-09",
+      "question": "What is the amber centrifuge speed limit?",
+      "tenant": "amber",
+      "permissions": [],
+      "evidence": [],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": false,
+        "abstain": true,
+        "allowed_source_ids": [],
+        "spans": []
+      }
+    },
+    {
+      "id": "synthetic-capture-10",
+      "question": "Who supplies violet microscope lenses?",
+      "tenant": "violet",
+      "permissions": [],
+      "evidence": [],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": false,
+        "abstain": true,
+        "allowed_source_ids": [],
+        "spans": []
+      }
+    },
+    {
+      "id": "synthetic-capture-11",
+      "question": "When will the amber freezer be replaced?",
+      "tenant": "amber",
+      "permissions": [],
+      "evidence": [],
+      "split": "holdout",
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "SYNTHETIC NON-INDEPENDENT; developer-authored frozen evidence and labels; holdout solely exercises recorder, never independent evaluation.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": false,
+        "abstain": true,
+        "allowed_source_ids": [],
+        "spans": []
+      }
+    }
+  ]
+}

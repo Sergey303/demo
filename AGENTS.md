@@ -54,3 +54,5 @@ For AI-quality review, use `python-ai/rag-docs/QUALITY-EVAL.md` and `quality_eva
 For generated RAG evaluation and Codex review inspect `python-ai/rag-docs/blind_eval.py`, `BLIND-EVAL.md`, and `tests/test_blind_eval.py`. Fixture labels/answers are synthetic and UNREVIEWED. Do not treat hash seals as proof of independent review or classify an offline syntactic citation check as semantic entailment. Keep the previous frozen 28-case threshold unchanged.
 
 For a local-only generated-answer capture use `python-ai/rag-docs/capture_local.py` and `tests/test_capture_local.py`. Never unseal an independent holdout merely to develop code or claim an offline synthetic recording as model evidence. The recorder must connect only to a local model and should never download models automatically.
+
+Before accepting claims about Qwen3 RAG quality, inspect `python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md`, `capture_diagnostics.py`, and their tests. Historical and no-thinking raw captures are separate, local `/tmp` files. Do not mistake syntactically valid citations for semantic entailment or developer-authored cases for independent holdout evidence.

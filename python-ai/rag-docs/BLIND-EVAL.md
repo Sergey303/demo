@@ -1,7 +1,8 @@
 # Blind human review and recorded generation
 
-Current status: **INSUFFICIENT INDEPENDENT EVIDENCE**. No independent labels or
-live generated-answer measurements are supplied. `eval/blind_development.json`
+Current status: **INSUFFICIENT INDEPENDENT EVIDENCE**. No independent human labels or independently reviewed generated-answer
+quality measurements are supplied. Actual local synthetic model captures are
+documented separately. `eval/blind_development.json`
 is one synthetic, UNREVIEWED contract fixture, including a holdout-marked case
 solely to exercise sealing. It is not a benchmark. Existing `evaluate.py`,
 `quality_eval.py`, and the observed 28 cases remain unchanged. Do not tune the
@@ -121,7 +122,7 @@ holdout cases is necessary; the workflow additionally requires the stated class
 balance and representative collection. Reports contain sensitive questions and
 answers: handle them with the same permissions as the evidence. This offline
 contract verifies supplied snapshots, not current production authorization or
-reviewer identity. No live generated evaluation is claimed.
+reviewer identity. No independently reviewed generated-answer evaluation is claimed.
 
 ### Runnable unreviewed example (no model used)
 
@@ -181,6 +182,14 @@ artifact digest, fixed generation options, prompt and its UTF-8 SHA, case/eviden
 hashes, request metadata, raw response object, elapsed time and status. Keep the
 model tag unchanged during capture: the digest is server-reported, not artifact
 attestation. Fixed options do not guarantee identical inference across runtimes.
+The frozen generation policy explicitly sends top-level `think: false` to
+`/api/generate` by default, disabling Qwen3 hidden reasoning so the budget goes
+toward a comparable, extractable response. Options remain `temperature=0`,
+`seed=0`, and `num_predict=512`. This intentionally changes generation mode:
+keep the previous run (including the historical smoke below) separate and
+immutable; do not pool it with captures using this policy or overwrite it.
+The new `think=false` policy was subsequently tested on 11 synthetic cases;
+see [the Qwen3 comparison](SYNTHETIC-QWEN3-CAPTURE.md).
 Both exact manifest **file bytes** SHA and canonical manifest hash are recorded.
 
 Each record and the envelope carry canonical `blind_eval.digest` hashes; verify
@@ -193,7 +202,13 @@ Output is exclusively created with owner-only permissions and never overwritten.
 Preflight failure exits 2 and removes an empty reserved file. Generation failure
 records `GENERATION_FAILED`, preserves other rows and exits 2. Use a fresh path
 for retries and retain failed attempts. `GENERATED` means a complete response was
-captured, not a correct answer. There is no synthetic answer or dry-run fallback.
+captured, not a correct answer. Completion requires `done: true`, an exact model
+match, no API error, a nonempty non-whitespace response string, and
+`done_reason: stop` (or a missing reason for older Ollama). A `length` reason or
+empty response is `GENERATION_FAILED` even when `done` is true. When the API
+returns valid JSON, the raw response is retained on failure, including
+`done_reason` and `thinking`, for private diagnosis; it is not printed publicly.
+There is no synthetic answer or dry-run fallback.
 
 ### Human handoff to the existing evaluator
 

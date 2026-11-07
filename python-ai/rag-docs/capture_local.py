@@ -14,6 +14,8 @@ from blind_eval import digest, seal
 
 MAX_RESPONSE = 4 * 1024 * 1024
 OPTIONS = {'temperature': 0, 'seed': 0, 'num_predict': 512}
+# Frozen generation policy: reserve the token budget for extractable answers.
+THINK = False
 
 
 class CaptureError(ValueError):
@@ -114,7 +116,7 @@ def capture(dataset, manifest, prior, manifest_sha256, model, endpoint, timeout,
     rows = []
     for case in cases:
         prompt = prompt_for(case)
-        payload = {'model': model, 'prompt': prompt, 'stream': False, 'options': dict(OPTIONS)}
+        payload = {'model': model, 'prompt': prompt, 'stream': False, 'think': THINK, 'options': dict(OPTIONS)}
         row = {'id': case['id'], 'tenant': case['tenant'], 'case_sha256': digest(case),
                'evidence': case['evidence'], 'evidence_sha256': digest(case['evidence']),
                'manifest_sha256': manifest_sha256, 'prompt': prompt,
@@ -127,11 +129,14 @@ def capture(dataset, manifest, prior, manifest_sha256, model, endpoint, timeout,
             start = time.monotonic()
             try:
                 result = request(endpoint, 'POST', '/api/generate', payload, timeout=timeout)
+                # Keep valid JSON privately in the capture, including failed generations.
+                row['response'] = result
                 if (not isinstance(result, dict) or result.get('done') is not True
                         or result.get('model') != model or not isinstance(result.get('response'), str)
+                        or not result['response'].strip()
+                        or result.get('done_reason', 'stop') != 'stop'
                         or 'error' in result):
                     raise ValueError('Incomplete or mismatched local generation')
-                row['response'] = result
                 row['status'] = 'GENERATED'
             except ValueError:
                 row['status'] = 'GENERATION_FAILED'

@@ -72,3 +72,29 @@ see [BLIND-EVAL.md](BLIND-EVAL.md). No independent labels or live generated
 benchmark results are supplied.
 
 **Raw local generation recording:** [sealed holdout recorder and human review protocol](BLIND-EVAL.md) uses `capture_local.py` with loopback-only Ollama and stores frozen model/prompt/corpus metadata without fabricating grounding labels. A real local Ollama/Qwen3 1.7B capture of one synthetic case passed on RDC (2026-11-07); no independently reviewed LLM quality metrics are claimed.
+
+**SYNTHETIC NON-INDEPENDENT recorder exercise:** `eval/synthetic_capture/`
+contains 11 invented questions with frozen tenant-authorized evidence: six
+answerable, two related but insufficient, and three empty. All annotations are
+UNREVIEWED; independent/blind/adjudicated are false. `holdout` solely exercises
+the recorder and never claims independent evaluation. Seals prove neither
+independent review nor answer quality. Rebuild with
+`python eval/synthetic_capture/build.py`; its prior-exposure copy matches
+`eval/prior_exposure.json`, and duplicate/exposed questions are rejected.
+From `python-ai/rag-docs`, with `qwen3:1.7b` already installed locally:
+
+```bash
+python capture_local.py --dataset eval/synthetic_capture/dataset.json \
+  --manifest eval/synthetic_capture/manifest.json \
+  --prior eval/synthetic_capture/prior_exposure.json \
+  --model qwen3:1.7b --endpoint http://127.0.0.1:11434 \
+  --allow-unsealing-holdout --output /tmp/rag-synthetic-qwen3-capture.json
+```
+
+The access flag is for this explicitly exposed synthetic fixture only; never
+unseal an independent holdout for this developer exercise. Use a fresh output
+path under `/tmp`. No model is downloaded. Empty evidence skips generation;
+related insufficient evidence exercises model abstention. Raw captures provide
+no verified quality labels; the frozen 28-case threshold remains unchanged.
+
+**Qwen3 evaluation, actual local runs:** [synthetic no-thinking comparison](SYNTHETIC-QWEN3-CAPTURE.md) and [mechanical raw-capture diagnostics](capture_diagnostics.py). The 11-case fixture is deliberately developer-authored and does not constitute independent validation of answer faithfulness.

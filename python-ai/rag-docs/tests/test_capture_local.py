@@ -36,7 +36,9 @@ def test_exact_authorized_prompt_and_hashes(dataset):
     result = run(dataset, request)
     row = result['records'][0]
     payload = request.call_args.args[3]
-    assert payload['options'] == cap.OPTIONS and payload['stream'] is False
+    assert payload['options'] == {'temperature': 0, 'seed': 0, 'num_predict': 512}
+    assert payload['stream'] is False and payload['think'] is False
+    assert row['request']['payload'] == payload
     context = json.loads(payload['prompt'].split('\n', 1)[1])
     case = dataset['cases'][0]
     assert context == {k: case[k] for k in ('tenant', 'question', 'evidence')}
@@ -160,12 +162,18 @@ def test_cli_custody_no_overwrite_and_manifest_bytes(dataset, tmp_path, monkeypa
     {'model': 'demo:fixed', 'done': False, 'response': 'partial'},
     {'model': 'other:tag', 'done': True, 'response': 'wrong model'},
     {'model': 'demo:fixed', 'done': True, 'response': 'error', 'error': 'private'},
+    {'model': 'demo:fixed', 'done': True, 'response': '', 'done_reason': 'length', 'thinking': 'private reasoning'},
+    {'model': 'demo:fixed', 'done': True, 'response': 'partial', 'done_reason': 'length'},
+    {'model': 'demo:fixed', 'done': True, 'response': '', 'done_reason': 'stop'},
+    {'model': 'demo:fixed', 'done': True, 'response': ' \n\t'},
+    {'model': 'demo:fixed', 'done': True, 'response': 'answer', 'done_reason': None},
 ])
 def test_incomplete_or_mismatched_generation_not_accepted(dataset, answer):
     def request(endpoint, method, path, payload=None, timeout=None):
         return stub(endpoint, method, path) if path == '/api/tags' else answer
     row = run(dataset, request)['records'][0]
-    assert row['status'] == 'GENERATION_FAILED' and row['response'] is None
+    assert row['status'] == 'GENERATION_FAILED' and row['response'] == answer
+    assert row['record_sha256'] == digest({k: v for k, v in row.items() if k != 'record_sha256'})
 
 
 def test_total_deadline_checked_even_with_successful_read(monkeypatch):
@@ -219,3 +227,12 @@ def test_preflight_failure_clears_empty_reserved_file(dataset, tmp_path, monkeyp
         cap.main()
     assert failure.value.code == 2
     assert not paths['output'].exists()
+
+
+@pytest.mark.parametrize('reason', [{}, {'done_reason': 'stop'}])
+def test_complete_generation_accepts_stop_or_legacy_missing_reason(dataset, reason):
+    answer = {'model': 'demo:fixed', 'done': True, 'response': ' answer ', **reason}
+    def request(endpoint, method, path, payload=None, timeout=None):
+        return stub(endpoint, method, path) if path == '/api/tags' else answer
+    row = run(dataset, request)['records'][0]
+    assert row['status'] == 'GENERATED' and row['response'] == answer
