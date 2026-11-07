@@ -142,3 +142,87 @@ python blind_eval.py evaluate \
 The report includes recorded/reviewed/pending counts and explicit human
 judgments of unsupported claims and conflicts when supplied. An absence of
 mechanical flags does **not** establish semantic support or model quality.
+
+## Local raw generation capture (independent custodian only)
+
+`capture_local.py` adds an optional capture step without changing the frozen
+0.67 policy, `blind_eval.py`, or `quality_eval.py`. **INSUFFICIENT INDEPENDENT
+EVIDENCE** remains the status. No real generations were run on this host: its
+available models are embeddinggemma and Whisper, with no generative Ollama
+service. Tests use stubs only. This tool never starts services or downloads
+models. An embedding/audio model is not a substitute for a generator.
+
+An independent evaluator, **not the developer**, should run this only with an
+already installed generative Ollama model and evaluator-controlled sealed data.
+Replace paths and model tag; keep holdout files outside the repository. The
+explicit flag acknowledges exposure of holdout content:
+
+```bash
+python capture_local.py \
+  --dataset /custody/questions.json --manifest /custody/manifest.json \
+  --prior /custody/prior-exposure.json --model INSTALLED_MODEL:TAG \
+  --allow-unsealing-holdout --timeout 30 \
+  --output /custody/raw-capture-new.json
+```
+
+Only literal `http://127.0.0.1:PORT` or `http://localhost:PORT` endpoints are
+accepted (default port 11434). Connections use literal IPv4 loopback, ignore
+proxy environment variables, refuse redirects, and have a total request deadline
+of at most 120 seconds and a 4 MiB response cap. No API key or arbitrary URL is
+accepted. Each prompt contains only that case's question, tenant and exact frozen
+authorized evidence, excluding labels and other cases. This measures generation
+on frozen evidence, not retrieval. Empty evidence records
+`ABSTAINED_NO_EVIDENCE` without a generation request; an entirely empty-evidence
+run also skips model lookup.
+
+The tool validates permissions, prior exposure and seal before network access.
+It requires the exact installed model name/tag and records the `/api/tags`
+artifact digest, fixed generation options, prompt and its UTF-8 SHA, case/evidence
+hashes, request metadata, raw response object, elapsed time and status. Keep the
+model tag unchanged during capture: the digest is server-reported, not artifact
+attestation. Fixed options do not guarantee identical inference across runtimes.
+Both exact manifest **file bytes** SHA and canonical manifest hash are recorded.
+
+Each record and the envelope carry canonical `blind_eval.digest` hashes; verify
+by removing only the object's own hash field before hashing. Archive the envelope
+hash and exact manifest SHA separately in custodian-controlled immutable storage.
+Hashes detect changes against that trusted copy; they are not signatures and
+cannot prevent an attacker replacing both the capture and the trusted hashes.
+
+Output is exclusively created with owner-only permissions and never overwritten.
+Preflight failure exits 2 and may leave an empty reserved file. Generation failure
+records `GENERATION_FAILED`, preserves other rows and exits 2. Use a fresh path
+for retries and retain failed attempts. `GENERATED` means a complete response was
+captured, not a correct answer. There is no synthetic answer or dry-run fallback.
+
+### Human handoff to the existing evaluator
+
+Keep raw captures immutable. The custodian verifies archived hashes, exact
+manifest bytes, case/evidence hashes and statuses. An authorized human curator
+then reads `response.response` and its evidence and creates a **separate** output
+using the exact `Offline free-form evaluation contract` above:
+
+- Copy `id`, `tenant`, `case_sha256`, and `evidence` from the raw record.
+- Set `run.model` to the captured tag plus artifact digest,
+  `run.corpus_sha256` to the evidence hash, and `run.policy` to `min_score=0.67`.
+- Preserve the raw answer text. The human determines abstention, citation IDs
+  and exact claim character spans after reading the full answer and evidence.
+  Missing/malformed model citations should remain visible as mechanical failures.
+- Never turn failed generation into an answer. A no-evidence abstention may use
+  explanatory refusal text and empty evidence/citations/claims.
+
+Keep a sidecar custody ledger binding raw capture/record hashes, curated output
+hash, curator identity, and annotation decisions or edits; the strict evaluator
+schema has no slot for that provenance. Any human-edited answer must be explicitly
+identified in the ledger and must not be reported as unmodified model quality.
+No code here fabricates claim spans, uses string matching to infer support, or
+scores entailment. Collect the separate independent semantic reviews bound to
+the curated output hash, then run the existing `blind_eval.py evaluate` command
+with the same dataset, manifest and prior list. Hashes, synthetic fixtures and
+syntactic citation coverage do not establish semantic entailment or independence.
+
+**Transport verification:** a test sends a real HTTP request to a short-lived
+loopback-only test server, in addition to mocked redirect, timeout and size-limit
+cases. The capture CLI also removes an empty reserved output file when preflight
+fails. Successful model-backed generation is still untested on this host because
+no local generative Ollama model/service is available.
