@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "dataset_sha256": "3c0fa82926724e50ba6cc1ef942a82793bcab917b247c8218eefa5afede08dcd",
+  "prior_sha256": "64df720ea18a6448421ca7b64756888c3f7c9644f5badf2f5c07041ab8b6fd6c",
+  "cases": {
+    "synthetic-dev-1": {
+      "sha256": "2ddd7e6c76b38c8efe16e0a02e6bb5d8f7e6c161dc51d264a8ecb46d494eee4d",
+      "split": "holdout"
+    }
+  }
+}

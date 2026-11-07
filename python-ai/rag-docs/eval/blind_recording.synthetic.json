@@ -1,0 +1,34 @@
+[
+  {
+    "id": "synthetic-dev-1",
+    "case_sha256": "2ddd7e6c76b38c8efe16e0a02e6bb5d8f7e6c161dc51d264a8ecb46d494eee4d",
+    "tenant": "demo",
+    "answer": "Refunds take 7 days. [[refund]]",
+    "abstained": false,
+    "citations": [
+      "refund"
+    ],
+    "evidence": [
+      {
+        "id": "refund",
+        "tenant": "demo",
+        "version": "synthetic-v1",
+        "text": "Refunds take 7 days."
+      }
+    ],
+    "claims": [
+      {
+        "start": 0,
+        "end": 31,
+        "citations": [
+          "refund"
+        ]
+      }
+    ],
+    "run": {
+      "model": "SYNTHETIC-FIXTURE-NOT-A-MODEL",
+      "corpus_sha256": "54c5138df6b8f895438a699bf842e1477dc93ec3d23b617a7de23c3aad96bda2",
+      "policy": "min_score=0.67"
+    }
+  }
+]

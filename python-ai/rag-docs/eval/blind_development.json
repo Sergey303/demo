@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "synthetic-dev-1",
+      "question": "How long does a refund take?",
+      "tenant": "demo",
+      "permissions": [
+        "refund"
+      ],
+      "split": "holdout",
+      "evidence": [
+        {
+          "id": "refund",
+          "tenant": "demo",
+          "version": "synthetic-v1",
+          "text": "Refunds take 7 days."
+        }
+      ],
+      "annotation": {
+        "reviewer": "UNREVIEWED",
+        "provenance": "Synthetic development contract fixture; no human labels or independent evidence. Holdout split exercises sealing only.",
+        "independent": false,
+        "blind": false,
+        "adjudicated": false,
+        "answerable": true,
+        "abstain": false,
+        "allowed_source_ids": [
+          "refund"
+        ],
+        "spans": [
+          {
+            "source": "refund",
+            "start": 0,
+            "end": 20,
+            "quote": "Refunds take 7 days."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -66,3 +66,7 @@ Example measurements in RDC (single HNSW query/build thread; 128 dimensions, 300
 ### Token-budgeted chunking (tiktoken)
 
 `app/token_chunks.py` provides an alternative tokenizer-aware document splitter with configurable token budget and overlap (`pip install tiktoken`). Chunks retain source attribution; token boundaries are based on `cl100k_base`, **not** the embedding model's tokenizer. For Unicode, decoding arbitrary BPE windows may split UTF-8 boundaries, so this is a demonstrator rather than a lossless byte-preserving tokenizer-aware splitter.
+
+For sealed independent human annotation and offline free-form answer review,
+see [BLIND-EVAL.md](BLIND-EVAL.md). No independent labels or live generated
+benchmark results are supplied.

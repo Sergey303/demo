@@ -98,3 +98,9 @@ independent review; it is not a statistical proof or production approval.
 
 This is intentionally a **failure-exposing** engineering benchmark and a
 candidate screening demonstration, not a claim of best-in-class RAG.
+
+## Independent blind review and free-form outputs
+
+[BLIND-EVAL.md](BLIND-EVAL.md) defines the separate sealed human annotation
+workflow and offline generated-answer review contract. Its included synthetic
+fixture is unreviewed; current status is **INSUFFICIENT INDEPENDENT EVIDENCE**.

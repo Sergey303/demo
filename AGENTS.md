@@ -50,3 +50,5 @@ Start with [audio access threat model](architecture/AUDIO-ACCESS.md), [SQL grant
 For standalone document RAG security review, inspect `python-ai/rag-docs/app/access.py`, the authenticated `/ask` boundary in `app/main.py`, and `python-ai/rag-docs/tests/test_acl.py`. The HTTP route requires an ACL manifest and token; lower-level `KnowledgeBase.search` remains a trusted offline benchmark primitive and must not be exposed directly to end users.
 
 For AI-quality review, use `python-ai/rag-docs/QUALITY-EVAL.md` and `quality_eval.py`. The small synthetic corpus is not blind/representative; run the actual local embeddings and report errors and gate status, not just accuracy. Free-form Ollama output is not verified by the extractive evidence tests.
+
+For generated RAG evaluation and Codex review inspect `python-ai/rag-docs/blind_eval.py`, `BLIND-EVAL.md`, and `tests/test_blind_eval.py`. Fixture labels/answers are synthetic and UNREVIEWED. Do not treat hash seals as proof of independent review or classify an offline syntactic citation check as semantic entailment. Keep the previous frozen 28-case threshold unchanged.
