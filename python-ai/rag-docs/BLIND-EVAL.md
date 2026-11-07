@@ -190,7 +190,7 @@ Hashes detect changes against that trusted copy; they are not signatures and
 cannot prevent an attacker replacing both the capture and the trusted hashes.
 
 Output is exclusively created with owner-only permissions and never overwritten.
-Preflight failure exits 2 and may leave an empty reserved file. Generation failure
+Preflight failure exits 2 and removes an empty reserved file. Generation failure
 records `GENERATION_FAILED`, preserves other rows and exits 2. Use a fresh path
 for retries and retain failed attempts. `GENERATED` means a complete response was
 captured, not a correct answer. There is no synthetic answer or dry-run fallback.
@@ -224,5 +224,44 @@ syntactic citation coverage do not establish semantic entailment or independence
 **Transport verification:** a test sends a real HTTP request to a short-lived
 loopback-only test server, in addition to mocked redirect, timeout and size-limit
 cases. The capture CLI also removes an empty reserved output file when preflight
-fails. Successful model-backed generation is still untested on this host because
-no local generative Ollama model/service is available.
+fails. A single real local Qwen3 1.7B capture now passes on RDC Ubuntu. The
+independent sealed holdout and semantic review remain unavailable. See the
+reproducible smoke record below.
+
+## Actual local model capture smoke — 2026-11-07
+
+**Environment:** Ubuntu 24.04 / WSL2 on `rdc-project`, CPU-only, Ollama
+`0.40.15`, `qwen3:1.7b` (model ID prefix `8f68893c685c`). Ollama was
+installed in the Linux filesystem, not the nearly full Windows `D:` drive.
+Its HTTP service listens only on `127.0.0.1:11434` with `OLLAMA_NO_CLOUD=1`.
+WSL does not have running systemd; `rdc-ollama-start` starts the local service
+again if the WSL process is stopped. Model weights are not committed to Git.
+
+The following smoke uses **only the checked-in, explicitly unreviewed
+synthetic development fixture**. It exercises the full HTTP transport and
+raw-recording contract, **not an independently administered blind holdout**:
+
+```bash
+rdc-ollama-start
+cd python-ai/rag-docs
+python capture_local.py \
+  --dataset eval/blind_development.json \
+  --manifest eval/blind_development.manifest.json \
+  --prior eval/prior_exposure.json \
+  --model qwen3:1.7b --endpoint http://127.0.0.1:11434 \
+  --timeout 110 --allow-unsealing-holdout \
+  --output /tmp/rdc-qwen3-live-capture-20261107.json
+```
+
+**Observed:** one record with status `GENERATED`, generation time **11.53 s**
+(illustrative single-sample wall clock), source ID `refund`, and response:
+
+> The refund process takes 7 days, as stated in the evidence [[refund]].
+
+The exact answer and its supporting evidence come from the artificial
+fixture; this is not a real-world accuracy result. The file was written to
+`/tmp`, outside the public repository. Its `record_sha256` prefix was
+`08e0ddd4f4805f51`. The envelope retained the required status
+`INSUFFICIENT INDEPENDENT EVIDENCE`. There are still no independently
+collected questions or human entailment assessments, and the previous
+28-question quality gate remains `NOT_ELIGIBLE`.

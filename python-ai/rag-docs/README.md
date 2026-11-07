@@ -71,4 +71,4 @@ For sealed independent human annotation and offline free-form answer review,
 see [BLIND-EVAL.md](BLIND-EVAL.md). No independent labels or live generated
 benchmark results are supplied.
 
-**Raw local generation recording:** [sealed holdout recorder and human review protocol](BLIND-EVAL.md) uses `capture_local.py` with loopback-only Ollama and stores frozen model/prompt/corpus metadata without fabricating grounding labels. No generative model is available in the current RDC environment, so no live LLM quality metrics are claimed.
+**Raw local generation recording:** [sealed holdout recorder and human review protocol](BLIND-EVAL.md) uses `capture_local.py` with loopback-only Ollama and stores frozen model/prompt/corpus metadata without fabricating grounding labels. A real local Ollama/Qwen3 1.7B capture of one synthetic case passed on RDC (2026-11-07); no independently reviewed LLM quality metrics are claimed.
