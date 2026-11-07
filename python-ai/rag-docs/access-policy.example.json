@@ -1,0 +1,6 @@
+{
+  "refunds.txt": {"tenant": "example-team", "readers": ["alice", "bob"]},
+  "security.txt": {"tenant": "example-team", "readers": ["alice"]},
+  "shipping.txt": {"tenant": "example-team", "readers": ["alice", "bob"]},
+  "sample.md": {"tenant": "example-team", "readers": ["alice"]}
+}

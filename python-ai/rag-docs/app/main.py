@@ -2,13 +2,15 @@
 import os
 from pathlib import Path
 from functools import lru_cache
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Header
+from pydantic import BaseModel, Field, ConfigDict
 from .core import KnowledgeBase, build_prompt, chunk_documents
+from .access import verify_token, AccessDenied, authorized_sources, PolicyUnavailable
 
 app = FastAPI(title="Neural RAG document assistant", version="1.0.0")
 
 class AskRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=3, ge=1, le=8)
     generate: bool = False
@@ -25,11 +27,25 @@ def health():
     return {"status": "ok"}
 
 @app.post("/ask")
-def ask(req: AskRequest):
+def ask(req: AskRequest, authorization: str | None = Header(default=None)):
+    if not authorization or not authorization.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail='Unauthorized')
     try:
-        hits = knowledge_base().search(req.question, req.top_k)
+        tenant, subject = verify_token(authorization[7:])
+    except (AccessDenied, RuntimeError):
+        raise HTTPException(status_code=401, detail='Unauthorized') from None
+    try:
+        configured_policy = os.getenv('DOCS_ACL_FILE')
+        allowed = authorized_sources(Path(configured_policy) if configured_policy else None,
+                                     tenant, subject)
+    except PolicyUnavailable:
+        raise HTTPException(status_code=503, detail='Authorization policy unavailable') from None
+    if not allowed:
+        return {'answer':'No authorized evidence.', 'sources':[], 'mode':'retrieval'}
+    try:
+        hits = knowledge_base().search(req.question, req.top_k, allowed_sources=allowed)
     except (ValueError, OSError) as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=503, detail='Retrieval unavailable') from exc
     response = {"answer": None, "sources": hits, "mode": "retrieval"}
     if not hits:
         response["answer"] = "No documents indexed."

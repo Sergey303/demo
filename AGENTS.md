@@ -46,3 +46,5 @@ Please cite precise files/functions and distinguish verified strengths from unte
 ## Audio access review
 
 Start with [audio access threat model](architecture/AUDIO-ACCESS.md), [SQL grants](dotnet-outbox/sql/004_audio_acl.sql), [signed identity](dotnet-outbox/src/AudioIdentity.cs) and [Python authorization](architecture/audio_access.py). Confirm both HTTP result access and Python retrieval are secured; never infer DB-owner isolation or production identity from this demo.
+
+For standalone document RAG security review, inspect `python-ai/rag-docs/app/access.py`, the authenticated `/ask` boundary in `app/main.py`, and `python-ai/rag-docs/tests/test_acl.py`. The HTTP route requires an ACL manifest and token; lower-level `KnowledgeBase.search` remains a trusted offline benchmark primitive and must not be exposed directly to end users.

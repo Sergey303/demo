@@ -29,3 +29,7 @@ For real enterprise use, authenticate with OIDC, separate SQL roles, enforce dat
 ## Verification status
 
 Python signed-token tests and .NET token validation/unit tests run without PostgreSQL. The new tenant-isolation/revocation PostgreSQL test and the updated HTTP/model E2E require the demo database and have not yet been reverified since the ACL migration. Earlier outbox and Whisper E2E runs predate this access-control change. Do not claim the ACL is integration-tested until those new tests pass.
+
+## Standalone document RAG
+
+The [document RAG](../python-ai/rag-docs/README.md) reuses the signed-identity verifier, but uses a trusted per-source JSON ACL manifest instead of PostgreSQL grants. Its /ask route verifies identity and current policy before cosine scoring and Ollama context construction. Revocation without restart is verified by FastAPI tests. This does not implement OIDC, database RLS or tenant-isolated vector storage.

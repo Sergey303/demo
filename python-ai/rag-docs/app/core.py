@@ -18,7 +18,13 @@ def chunk_documents(folder: Path, max_chars: int = 700) -> list[Passage]:
     if not folder.is_dir():
         raise ValueError(f"Document directory not found: {folder}")
     passages = []
-    for path in sorted(folder.glob("*.md")) + sorted(folder.glob("*.txt")):
+    root = folder.resolve()
+    for path in sorted(folder.rglob("*.md")) + sorted(folder.rglob("*.txt")):
+        # Sources are tenant-relative paths, never basename-only. A symlink or
+        # parent-directory escape must not import unintended private files.
+        if path.is_symlink() or not path.resolve().is_relative_to(root):
+            continue
+        source = path.relative_to(folder).as_posix()
         text = path.read_text(encoding="utf-8")
         chunks = re.split(r"\n\s*\n", text)
         buffer = ""
@@ -28,11 +34,11 @@ def chunk_documents(folder: Path, max_chars: int = 700) -> list[Passage]:
                 if not part:
                     continue
                 if buffer and len(buffer) + len(part) + 1 > max_chars:
-                    passages.append(Passage(path.name, buffer))
+                    passages.append(Passage(source, buffer))
                     buffer = ""
                 buffer = f"{buffer}\n{part}".strip()
         if buffer:
-            passages.append(Passage(path.name, buffer))
+            passages.append(Passage(source, buffer))
     return passages
 
 def cosine(a: list[float], b: list[float]) -> float:
@@ -74,12 +80,16 @@ class KnowledgeBase:
                     raise ValueError("Encoder returned zero or non-finite norm")
                 self.vectors.append([v / norm for v in vector])
 
-    def search(self, query: str, top_k: int = 3) -> list[dict]:
+    def search(self, query: str, top_k: int = 3, *, allowed_sources: set[str] | None = None) -> list[dict]:
         if not query.strip():
             raise ValueError("Question must not be empty")
         if top_k < 1:
             raise ValueError("top_k must be positive")
-        if not self.passages:
+        # Authorization is applied BEFORE similarity ranking, not as a
+        # post-ranking result filter which would leak neighbors/affect recall.
+        candidates = [i for i, passage in enumerate(self.passages)
+                      if allowed_sources is None or passage.source in allowed_sources]
+        if not candidates:
             return []
         encoded = self.embedder.encode([query])
         if len(encoded) != 1:
@@ -92,9 +102,9 @@ class KnowledgeBase:
             raise ValueError("Invalid query embedding norm")
         query_unit = [v / norm for v in vector]
         # An index with a lower insertion order wins when scores tie.
-        scored = ((sum(a * b for a, b in zip(query_unit, v)), -i, i)
-                  for i, v in enumerate(self.vectors))
-        top = heapq.nlargest(min(top_k, len(self.vectors)), scored)
+        scored = ((sum(a * b for a, b in zip(query_unit, self.vectors[i])), -i, i)
+                  for i in candidates)
+        top = heapq.nlargest(min(top_k, len(candidates)), scored)
         return [
             {"source": self.passages[i].source, "passage": self.passages[i].text,
              "score": round(score, 4)}

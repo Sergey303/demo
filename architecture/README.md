@@ -43,7 +43,7 @@ flowchart TB
 | --- | --- | --- |
 | Accepted jobs are durable | POST returns accepted only after job + outbox are committed; duplicate keys do not create another job | [HTTP smoke + PostgreSQL tests](../dotnet-outbox/tests); [verified local run](../dotnet-outbox/README.md) |
 | Worker crash does not lose accepted work | Kill process after claim but before commit; restart and check same job eventually completes | Audio worker child-process termination, lease reclaim and fencing tested; text worker process crash remains untested |
-| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [audio ACL retrieval](audio_worker.py) and [signed identity](../dotnet-outbox/src/AudioIdentity.cs) implemented, new PostgreSQL E2E pending; document RAG remains without ACL |
+| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [audio ACL retrieval](audio_worker.py) and [signed identity](../dotnet-outbox/src/AudioIdentity.cs) implemented, new PostgreSQL E2E pending; standalone document RAG now has signed identity and manifest-based per-source access, separately tested |
 | AI quality change is gated | Frozen labeled queries; compare paired errors and latency; reject tiny datasets | [Executable quality/latency gate](decision_gate.py) + [tests](tests/test_decision_gate.py); present datasets are tiny and synthetic |
 | No unauthorized writes through public agent API | HTTP clients cannot self-approve actions | [Tool API](../python-ai/tool-agent/app/main.py) and [tests](../python-ai/tool-agent/tests/test_agent.py); authenticated approval workflow **not implemented** |
 | Traceability and operational readiness | Job ID / trace ID links ingress, processing, indexing and search, with queue lag and inference latency | **Target only**; `/health` and `/ready` exist for Jobs API |
@@ -91,7 +91,7 @@ python -m pytest -q architecture/tests
 
 ## Tenant-aware audio access
 
-The [audio access controls](AUDIO-ACCESS.md) bind signed user identity to a tenant and explicit PostgreSQL read grants; the audio upload and result API and the Python retrieval service check grants. Revocation is enforced on subsequent reads, without a per-user result cache. This is a narrow demonstrator, not an OIDC/RLS production system.
+The [audio access controls](AUDIO-ACCESS.md) bind signed user identity to a tenant and explicit PostgreSQL read grants; the audio upload and result API and the Python retrieval service check grants. The standalone document RAG also enforces per-source manifest ACL on its HTTP search and local LLM input. Revocation is enforced on subsequent reads, without a per-user result cache. This is a narrow demonstrator, not an OIDC/RLS production system.
 
 ## Durable audio before inference
 

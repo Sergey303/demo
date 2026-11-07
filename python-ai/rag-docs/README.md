@@ -1,6 +1,6 @@
 # Neural RAG: knowledge-base question answering
 
-A **real neural embedding model** indexes local Markdown/text documents, ranks passages by cosine similarity and returns source attribution. Optional local Ollama generates a grounded answer. No credentials are required.
+A **real neural embedding model** indexes local Markdown/text documents, ranks passages by cosine similarity and returns source attribution. Optional local Ollama generates a grounded answer. **The HTTP `/ask` route is now fail-closed:** a signed user identity and current per-source tenant ACL are required before retrieval or generation.
 
 ## Run
 
@@ -8,14 +8,21 @@ A **real neural embedding model** indexes local Markdown/text documents, ranks p
 python -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
-curl -s localhost:8000/ask -H 'content-type: application/json' -d '{"question":"How do I get a refund?"}'
+export DEMO_AUTH_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+export DOCS_DIR="$PWD/documents"
+export DOCS_ACL_FILE="$PWD/access-policy.example.json"
+export DEMO_AUTH_TOKEN="$(PYTHONPATH=../../architecture python -c 'from audio_access import issue_token; print(issue_token("example-team","alice"))')"
+uvicorn app.main:app --port 8000 &
+curl -s localhost:8000/ask -H 'content-type: application/json' \
+  -H "Authorization: Bearer $DEMO_AUTH_TOKEN" -d '{"question":"How do I get a refund?"}'
 pytest -q
 ```
 
 First execution downloads a multilingual sentence-transformer model; subsequent starts use its local cache. Configure `DOCS_DIR` to index your own .md/.txt files; restart server to reindex. To generate an answer, start local Ollama with `llama3.2` (or set `OLLAMA_MODEL`), then send `{"question":"...","generate":true}`.
 
-**Engineering trade-offs:** in-memory exact vector search is deliberate for a small demo; use a vector index and incremental reindexing at scale. Retrieved documents are untrusted; no prompt can guarantee absence of prompt injection. Citations are passage references, not verification of generated claims. Production would need access-control filtering, PII handling, retrieval/answer evaluation, tracing, rate limits, latency/cost dashboards and security tests.
+**Access-control contract:** the signed user identity is verified by the shared monorepo `architecture/audio_access.py` module; access policy is an operator-controlled JSON manifest (see `access-policy.example.json`) that maps each source path to a tenant and readers. The manifest is **re-read on every request**: changing a grant takes effect on the next retrieval without rebuilding embeddings or restarting FastAPI. Document paths are tenant-relative (e.g., `team-a/faq.md`), and unauthorized sources are excluded **before cosine ranking** and before any context is sent to Ollama. Missing/corrupt policy fails closed (503). No matching grants return no evidence. Do not send real private documents through this example without production IAM and storage controls.
+
+**Engineering trade-offs:** in-memory exact vector search is deliberate for a small demo; use a vector index and incremental reindexing at scale. The embedding index contains all locally indexed documents and is trusted server-side memory, *not* tenant-isolated storage. Retrieved documents are untrusted; no prompt can guarantee absence of prompt injection. Citations are passage references, not verification of generated claims. Production needs database-backed authorization/RLS, audited grant changes, OIDC, PII handling, retrieval/answer evaluation, tracing, rate limits, latency/cost dashboards, and tests against revocation during in-flight requests.
 
 **Interview demo:** compare top-k hits and scores; explain chunk size, vector similarity, offline local inference, when RAG is preferable to model fine-tuning, and why tests inject a fake encoder to avoid network/model downloads.
 
