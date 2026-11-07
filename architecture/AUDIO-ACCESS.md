@@ -26,9 +26,27 @@ This demonstration uses custom short-lived HMAC tokens, not production OIDC/JWT 
 
 For real enterprise use, authenticate with OIDC, separate SQL roles, enforce database-level RLS or vetted stored procedures, audit permission changes, rotate keys, and test caches and in-flight revocation.
 
-## Verification status
+## Verification status — 2026-11-07
 
-Python signed-token tests and .NET token validation/unit tests run without PostgreSQL. The new tenant-isolation/revocation PostgreSQL test and the updated HTTP/model E2E require the demo database and have not yet been reverified since the ACL migration. Earlier outbox and Whisper E2E runs predate this access-control change. Do not claim the ACL is integration-tested until those new tests pass.
+Verified on the isolated `reliable_jobs` PostgreSQL 16 database after migration
+`004_audio_acl.sql`: both `jobs.tenant_id` and `audio_read_grants` exist.
+
+- **11/11 focused Python tests passed** (3 signed identity and tenant/revoke
+  tests, 8 real PostgreSQL worker/concurrency tests). Cross-tenant and
+  unauthorized principals are denied *before* source vectors are loaded.
+- **Authenticated HTTP + local Whisper/ONNX + PostgreSQL search smoke passed**.
+  It confirmed: authorized WAV submission and idempotent replay; unauthenticated
+  and other-tenant HTTP result denial; non-owner idempotency-key reuse yields
+  409; real audio inference; and an authorized timestamped source result.
+  Revoking the owner grant then caused both subsequent HTTP result reads and
+  semantic search to deny access.
+- Full regression: **25/25 Python architecture tests**, **20/20 standalone
+  document RAG tests**, and **12/12 .NET tests** passed. One existing
+  Starlette TestClient deprecation warning was reported.
+
+These checks use synthetic audio and disposable demo credentials; they do not
+prove production security, DB-role isolation, traffic capacity, or protection
+against privileged database access.
 
 ## Standalone document RAG
 
