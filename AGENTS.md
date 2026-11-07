@@ -56,3 +56,5 @@ For generated RAG evaluation and Codex review inspect `python-ai/rag-docs/blind_
 For a local-only generated-answer capture use `python-ai/rag-docs/capture_local.py` and `tests/test_capture_local.py`. Never unseal an independent holdout merely to develop code or claim an offline synthetic recording as model evidence. The recorder must connect only to a local model and should never download models automatically.
 
 Before accepting claims about Qwen3 RAG quality, inspect `python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md`, `capture_diagnostics.py`, and their tests. Historical and no-thinking raw captures are separate, local `/tmp` files. Do not mistake syntactically valid citations for semantic entailment or developer-authored cases for independent holdout evidence.
+
+For guarded LLM responses review `python-ai/rag-docs/app/guarded.py` and `tests/test_guarded.py`. Never equate valid JSON/citation IDs with entailment. Keep HTTP envelope streaming byte limits, reject lone surrogates, and do not alter the original retrieval/evidence modes or the frozen 0.67 threshold without independent evidence.

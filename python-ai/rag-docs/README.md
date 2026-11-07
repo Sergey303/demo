@@ -98,3 +98,53 @@ related insufficient evidence exercises model abstention. Raw captures provide
 no verified quality labels; the frozen 28-case threshold remains unchanged.
 
 **Qwen3 evaluation, actual local runs:** [synthetic no-thinking comparison](SYNTHETIC-QWEN3-CAPTURE.md) and [mechanical raw-capture diagnostics](capture_diagnostics.py). The 11-case fixture is deliberately developer-authored and does not constitute independent validation of answer faithfulness.
+
+### Opt-in guarded free-form answers
+
+Send `{"question":"…","answer_mode":"guarded","generate":true}` to the
+same authenticated `/ask` endpoint. Signed identity and the current ACL still
+filter retrieval before generation; clients cannot supply a tenant, source list,
+or score threshold. Existing retrieval, evidence and legacy `generate=true`
+behavior remain unchanged.
+
+Guarded mode abstains before contacting Ollama when authorized evidence is absent
+or the top cosine is below the unchanged `DEFAULT_MIN_SCORE` (0.67). This is a
+**relevance threshold, not entailment**. Generation uses only a local HTTP Ollama
+endpoint, with redirects and environment proxies disabled, `think=false`,
+`stream=false`, `format="json"`, temperature 0 and `num_predict=256`. No model is
+downloaded by this mode. The system prompt includes only authorized retrieved
+excerpts, identifies sources by exact relative filenames, and treats excerpts as
+untrusted data. These prompt-injection precautions are best effort.
+
+The mechanical gate requires completed output (`done=true`, `done_reason="stop"`
+or absent) and strict JSON with exactly `answer`, `citations`, and `abstain`.
+It rejects duplicate keys, extra fields, wrong types, answers over 4,000 characters,
+raw output over 16,384 characters, HTTP response envelope over 128 KiB
+(**bounded during streaming, before JSON parsing**), invalid UTF-8 including escaped
+lone surrogate characters, empty substantive answers, missing/duplicate/
+unknown citations, and citations on abstention. Every accepted citation must be
+an authorized retrieved source ID. This validates citation syntax and authorization;
+it does **not** establish semantic faithfulness, entailment, or absence of
+hallucination. A model can still invent a claim and cite an allowed document.
+
+Guarded responses always contain `answer`, `sources` (empty), `mode="guarded"`,
+`abstained`, `citations`, and `reason`. Accepted answers carry the reason
+`citation syntax/authorization validated, semantic faithfulness unverified`.
+Abstentions use `ABSTAIN: Insufficient authorized evidence to answer.`, empty
+citations, and a reason of `no_authorized_sources`, `below_relevance_threshold`,
+`model_abstained`, or `invalid_model_output`. Invalid or truncated output is never
+returned as an answer; model refusal prose and source excerpts are also withheld.
+Transport failures return a fixed 503 error without private model/error content.
+
+**Verification (2026-11-07):** 145/145 RAG tests passed, including oversized
+HTTP envelopes and malformed Unicode, with one existing TestClient dependency
+warning. A separate local CPU Qwen3 1.7B FastAPI smoke used an authenticated
+synthetic tenant with one authorized policy excerpt: the supported question
+returned `Tuesday`, citation `policy.md`, and `abstained=false`; a question
+about an unmentioned fee returned `abstained=true`, reason
+`invalid_model_output`. Both used HTTP 200 and real local model generation.
+The latter is a safe rejection of a malformed model result, **not** evidence
+that the model itself chose a meaningful abstention. These two developer-authored
+smoke cases are NOT an independent quality study. Semantic support, prompt
+injection resilience and free-form factual accuracy remain unverified.
+Evaluation fixtures, prior quality benchmarks and the 0.67 gate are unchanged.

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from .core import KnowledgeBase, build_prompt, chunk_documents
 from .access import verify_token, AccessDenied, authorized_sources, PolicyUnavailable
 from .evidence import decide_evidence, DEFAULT_MIN_SCORE
+from .guarded import guarded_answer, abstain
 
 app = FastAPI(title="Neural RAG document assistant", version="1.0.0")
 
@@ -16,7 +17,7 @@ class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=3, ge=1, le=8)
     generate: bool = False
-    answer_mode: Literal['retrieval', 'evidence'] = 'retrieval'
+    answer_mode: Literal['retrieval', 'evidence', 'guarded'] = 'retrieval'
 
 @lru_cache
 def knowledge_base() -> KnowledgeBase:
@@ -43,9 +44,13 @@ def ask(req: AskRequest, authorization: str | None = Header(default=None)):
                                      tenant, subject)
     except PolicyUnavailable:
         raise HTTPException(status_code=503, detail='Authorization policy unavailable') from None
+    if req.answer_mode == 'guarded' and not req.generate:
+        raise HTTPException(status_code=422, detail='Guarded mode requires generate=true')
     if req.answer_mode == 'evidence' and req.generate:
         raise HTTPException(status_code=422, detail='Evidence-only mode cannot generate free-form LLM text')
     if not allowed:
+        if req.answer_mode == 'guarded':
+            return abstain('no_authorized_sources')
         if req.answer_mode == 'evidence':
             decision = decide_evidence([])
             return {'answer': decision.answer, 'sources': [], 'mode': 'evidence',
@@ -55,6 +60,8 @@ def ask(req: AskRequest, authorization: str | None = Header(default=None)):
         hits = knowledge_base().search(req.question, req.top_k, allowed_sources=allowed)
     except (ValueError, OSError) as exc:
         raise HTTPException(status_code=503, detail='Retrieval unavailable') from exc
+    if req.answer_mode == 'guarded':
+        return guarded_answer(req.question, hits, allowed)
     if req.answer_mode == 'evidence':
         decision = decide_evidence(hits, min_score=DEFAULT_MIN_SCORE)
         # Sources/citations are withheld on abstention: no misleading evidence.

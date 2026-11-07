@@ -82,3 +82,5 @@ demo/
 All projects are standalone. Run npm commands in the corresponding project directory rather than the repository root. The original GosVet repository is kept unchanged. Note that all committed files under `demo/GosVet/` are public because this repository is public.
 
 **Local generative RAG evaluation:** [two genuine Qwen3 runs on 11 synthetic tenant-scoped cases](python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md), including exposed failures of citation formatting, a fixed thinking-token truncation defect, and reproducible mechanical diagnostics. Not an independent answer-quality benchmark.
+
+**Grounded-answer safety boundary:** [guarded opt-in free-form RAG](python-ai/rag-docs/README.md) checks current source permissions and strict model citation/JSON output, abstaining on invalid/unsupported-format output; real local Qwen3 smoke tested. Citation validity is not proof of semantic support.
