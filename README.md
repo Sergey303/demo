@@ -84,3 +84,5 @@ All projects are standalone. Run npm commands in the corresponding project direc
 **Local generative RAG evaluation:** [two genuine Qwen3 runs on 11 synthetic tenant-scoped cases](python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md), including exposed failures of citation formatting, a fixed thinking-token truncation defect, and reproducible mechanical diagnostics. Not an independent answer-quality benchmark.
 
 **Grounded-answer safety boundary:** [guarded opt-in free-form RAG](python-ai/rag-docs/README.md) checks current source permissions and strict model citation/JSON output, abstaining on invalid/unsupported-format output; real local Qwen3 smoke tested. Citation validity is not proof of semantic support.
+
+**Claim-level provenance:** [opt-in exact-copy `claim_checked` RAG](python-ai/rag-docs/README.md) derives each claim from a complete sentence in a tenant-authorized source, with atomic rejection if any source span is invalid. This is NOT semantic entailment or independent evidence of accuracy.

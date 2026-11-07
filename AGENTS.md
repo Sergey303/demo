@@ -58,3 +58,5 @@ For a local-only generated-answer capture use `python-ai/rag-docs/capture_local.
 Before accepting claims about Qwen3 RAG quality, inspect `python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md`, `capture_diagnostics.py`, and their tests. Historical and no-thinking raw captures are separate, local `/tmp` files. Do not mistake syntactically valid citations for semantic entailment or developer-authored cases for independent holdout evidence.
 
 For guarded LLM responses review `python-ai/rag-docs/app/guarded.py` and `tests/test_guarded.py`. Never equate valid JSON/citation IDs with entailment. Keep HTTP envelope streaming byte limits, reject lone surrogates, and do not alter the original retrieval/evidence modes or the frozen 0.67 threshold without independent evidence.
+
+For `claim_checked` provenance, review `python-ai/rag-docs/app/claim_checked.py`, `tests/test_claim_checked.py`, and the RAG README. Every claim must be a complete simple sentence or full source passage, not a context-clipped substring, to avoid reversing negation. This proves provenance only and does not certify entailment or relevance; preserve the independent evidence gate.

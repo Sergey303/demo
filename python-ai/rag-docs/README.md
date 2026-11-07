@@ -148,3 +148,52 @@ that the model itself chose a meaningful abstention. These two developer-authore
 smoke cases are NOT an independent quality study. Semantic support, prompt
 injection resilience and free-form factual accuracy remain unverified.
 Evaluation fixtures, prior quality benchmarks and the 0.67 gate are unchanged.
+
+### Opt-in exact-copy claim provenance
+
+Authenticated `/ask` also accepts `answer_mode: "claim_checked"` with
+`generate: true`. It reuses the signed principal, current tenant ACL, authorized
+retrieval and frozen `DEFAULT_MIN_SCORE=0.67` gate. The local-only Ollama client
+streams a bounded HTTP envelope (128 KiB); no external service is required.
+
+The model must return only
+`{"claims":[{"text":"...","source":"filename","quote":"exact excerpt"}],"abstain":false}`
+or `{"claims":[],"abstain":true}`. There must be 1–4 distinct claims. Each text
+must equal its quote (both are trimmed), and the quote must be a contiguous exact
+substring corresponding to a **complete simple sentence or the entire passage**
+of one authorized retrieved passage of the named source. Clipped fragments
+that omit immediately surrounding negation are rejected. Passages are
+never concatenated for verification. Unknown fields, duplicate keys or claim
+texts, malformed/truncated output, invalid UTF-8 (including lone surrogates),
+missing quotes and any invalid claim discard the entire answer. The prompt is
+limited to 64 KiB UTF-8, model JSON to 16,384 characters, and the assembled answer
+to 4,000 characters. Transport failure abstains; disallowed endpoints return 400.
+Authentication, policy and request errors retain their existing HTTP boundaries.
+
+The server joins verified claim texts with newlines and derives unique source
+citations itself. It returns no additional source fragments; on abstention it
+returns no source names or citations. Successful responses carry the reason
+`exact-span provenance validated; semantic relevance not independently verified`.
+This mode intentionally rejects useful paraphrases. It validates **exact-copy
+provenance only**, provides no general claim entailment, and does not prove that
+the excerpts answer the question or that generated answers are grounded. Similarity
+is only a relevance proxy. Existing `guarded`, `evidence`, and `retrieval` modes
+retain their behavior. **Verification (2026-11-07):** full RAG regression **186/186 PASS**, including a test
+rejecting `safe.` clipped from `This is not safe.`. The independent Codex review
+found no P0-P2 security bypass, but demonstrated that even an exact excerpt can
+mislead if context is clipped; requiring complete simple sentences mitigates
+that particular problem without establishing semantic entailment. A separate
+local CPU Qwen3 1.7B FastAPI smoke with synthetic evidence produced:
+
+- `When is the amber inspection scheduled?` → accepted, exact quote
+  `The amber inspection is scheduled on Tuesday.`, citation `synthetic.md`.
+- `How much does the amber inspection cost?` → accepted, exact quote
+  `The fee is not specified.`, citation `synthetic.md`.
+
+The **second result is not an answered price**: it is a faithful quote stating
+that the price is unknown. It demonstrates why exact-copy provenance alone
+cannot decide answer sufficiency. These are only developer-authored synthetic
+smokes, not independent answer-quality measurements. The stricter sentence
+boundary was independently unit-tested; no separate live re-run is claimed
+for that incremental change. Existing guarded/evidence/retrieval tests remain
+green and the 0.67 relevance threshold is unchanged.
