@@ -1,0 +1,12 @@
+{
+  "refunds.txt": "Unused products can be returned for a refund within 14 days of purchase. Used products require manual approval and are not automatically eligible.",
+  "shipping.txt": "Standard shipping takes three to five business days. Express shipping takes one to two business days.",
+  "security.txt": "For a password reset open Account Settings, select Security, and choose Reset password. A recovery email is required.",
+  "privacy.txt": "Customer account deletion requests can be filed in Privacy Settings. The service completes deletion within thirty calendar days.",
+  "billing.txt": "The monthly invoice is issued on the first business day of each month. Invoice disputes must be reported within ten calendar days.",
+  "warranty.txt": "The product warranty covers manufacturing defects for twenty-four months. Accidental water damage is not covered.",
+  "support.txt": "Customer support operates Monday through Friday from nine to seventeen UTC. Urgent incidents must use the emergency hotline.",
+  "retention.txt": "Meeting audio is retained for ninety days. Transcripts are retained for one hundred eighty days unless a legal hold applies.",
+  "incident.txt": "Security incidents rated severity one require acknowledgment within fifteen minutes and escalation to the incident commander.",
+  "access.txt": "Access to confidential recordings requires an explicit read grant. A revoked grant takes effect on the next search query."
+}

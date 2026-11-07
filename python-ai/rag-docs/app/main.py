@@ -2,10 +2,12 @@
 import os
 from pathlib import Path
 from functools import lru_cache
+from typing import Literal
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field, ConfigDict
 from .core import KnowledgeBase, build_prompt, chunk_documents
 from .access import verify_token, AccessDenied, authorized_sources, PolicyUnavailable
+from .evidence import decide_evidence, DEFAULT_MIN_SCORE
 
 app = FastAPI(title="Neural RAG document assistant", version="1.0.0")
 
@@ -14,6 +16,7 @@ class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=3, ge=1, le=8)
     generate: bool = False
+    answer_mode: Literal['retrieval', 'evidence'] = 'retrieval'
 
 @lru_cache
 def knowledge_base() -> KnowledgeBase:
@@ -40,12 +43,24 @@ def ask(req: AskRequest, authorization: str | None = Header(default=None)):
                                      tenant, subject)
     except PolicyUnavailable:
         raise HTTPException(status_code=503, detail='Authorization policy unavailable') from None
+    if req.answer_mode == 'evidence' and req.generate:
+        raise HTTPException(status_code=422, detail='Evidence-only mode cannot generate free-form LLM text')
     if not allowed:
+        if req.answer_mode == 'evidence':
+            decision = decide_evidence([])
+            return {'answer': decision.answer, 'sources': [], 'mode': 'evidence',
+                    'abstained': True, 'citations': [], 'reason': decision.reason}
         return {'answer':'No authorized evidence.', 'sources':[], 'mode':'retrieval'}
     try:
         hits = knowledge_base().search(req.question, req.top_k, allowed_sources=allowed)
     except (ValueError, OSError) as exc:
         raise HTTPException(status_code=503, detail='Retrieval unavailable') from exc
+    if req.answer_mode == 'evidence':
+        decision = decide_evidence(hits, min_score=DEFAULT_MIN_SCORE)
+        # Sources/citations are withheld on abstention: no misleading evidence.
+        return {'answer': decision.answer, 'sources': hits[:1] if not decision.abstained else [],
+                'mode': 'evidence', 'abstained': decision.abstained,
+                'citations': decision.citations, 'reason': decision.reason}
     response = {"answer": None, "sources": hits, "mode": "retrieval"}
     if not hits:
         response["answer"] = "No documents indexed."

@@ -26,6 +26,17 @@ First execution downloads a multilingual sentence-transformer model; subsequent 
 
 **Interview demo:** compare top-k hits and scores; explain chunk size, vector similarity, offline local inference, when RAG is preferable to model fine-tuning, and why tests inject a fake encoder to avoid network/model downloads.
 
+## Grounded evidence mode and quality gates
+
+[Quality and abstention report](QUALITY-EVAL.md) demonstrates a conservative
+source-quote response (set `answer_mode: "evidence"` on authenticated `/ask`),
+server-owned similarity threshold, explicit citations/refusals, and a small
+hand-authored evaluation covering answerable, unanswerable and tenant-restricted
+questions. This is **extractive evidence**, not an independently verified
+free-form answer. The measured local model has known false answers; the
+[executable gate](quality_eval.py) returns `NOT_ELIGIBLE` rather than
+presenting the synthetic corpus as proof of production quality.
+
 ## Evidence-oriented retrieval comparison
 
 `python evaluate.py` compares real sentence-transformer ranking against an inspectable TF-IDF cosine baseline on the same small, separated evaluation corpus. It reports **Recall@1**, **MRR@1**, and per-question disagreements. A one-document or Recall@3-on-three-documents evaluation cannot meaningfully distinguish rankers; this evaluation avoids that particular false positive. The included corpus is still illustrative; a representative blind dataset is required before claiming model superiority.

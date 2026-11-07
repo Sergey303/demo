@@ -1,0 +1,4 @@
+{
+  "retail": ["refunds.txt", "shipping.txt", "security.txt", "privacy.txt", "billing.txt", "warranty.txt", "support.txt"],
+  "enterprise": ["retention.txt", "incident.txt", "access.txt"]
+}

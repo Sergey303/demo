@@ -106,3 +106,7 @@ The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the exist
 5. Which telemetry and failure drills prove service recovery rather than just unit-level correctness?
 
 These are genuine open decisions rather than implemented claims. The next highest-value increment is **verified tenant-isolation/revocation evidence**, then representative blind quality evaluation and grounded abstention, rather than another architecture diagram.
+
+## Measured AI answer-quality limitations
+
+The [RAG quality case](../python-ai/rag-docs/QUALITY-EVAL.md) uses a local neural embedder, a verbatim citation mode, explicit abstention and a release gate. On 28 authored cases it found false answers and a wrong source, so the gate **fails**: this is evidence of a working evaluation process, not evidence of production-grade faithfulness.
