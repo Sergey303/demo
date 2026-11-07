@@ -100,9 +100,12 @@ app.MapPost("/jobs", async (JobRequest? body, HttpRequest request, NpgsqlDataSou
 });
 
 // Small WAV-only job endpoint; media bytes live in the same transaction as the
-// outbox event. This is deliberately local, unauthenticated portfolio code.
+// outbox event. Authentication is a deliberately narrow signed-token demo.
 app.MapPost("/audio-jobs", async (AudioJobRequest? body, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
 {
+    var identity = AudioIdentity.FromAuthorization(request.Headers.Authorization.ToString(),
+        Environment.GetEnvironmentVariable("DEMO_AUTH_SECRET"));
+    if (identity is null) return Results.Unauthorized();
     if (body is null || string.IsNullOrWhiteSpace(body.WavBase64) ||
         body.Filename is not { Length: >= 5 and <= 100 } filename ||
         !filename.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
@@ -128,8 +131,8 @@ app.MapPost("/audio-jobs", async (AudioJobRequest? body, HttpRequest request, Np
     await using var tx = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
     var id = Guid.NewGuid();
     await using (var cmd = new NpgsqlCommand(
-        "INSERT INTO jobs(id,idempotency_key,payload_sha256,input,status,kind,audio_payload,audio_name) " +
-        "VALUES (@id,@key,@hash,'','queued','audio',@wav,@name) " +
+        "INSERT INTO jobs(id,idempotency_key,payload_sha256,input,status,kind,audio_payload,audio_name,tenant_id) " +
+        "VALUES (@id,@key,@hash,'','queued','audio',@wav,@name,@tenant) " +
         "ON CONFLICT(idempotency_key) DO NOTHING RETURNING id", conn, tx))
     {
         cmd.Parameters.AddWithValue("id", id);
@@ -137,6 +140,7 @@ app.MapPost("/audio-jobs", async (AudioJobRequest? body, HttpRequest request, Np
         cmd.Parameters.AddWithValue("hash", hash);
         cmd.Parameters.AddWithValue("wav", wav);
         cmd.Parameters.AddWithValue("name", filename);
+        cmd.Parameters.AddWithValue("tenant", identity.Tenant);
         if (await cmd.ExecuteScalarAsync(ct) is Guid created)
         {
             await using var ev = new NpgsqlCommand(
@@ -144,30 +148,51 @@ app.MapPost("/audio-jobs", async (AudioJobRequest? body, HttpRequest request, Np
             ev.Parameters.AddWithValue("id", Guid.NewGuid());
             ev.Parameters.AddWithValue("job", created);
             await ev.ExecuteNonQueryAsync(ct);
+            // The owner grant is atomic with the accepted job and outbox event.
+            await using var owner = new NpgsqlCommand(
+                "INSERT INTO audio_read_grants(job_id,tenant_id,subject_id) VALUES (@id,@tenant,@subject)",conn,tx);
+            owner.Parameters.AddWithValue("id", created);
+            owner.Parameters.AddWithValue("tenant", identity.Tenant);
+            owner.Parameters.AddWithValue("subject", identity.Subject);
+            await owner.ExecuteNonQueryAsync(ct);
             await tx.CommitAsync(ct);
             return Results.Accepted($"/jobs/{created}",new { id = created, status = "queued" });
         }
     }
     await using var lookup = new NpgsqlCommand(
-        "SELECT id,payload_sha256,kind,audio_name FROM jobs WHERE idempotency_key=@key",conn,tx);
+        "SELECT j.id,j.payload_sha256,j.kind,j.audio_name,j.tenant_id, " +
+        "EXISTS(SELECT 1 FROM audio_read_grants g WHERE g.job_id=j.id " +
+        "AND g.tenant_id=j.tenant_id AND g.subject_id=@subject) " +
+        "FROM jobs j WHERE j.idempotency_key=@key",conn,tx);
     lookup.Parameters.AddWithValue("key",key);
+    lookup.Parameters.AddWithValue("subject",identity.Subject);
     await using var reader = await lookup.ExecuteReaderAsync(ct);
     if (!await reader.ReadAsync(ct))
         throw new InvalidOperationException("Conflicting key not found.");
     var previousId = reader.GetGuid(0);
-    var same = reader.GetString(1).Trim() == hash && reader.GetString(2) == "audio" && reader.GetString(3) == filename;
+    var same = reader.GetString(2) == "audio" && reader.GetString(4) == identity.Tenant &&
+        reader.GetBoolean(5) && reader.GetString(1).Trim() == hash &&
+        !reader.IsDBNull(3) && reader.GetString(3) == filename;
     await reader.DisposeAsync();
     await tx.CommitAsync(ct);
     return same ? Results.Ok(new { id = previousId, status = "already-accepted" })
         : Results.Conflict(new { error = "Key already used for a different job." });
 });
 
-app.MapGet("/jobs/{id:guid}", async (Guid id, NpgsqlDataSource db, CancellationToken ct) =>
+app.MapGet("/jobs/{id:guid}", async (Guid id, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
 {
+    var identity = AudioIdentity.FromAuthorization(request.Headers.Authorization.ToString(),
+        Environment.GetEnvironmentVariable("DEMO_AUTH_SECRET"));
     await using var conn = await db.OpenConnectionAsync(ct);
     await using var cmd = new NpgsqlCommand(
-        "SELECT status, result::text FROM jobs WHERE id = @id", conn);
+        // Text demo stays public; audio requires verified identity and current grant.
+        // A missing/invalid/revoked grant and nonexistent ID all return 404.
+        "SELECT j.status,j.result::text FROM jobs j WHERE j.id=@id AND (j.kind='text' OR " +
+        "(j.kind='audio' AND j.tenant_id=@tenant AND EXISTS(SELECT 1 FROM audio_read_grants g " +
+        "WHERE g.job_id=j.id AND g.tenant_id=j.tenant_id AND g.subject_id=@subject)))", conn);
     cmd.Parameters.AddWithValue("id", id);
+    cmd.Parameters.AddWithValue("tenant", identity?.Tenant ?? "");
+    cmd.Parameters.AddWithValue("subject", identity?.Subject ?? "");
     await using var reader = await cmd.ExecuteReaderAsync(ct);
     if (!await reader.ReadAsync(ct)) return Results.NotFound();
     return Results.Ok(new { id, status = reader.GetString(0),

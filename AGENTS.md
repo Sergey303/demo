@@ -42,3 +42,7 @@ For the new audio-before-inference extension read [`architecture/DURABLE-AUDIO.m
 5. If an example omits straightforward surrounding code, review the showcased core rather than treating unrelated missing product features as defects. Still call out omissions affecting correctness, security or the claimed guarantee.
 
 Please cite precise files/functions and distinguish verified strengths from untested assumptions. No credentials, proprietary code, external services or hidden context are required to understand the examples.
+
+## Audio access review
+
+Start with [audio access threat model](architecture/AUDIO-ACCESS.md), [SQL grants](dotnet-outbox/sql/004_audio_acl.sql), [signed identity](dotnet-outbox/src/AudioIdentity.cs) and [Python authorization](architecture/audio_access.py). Confirm both HTTP result access and Python retrieval are secured; never infer DB-owner isolation or production identity from this demo.

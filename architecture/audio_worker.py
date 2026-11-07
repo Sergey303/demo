@@ -139,14 +139,26 @@ def process_one(connection_string, *, processor=process_audio, lease_seconds=180
     return True
 
 
-def fetch_and_search(connection_string, job_id, question, k=3, *, encoder=None):
+def fetch_and_search(connection_string, job_id, question, k=3, *, token, encoder=None):
+    """Authorize in SQL *before* loading transcript, embeddings, or model.
+
+    No per-user retrieval cache: revocation applies on the next query.
+    The DB credentials are a trusted backend capability, not a user credential.
+    """
     import psycopg
+    from audio_access import AccessDenied, verify_token
+    tenant, subject = verify_token(token)
     with psycopg.connect(connection_string) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT result FROM jobs WHERE id=%s AND kind='audio' AND status='done'", (job_id,))
+            cur.execute("""SELECT j.result FROM jobs j
+                           WHERE j.id=%s AND j.kind='audio' AND j.status='done'
+                             AND j.tenant_id=%s
+                             AND EXISTS (SELECT 1 FROM audio_read_grants g
+                               WHERE g.job_id=j.id AND g.tenant_id=j.tenant_id
+                                 AND g.subject_id=%s)""", (job_id, tenant, subject))
             row=cur.fetchone()
     if row is None:
-        raise ValueError('No completed audio job found')
+        raise AccessDenied('Access denied')
     if encoder is None:
         from pipeline import OnnxEncoder
         encoder=OnnxEncoder()
@@ -183,7 +195,11 @@ def main():
             if not processed:
                 time.sleep(.5)
     else:
-        print(json.dumps(fetch_and_search(cs, args.job_id,args.question,args.k),indent=2))
+        # A token is issued by a trusted offline identity component; never pass it
+        # as a CLI positional argument (it would appear in process listings).
+        token = os.environ.get('DEMO_AUTH_TOKEN')
+        print(json.dumps(fetch_and_search(cs, args.job_id,args.question,args.k,
+                                          token=token),indent=2))
 
 
 if __name__ == '__main__':

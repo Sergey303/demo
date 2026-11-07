@@ -30,13 +30,14 @@ job/outbox transaction, rather than adding a second queue or broker.
 
 A pre-existing Compose database was initialized with `001_init.sql`; Docker
 will **not** rerun initialization files when a database volume already exists.
-Run migrations `002_audio_jobs.sql` and `003_audio_leases.sql` **before starting the updated workers**.
+Run migrations `002_audio_jobs.sql`, `003_audio_leases.sql`, and `004_audio_acl.sql` **before starting the updated workers**.
 On the Windows Docker host from `D:\projects\ChatPilotGroup\demo\dotnet-outbox`:
 
 ```powershell
 docker compose -p demo-outbox up -d --wait
 Get-Content -Raw .\sql\002_audio_jobs.sql | docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
 Get-Content -Raw .\sql\003_audio_leases.sql | docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
+Get-Content -Raw .\sql\004_audio_acl.sql | docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
 ```
 
 Then in RDC, from the repository root:
@@ -44,6 +45,7 @@ Then in RDC, from the repository root:
 ```bash
 python -m pip install -r architecture/audio-requirements.txt
 export JOBS_TEST_CONNECTION='host=demo-outbox-postgres port=5432 dbname=reliable_jobs user=demo password=demo'
+export DEMO_AUTH_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
 cd dotnet-outbox
 export ConnectionStrings__Jobs='Host=demo-outbox-postgres;Port=5432;Database=reliable_jobs;Username=demo;Password=demo'
 dotnet run --project src/ReliableJobs.csproj --urls http://127.0.0.1:5077
@@ -54,6 +56,7 @@ In a second RDC terminal:
 ```bash
 cd /workspace/demo-architect-p1
 export JOBS_TEST_CONNECTION='host=demo-outbox-postgres port=5432 dbname=reliable_jobs user=demo password=demo'
+# Copy the SAME DEMO_AUTH_SECRET from the API terminal into this shell securely.
 python architecture/live_audio_smoke.py
 python -m pytest -q architecture/tests
 ```
@@ -65,7 +68,7 @@ use Npgsql syntax. Run the suites separately or set the variable accordingly.
 
 ## Architecture boundaries and honest limitations
 
-- The initial API is unauthenticated and restricted to local demo deployment.
+- The audio API uses a signed short-lived demo identity and per-record grants; see [audio access](AUDIO-ACCESS.md). Text jobs retain their original public demo behavior.
   RIFF/WAVE magic and byte-size checks are **not** a full codec/security audit.
 - Inference runs outside database transactions using a **180-second lease**
   by default. Heartbeat attempts renewal every `min(20s, lease/3)` (at least

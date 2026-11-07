@@ -2,7 +2,7 @@
 
 **Problem:** A regulated organization needs searchable evidence from internal meetings and policy documents. Search results must retain source references, audio timestamps and clear limits on confidence. Processing should survive worker restarts without silently losing accepted work. This is a **target architecture**, not an implemented end-to-end product.
 
-**Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio contains functioning implementations of its *parts*. The shared upload API, storage, auth, worker-to-AI adapter, audit and end-to-end policy enforcement do not yet exist. Do not advertise this as a production AI platform.
+**Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio contains functioning implementations of its *parts*. The durable audio API, local AI worker and a signed-token audio retrieval boundary now exist as separate demos; production OIDC, unified document ingestion, audit, end-to-end authorization across all data types and operational hardening do not. Do not advertise this as a production AI platform.
 
 ## C4 container view (target, with implementation status)
 
@@ -35,7 +35,7 @@ flowchart TB
   Retrieval -.-> Obs
 ```
 
-**Actual code**: [Jobs API](../dotnet-outbox/src/Program.cs), [worker](../dotnet-outbox/src/OutboxWorker.cs), [schema](../dotnet-outbox/sql/001_init.sql), [Whisper pipeline](../python-ai/audio-search/pipeline.py), [retrieval](../python-ai/audio-search/search.py), [reranking](../python-ai/audio-search/rerank.py), [document RAG](../python-ai/rag-docs/app/core.py), [HTTP tool boundary](../python-ai/tool-agent/app/main.py). **No code currently connects Jobs API to Whisper.**
+**Actual code**: [Jobs API](../dotnet-outbox/src/Program.cs), [worker](../dotnet-outbox/src/OutboxWorker.cs), [schema](../dotnet-outbox/sql/001_init.sql), [Whisper pipeline](../python-ai/audio-search/pipeline.py), [retrieval](../python-ai/audio-search/search.py), [reranking](../python-ai/audio-search/rerank.py), [document RAG](../python-ai/rag-docs/app/core.py), [HTTP tool boundary](../python-ai/tool-agent/app/main.py). **The durable audio extension now connects Jobs API to Whisper**; use [runbook](DURABLE-AUDIO.md) to distinguish it from the older text-only orchestration.
 
 ## Functional and quality contracts
 
@@ -43,7 +43,7 @@ flowchart TB
 | --- | --- | --- |
 | Accepted jobs are durable | POST returns accepted only after job + outbox are committed; duplicate keys do not create another job | [HTTP smoke + PostgreSQL tests](../dotnet-outbox/tests); [verified local run](../dotnet-outbox/README.md) |
 | Worker crash does not lose accepted work | Kill process after claim but before commit; restart and check same job eventually completes | Audio worker child-process termination, lease reclaim and fencing tested; text worker process crash remains untested |
-| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [Audio hits](../python-ai/audio-search/search.py), [document hits](../python-ai/rag-docs/app/core.py); **authorization filtering not implemented** |
+| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [audio ACL retrieval](audio_worker.py) and [signed identity](../dotnet-outbox/src/AudioIdentity.cs) implemented, new PostgreSQL E2E pending; document RAG remains without ACL |
 | AI quality change is gated | Frozen labeled queries; compare paired errors and latency; reject tiny datasets | [Executable quality/latency gate](decision_gate.py) + [tests](tests/test_decision_gate.py); present datasets are tiny and synthetic |
 | No unauthorized writes through public agent API | HTTP clients cannot self-approve actions | [Tool API](../python-ai/tool-agent/app/main.py) and [tests](../python-ai/tool-agent/tests/test_agent.py); authenticated approval workflow **not implemented** |
 | Traceability and operational readiness | Job ID / trace ID links ingress, processing, indexing and search, with queue lag and inference latency | **Target only**; `/health` and `/ready` exist for Jobs API |
@@ -89,6 +89,10 @@ python -m pytest -q architecture/tests
 
 **Evidence status (2026-11-06):** 10/10 contract/decision tests passed. A new live PostgreSQL + model run was **blocked** by temporary DNS failure for `demo-outbox-postgres` in RDC; do not count the cross-project E2E as validated until the database is reachable again. The individual PostgreSQL Outbox E2E was previously validated on 2026-11-05 (separate run).
 
+## Tenant-aware audio access
+
+The [audio access controls](AUDIO-ACCESS.md) bind signed user identity to a tenant and explicit PostgreSQL read grants; the audio upload and result API and the Python retrieval service check grants. Revocation is enforced on subsequent reads, without a per-user result cache. This is a narrow demonstrator, not an OIDC/RLS production system.
+
 ## Durable audio before inference
 
 The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the existing PostgreSQL outbox **before** AI inference and uses a dedicated Python worker to persist timestamped passages plus embeddings atomically. This is a runnable implementation with tests, verified with a live end-to-end run on isolated PostgreSQL on 2026-11-07 (see the runbook evidence). It now uses short claim/finalize transactions and a fenced expiring lease, with inference outside PostgreSQL transactions; heartbeat renewal is implemented and verified with synthetic slow handlers and small concurrent-worker tests; production load/monitoring remain unverified.
@@ -101,4 +105,4 @@ The [durable audio extension](DURABLE-AUDIO.md) accepts WAV bytes into the exist
 4. Does the increased query latency of a cross-encoder justify the measured gain for *held-out real users*? When would the gate prohibit rollout?
 5. Which telemetry and failure drills prove service recovery rather than just unit-level correctness?
 
-These are genuine open decisions rather than implemented claims. The next highest-value increment is **tenant-aware authorization and access revocation in retrieval**, plus representative evaluation data, rather than another architecture diagram.
+These are genuine open decisions rather than implemented claims. The next highest-value increment is **verified tenant-isolation/revocation evidence**, then representative blind quality evaluation and grounded abstention, rather than another architecture diagram.
