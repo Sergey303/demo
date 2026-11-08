@@ -4,6 +4,8 @@
 
 **Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio contains functioning implementations of its *parts*. The durable audio API, local AI worker and a signed-token audio retrieval boundary now exist as separate demos; production OIDC, unified document ingestion, audit, end-to-end authorization across all data types and operational hardening do not. Do not advertise this as a production AI platform.
 
+**Implementation roadmap (2026-11-08):** [Enterprise AI Platform integration plan](ENTERPRISE-AI-PLATFORM-PLAN.md) defines EP-00–EP-09 with prioritized vertical slices, dependencies, concrete acceptance tests and code ownership. **This page remains the architecture/evidence inventory** until the integrated browser-to-AI path is built and proven.
+
 ## C4 container view (target, with implementation status)
 
 ```mermaid
