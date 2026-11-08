@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
+import socket
 import signal
 import subprocess
 import sys
@@ -52,6 +53,16 @@ def check_prerequisites() -> None:
         raise RuntimeError("Run 'cd bootstrap5 && npm ci' once to install the locked frontend dependencies.")
     if not API_PROJECT.is_file():
         raise RuntimeError("ReliableJobs.csproj not found. Run from the complete demo repository.")
+    for port in (5077, 4173):
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.4):
+                raise RuntimeError(
+                    f"Port {port} is already in use; stop the existing service first. "
+                    "Never attach a hiring demo to an unknown process."
+                )
+        except (ConnectionRefusedError, TimeoutError, OSError):
+            # Connection refused / timeout: no active local listener is reachable.
+            pass
 
 
 def stop(process: subprocess.Popen[bytes] | None) -> None:
@@ -108,7 +119,7 @@ def main() -> int:
         while True:
             try:
                 command = input("hiring-demo> ").strip().lower()
-            except EOFError:
+            except (EOFError, KeyboardInterrupt):
                 print("Console input closed; shutting down.")
                 break
             if command in ("q", "quit", "exit"):
