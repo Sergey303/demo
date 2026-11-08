@@ -44,3 +44,59 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser contract test (mocked HTTP, not live DB)
         run: npx playwright test tests/hiring-demo.spec.ts
+
+  live-screencast:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: reliable_jobs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d reliable_jobs"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      ConnectionStrings__Jobs: Host=127.0.0.1;Port=5432;Database=reliable_jobs;Username=demo;Password=demo
+      LIVE_HIRING_DEMO: "true"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - name: Initialize disposable PostgreSQL schema
+        env:
+          PGPASSWORD: demo
+        run: psql -h 127.0.0.1 -p 5432 -U demo -d reliable_jobs -v ON_ERROR_STOP=1 -f dotnet-outbox/sql/001_init.sql
+      - name: Build real .NET worker API
+        run: dotnet build -c Release dotnet-outbox/src/ReliableJobs.csproj
+      - name: Install React dependencies
+        working-directory: bootstrap5
+        run: npm ci
+      - name: Install Chromium
+        working-directory: bootstrap5
+        run: npx playwright install --with-deps chromium
+      - name: Record real end-to-end browser session
+        working-directory: bootstrap5
+        run: npx playwright test tests/hiring-demo-live.spec.ts --workers=1
+      - name: Preserve actual screencast, traces and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hiring-demo-real-postgresql-screencast
+          path: |
+            bootstrap5/test-results/
+            bootstrap5/playwright-report/
+          retention-days: 14
+          if-no-files-found: warn
