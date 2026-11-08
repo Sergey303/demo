@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 // This test is opt-in because it starts/stops the real .NET API.
 // CI provides an isolated PostgreSQL service and sets LIVE_HIRING_DEMO=true.
 test.skip(process.env.LIVE_HIRING_DEMO !== "true", "Real PostgreSQL E2E requires isolated CI services");
-test.use({ video: "on", viewport: { width: 1440, height: 900 } });
+test.use({ video: { mode: "on", size: { width: 1280, height: 800 } }, viewport: { width: 1440, height: 900 } });
 
 const root = resolve(process.cwd(), "..");
 const dll = resolve(root, "dotnet-outbox/src/bin/Release/net10.0/ReliableJobs.dll");
@@ -60,7 +60,10 @@ test("real outbox: accepted, committed, idempotent, conflict, survives API resta
 
     await expect(page.getByTestId("job-status")).toHaveText("done", { timeout: 25000 });
     await expect(page.getByText(/"WordCount": 3/)).toBeVisible();
-    await page.waitForTimeout(8500);
+    await page.getByRole("heading", { name: "2. Проверить сохранённый результат" }).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(4500);
+    await page.getByRole("heading", { name: "1. Принять задачу атомарно" }).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(4000);
 
     await page.getByRole("button", { name: "Повторить тот же запрос" }).click();
     await expect(page.getByText(/200 · already-accepted/)).toBeVisible();
