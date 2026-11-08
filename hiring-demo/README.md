@@ -136,6 +136,8 @@ verifies the persisted result. Playwright saves a real browser video as a
 The recording is not claimed to have succeeded until the job concludes
 successfully.
 
+**Verified real CI run — November 8, 2026:** [all three jobs passed](https://github.com/Sergey303/demo/actions/runs/42452435834), including one full PostgreSQL-backed browser E2E after applying migrations 001–004. A ~42-second **1280×800 actual Chromium recording** demonstrates the job creation, persisted result, idempotency, conflict, API-down indicator and recovery. [Download the recorded artifact](https://github.com/Sergey303/demo/actions/runs/42452435834/artifacts/13606193230) (GitHub Actions keeps it for 14 days); the repeatable workflow regenerates a new recording on each relevant push. This is not a synthetic UI animation.
+
 ## Recording the actual walkthrough
 
 The eight steps above form a roughly two-minute screencast. On a machine where
