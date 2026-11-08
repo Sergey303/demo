@@ -9,6 +9,7 @@ export type DashboardRoute = {
 // A single registry drives routing and navigation.
 export const dashboardRoutes: readonly DashboardRoute[] = [
   { path: "/dashboard", label: "Главная", description: "Обзор рабочего пространства" },
+  { path: "/dashboard/hiring-demo", label: "Живое демо .NET", description: "Outbox, идемпотентность и восстановление", parentPath: "/dashboard" },
   {
     path: "/dashboard/overview",
     label: "Обзор",
