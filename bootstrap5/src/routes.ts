@@ -10,6 +10,7 @@ export type DashboardRoute = {
 export const dashboardRoutes: readonly DashboardRoute[] = [
   { path: "/dashboard", label: "Главная", description: "Обзор рабочего пространства" },
   { path: "/dashboard/hiring-demo", label: "Живое демо .NET", description: "Outbox, идемпотентность и восстановление", parentPath: "/dashboard" },
+  { path: "/dashboard/enterprise-ai", label: "Enterprise AI · аудио", description: "Реальный WAV → Whisper → транскрипт", parentPath: "/dashboard" },
   {
     path: "/dashboard/overview",
     label: "Обзор",

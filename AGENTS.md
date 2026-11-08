@@ -4,11 +4,13 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 
 **Current integration program:** [Enterprise AI Platform plan](architecture/ENTERPRISE-AI-PLATFORM-PLAN.md). Before implementation, read its actual-vs-target matrix, EP-00–EP-09 dependency graph, P0 authorization/durability invariants, and DoD. Work one minimal vertical slice at a time, keep existing hiring demo stable, record exact base SHA, use independent code review, and do not relabel target-only features as tested.
 
+**EP-01/EP-02 implementation review:** begin with [enterprise-demo/README.md](enterprise-demo/README.md), `bootstrap5/src/pages/EnterpriseAiPage.tsx`, `bootstrap5/enterpriseDemoAuth.mjs`, `bootstrap5/vite.config.ts`, and `enterprise-demo/run.py`. Check that the browser never receives a signing secret/token, fixed principal cannot be changed by user input, failed auth clears displayed transcript, the same file/key reuses the job ID, and readiness does NOT claim Python model availability. Static/HTTP-stub tests are not live integration evidence. Never run the launcher against non-disposable DBs.
+
 ## Architect-level review route
 
 Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, failure matrix, runnable [`architecture/decision_gate.py`](architecture/decision_gate.py) and [`architecture/evidence_flow.py`](architecture/evidence_flow.py) cross-project orchestration. The latter accepts a transcript *after* ASR; it is not a durable ASR worker. **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.
 
-For the new audio-before-inference extension read [`architecture/DURABLE-AUDIO.md`](architecture/DURABLE-AUDIO.md), [`dotnet-outbox/sql/002_audio_jobs.sql`](dotnet-outbox/sql/002_audio_jobs.sql), and [`architecture/audio_worker.py`](architecture/audio_worker.py). The separate Python DB worker is intentionally a small demonstration and holds a transaction during ASR; do not infer production scaling or live verification from unit tests.
+For the new audio-before-inference extension read [`architecture/DURABLE-AUDIO.md`](architecture/DURABLE-AUDIO.md), [`dotnet-outbox/sql/002_audio_jobs.sql`](dotnet-outbox/sql/002_audio_jobs.sql), and [`architecture/audio_worker.py`](architecture/audio_worker.py). The separate Python worker uses short lease/finalize transactions with heartbeat while ASR runs outside PostgreSQL transactions. Stale writes are fenced, but duplicate inference is possible; do not infer production scaling or live verification from unit tests.
 
 ## Fast evidence scan
 

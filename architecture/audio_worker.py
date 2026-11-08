@@ -1,8 +1,9 @@
 """Durable local AI worker for WAV jobs accepted by dotnet-outbox.
 
-Worker uses PostgreSQL row locks; inference is performed while holding its
-transaction so a crash rolls back all effects. Not suitable for high-volume ASR
-without leasing and transaction-duration limits. Run against demo DB only.
+Worker claims a PostgreSQL lease in a short transaction, runs inference
+outside the transaction with a heartbeat, and fences finalization by lease token.
+Duplicate compute after lease loss is possible; stale result commit is rejected.
+Run against the isolated demo DB only.
 """
 import argparse
 from hashlib import sha256

@@ -12,6 +12,8 @@ These are **independent, original engineering examples, not claims of commercial
 
 **Next major portfolio milestone:** [Enterprise AI Platform — executable integration plan](architecture/ENTERPRISE-AI-PLATFORM-PLAN.md). It turns the already validated .NET outbox, durable Whisper audio jobs, PostgreSQL grants, document RAG and React demos into one user-facing, tenant-safe product. Includes the 10 EP work packages, dependency graph, release gates, security and crash tests, a 3–4-minute interview scenario, and honest status separation. **This is a plan, not a claim of an already integrated production platform.**
 
+**First implementation increment (EP-01/EP-02):** [Enterprise WAV-to-transcript browser demo](enterprise-demo/README.md) adds a separate `/dashboard/enterprise-ai` route, localhost-only trusted demo proxy, real audio-job HTTP client and a Python-worker launcher. Source and static contract tests must not be mistaken for a verified live browser→PostgreSQL→Whisper run; evidence and limitations are tracked in its runbook. The original two-minute text-job Hiring Demo remains the fastest independently live-verified interview route.
+
 ## Two-minute live interview demo
 
 **Start here for Tech Lead / Solution Architect interviews:** [Hiring Demo walkthrough](hiring-demo/README.md). The existing [React dashboard](bootstrap5/src/pages/HiringDemoPage.tsx) now has a live `/dashboard/hiring-demo` route linked to the actual .NET/PostgreSQL text-job API. The [launcher](hiring-demo/run.py) starts both localhost services after validating database readiness and supports a real API process restart via terminal command `r`.

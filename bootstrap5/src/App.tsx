@@ -6,6 +6,7 @@ import { DashboardBreadcrumbs } from "./navigation/DashboardBreadcrumbs";
 import { DashboardNavigation } from "./navigation/DashboardNavigation";
 import { DashboardHomePage } from "./pages/DashboardHomePage";
 import { HiringDemoPage } from "./pages/HiringDemoPage";
+import { EnterpriseAiPage } from "./pages/EnterpriseAiPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ProfessionalProfilePage } from "./pages/ProfessionalProfilePage";
@@ -17,6 +18,7 @@ import { DashboardShell } from "./shell/DashboardShell";
 const pagesByPath = {
   "/dashboard": <DashboardHomePage />,
   "/dashboard/hiring-demo": <HiringDemoPage />,
+  "/dashboard/enterprise-ai": <EnterpriseAiPage />,
   "/dashboard/overview": <OverviewPage />,
   "/dashboard/profile": <ProfilePage />,
   "/dashboard/profile/professional": <ProfessionalProfilePage />,
