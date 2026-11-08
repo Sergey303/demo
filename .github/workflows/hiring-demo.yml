@@ -1,0 +1,46 @@
+name: Hiring demo checks
+
+on:
+  push:
+    paths:
+      - 'bootstrap5/**'
+      - 'hiring-demo/**'
+      - '.github/workflows/hiring-demo.yml'
+  pull_request:
+    paths:
+      - 'bootstrap5/**'
+      - 'hiring-demo/**'
+      - '.github/workflows/hiring-demo.yml'
+
+jobs:
+  launcher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline launcher tests
+        run: python -m unittest discover -s hiring-demo/tests -v
+      - name: Compile launcher
+        run: python -m py_compile hiring-demo/run.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bootstrap5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - run: npm ci
+      - name: Typecheck and build
+        run: npm run build
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser contract test (mocked HTTP, not live DB)
+        run: npx playwright test tests/hiring-demo.spec.ts
