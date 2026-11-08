@@ -81,7 +81,7 @@ def launch(command: list[str], cwd: Path) -> subprocess.Popen[bytes]:
     return subprocess.Popen(command, cwd=cwd)
 
 
-def wait_ready(process: subprocess.Popen[bytes], timeout: float = 25) -> None:
+def wait_ready(process: subprocess.Popen[bytes], timeout: float = 60) -> None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if process.poll() is not None:
