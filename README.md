@@ -8,6 +8,10 @@
 
 These are **independent, original engineering examples, not claims of commercial production deployments**. Each has its own dependencies and runbook. Commercial X5 and CASESTUDIO achievements are described in the resume rather than inferred from this code.
 
+## Enterprise AI Platform integration roadmap
+
+**Next major portfolio milestone:** [Enterprise AI Platform — executable integration plan](architecture/ENTERPRISE-AI-PLATFORM-PLAN.md). It turns the already validated .NET outbox, durable Whisper audio jobs, PostgreSQL grants, document RAG and React demos into one user-facing, tenant-safe product. Includes the 10 EP work packages, dependency graph, release gates, security and crash tests, a 3–4-minute interview scenario, and honest status separation. **This is a plan, not a claim of an already integrated production platform.**
+
 ## Two-minute live interview demo
 
 **Start here for Tech Lead / Solution Architect interviews:** [Hiring Demo walkthrough](hiring-demo/README.md). The existing [React dashboard](bootstrap5/src/pages/HiringDemoPage.tsx) now has a live `/dashboard/hiring-demo` route linked to the actual .NET/PostgreSQL text-job API. The [launcher](hiring-demo/run.py) starts both localhost services after validating database readiness and supports a real API process restart via terminal command `r`.
