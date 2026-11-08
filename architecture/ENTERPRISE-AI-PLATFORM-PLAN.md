@@ -181,7 +181,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 **Сделано по EP-00 (статическая ревизия):** [фактический контракт и карта пробелов](enterprise-platform/contracts.md), основанные на `main` @ `f926104dbc7b5d13423492ba358ec3c832156f2d`. Выполнение тестов/миграций, live audio и независимая приёмка **ещё не проведены** — галочка EP-00 остаётся открытой.
 
-**Следующая конкретная задача:** проверить описанные контракты безопасными unit/contract проверками, затем **EP-01/EP-02: запуск Python audio worker вместе с существующими .NET/React и реальный WAV upload/status UI**, используя текущие `POST /audio-jobs` и `GET /jobs/{id}` без новой очереди.
+**Кодовый срез EP-01/EP-02 подготовлен:** [enterprise-demo/runbook](../enterprise-demo/README.md), отдельный React-маршрут `/dashboard/enterprise-ai`, серверный локальный HMAC proxy, launcher .NET + Python worker + Vite, CI/browser contract tests. TypeScript, сборка, Node/Python и browser-stub проверки прошли локально; **живой browser→PostgreSQL→Whisper E2E не выполнен**. Пункты приёмки EP-01/EP-02 остаются открыты до настоящего запуска с моделями и проверкой прав/восстановления.
+
+**Следующая конкретная задача:** воспроизвести на disposable PostgreSQL приём WAV→Python inference→persisted transcript из браузера, записать SHA/лог/видео, затем добавить документный durable ingestion (EP-03) и объединённый безопасный поиск (EP-04). Без новой очереди и без преждевременных агентов.
 
 **Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
 

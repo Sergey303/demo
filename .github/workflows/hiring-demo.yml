@@ -5,11 +5,13 @@ on:
     paths:
       - 'bootstrap5/**'
       - 'hiring-demo/**'
+      - 'enterprise-demo/**'
       - '.github/workflows/hiring-demo.yml'
   pull_request:
     paths:
       - 'bootstrap5/**'
       - 'hiring-demo/**'
+      - 'enterprise-demo/**'
       - '.github/workflows/hiring-demo.yml'
 
 jobs:
@@ -24,6 +26,10 @@ jobs:
         run: python -m unittest discover -s hiring-demo/tests -v
       - name: Compile launcher
         run: python -m py_compile hiring-demo/run.py
+      - name: Enterprise launcher and signed-token tests
+        run: python -m unittest discover -s enterprise-demo/tests -v
+      - name: Compile enterprise launcher
+        run: python -m py_compile enterprise-demo/run.py
 
   frontend:
     runs-on: ubuntu-latest
@@ -42,8 +48,10 @@ jobs:
         run: npm run build
       - name: Install browser
         run: npx playwright install --with-deps chromium
-      - name: Browser contract test (mocked HTTP, not live DB)
-        run: npx playwright test tests/hiring-demo.spec.ts
+      - name: Verify trusted proxy signer
+        run: node --test tests/enterprise-auth.test.mjs
+      - name: Browser contract tests (mocked HTTP)
+        run: npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts
 
   live-screencast:
     runs-on: ubuntu-latest
