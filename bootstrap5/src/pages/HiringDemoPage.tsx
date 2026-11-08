@@ -18,6 +18,7 @@ export function HiringDemoPage() {
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<EventItem[]>([]);
   const mounted = useRef(true);
+  const lastStatus = useRef<Record<string, string>>({});
   const addEvent = useCallback((label: string, kind: EventItem["kind"] = "info") => {
     setHistory((previous) => [{ time: new Date().toLocaleTimeString(), label, kind }, ...previous].slice(0, 16));
   }, []);
@@ -38,12 +39,12 @@ export function HiringDemoPage() {
       if (!response.ok) throw new Error("GET /jobs/" + id + " → HTTP " + response.status);
       const value = (await response.json()) as Job;
       if (!mounted.current) return;
-      setJob((previous) => {
-        if (previous?.id === value.id && previous.status !== value.status) {
-          addEvent("Job " + value.id.slice(0, 8) + " → " + value.status, value.status === "done" ? "ok" : "info");
-        }
-        return value;
-      });
+      const previousStatus = lastStatus.current[value.id];
+      if (previousStatus && previousStatus !== value.status) {
+        addEvent("Job " + value.id.slice(0, 8) + " → " + value.status, value.status === "done" ? "ok" : "info");
+      }
+      lastStatus.current[value.id] = value.status;
+      setJob(value);
     } catch {
       // The current request may fail during the intentionally stopped API.
       // Keep the last real job state visible; never fabricate a transition.
@@ -85,6 +86,7 @@ export function HiringDemoPage() {
       } else if (response.ok && typeof value === "object" && value !== null && "id" in value && typeof value.id === "string") {
         const data = value as Job;
         if (job && job.id !== data.id) addEvent("WARNING: retry returned different ID", "error");
+        lastStatus.current[data.id] = data.status;
         setJob(data);
         addEvent(response.status + " · " + data.status + " · job " + data.id.slice(0, 8) + " · " + latency + " ms", "ok");
         void checkJob(data.id);
