@@ -1,6 +1,6 @@
 # Enterprise AI Platform — план объединения сервисов demo
 
-**Статус:** PLAN / реализация единого продукта ещё не начата.  
+**Статус:** PLAN / единый продукт не реализован; EP-00 source inventory зафиксирован, проверки и первый вертикальный срез впереди.  
 **Дата среза:** 2026-11-08. **Исходная ветка:** `Sergey303/demo:main`; перед выполнением каждого пакета фиксировать актуальный SHA.  
 **Цель:** превратить работающие изолированные примеры в **одну проверяемую Enterprise Knowledge & Meeting Evidence Platform** для демонстрации компетенций .NET Tech Lead / Solution Architect / AI Architect, а не создать ещё один учебный микросервис.
 
@@ -30,7 +30,7 @@
 **Сценарий для собеседования (3–4 минуты):**
 
 1. Пользователь A (tenant `alpha`) открывает AI Workspace и видит readiness API, PostgreSQL, audio-worker, retrieval и локальных моделей **по отдельности**; отсутствие сервиса видно как ошибка, без фальшивой зелёной панели.
-2. Загружает небольшой, заранее подготовленный **но не предварительно обработанный** WAV; получает `202`, job ID и понятное состояние `queued → processing → done/failed`, выполняет повтор с тем же idempotency key без дубля.
+2. Загружает небольшой, заранее подготовленный **но не предварительно обработанный** WAV; получает `202`, job ID и действительные статусы `queued → done/failed` (в текущем API нет состояния `processing`; отдельную индикацию можно добавить только с серверным контрактом), выполняет повтор с тем же idempotency key без дубля.
 3. UI отображает распознанные фразы, источник, старт/конец по времени и ссылку на оригинальное аудио с серверной авторизацией.
 4. Загружает небольшую текстовую политику (`.txt`/ограниченный `.md` в MVP) через **durable** document job; видит статус, hash, passages и принадлежность tenant. PDF/Office — не P0.
 5. Ищет вопрос по аудио и документу, получает **только разрешённые** фрагменты с типом источника, идентификатором, timestamp (для аудио) или фрагментом документа.
@@ -179,10 +179,12 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 ## 10. С чего начинать прямо сейчас
 
-**Следующая конкретная задача:** `EP-00` — пройти по текущим API и таблицам, составить компактный `architecture/enterprise-platform/contracts.md` с существующими и новыми DTO, миграционной картой 001–004, статусами, токенами, search hit model, ролями и контрактами ошибок; сразу затем **EP-02 WAV UI**, используя работающий `POST /audio-jobs` и реальный `GET /jobs/{id}` без новой очереди.
+**Сделано по EP-00 (статическая ревизия):** [фактический контракт и карта пробелов](enterprise-platform/contracts.md), основанные на `main` @ `f926104dbc7b5d13423492ba358ec3c832156f2d`. Выполнение тестов/миграций, live audio и независимая приёмка **ещё не проведены** — галочка EP-00 остаётся открытой.
+
+**Следующая конкретная задача:** проверить описанные контракты безопасными unit/contract проверками, затем **EP-01/EP-02: запуск Python audio worker вместе с существующими .NET/React и реальный WAV upload/status UI**, используя текущие `POST /audio-jobs` и `GET /jobs/{id}` без новой очереди.
 
 **Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
 
 ---
 
-**Связанные документы:** [архитектура](README.md) · [durable audio](DURABLE-AUDIO.md) · [audio access](AUDIO-ACCESS.md) · [RAG](../python-ai/rag-docs/README.md) · [Hiring Demo](../hiring-demo/README.md) · [матрица рисков](failure-matrix.md).
+**Связанные документы:** [EP-00 contracts](enterprise-platform/contracts.md) · [архитектура](README.md) · [durable audio](DURABLE-AUDIO.md) · [audio access](AUDIO-ACCESS.md) · [RAG](../python-ai/rag-docs/README.md) · [Hiring Demo](../hiring-demo/README.md) · [матрица рисков](failure-matrix.md).
