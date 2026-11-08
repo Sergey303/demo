@@ -118,7 +118,7 @@ flowchart TD
 
 - [ ] `EP-00`: SHA/контракт/матрица реализованного зафиксированы; все относительные ссылки/команды в документации работают; старые режимы не ломаются.
 - [ ] `EP-01`: один запуск готовит **только disposable** ресурсы и проверяет PostgreSQL, .NET, Python, retrieval; отсутствие модельного сервиса не притворяется `ready` для LLM.
-- [ ] `EP-02`: 2 одинаковых WAV POST → один ID, один актуальный transcript result; неверный/чужой токен не читает аудио, WAV и метаданные.
+- [x] `EP-02` **ограниченный синтетический WAV-сценарий**: фактические 202/200, один job ID, Whisper→persisted transcript, запрет неавторизованного чтения и отзыв прав проверены Chromium+PG; [evidence](../enterprise-demo/EVIDENCE-2026-11-08.md). Не заявлять долгосрочную устойчивость или production-авторизацию.
 - [ ] `EP-03`: document POST/worker/retry/crash при сохранённых payload/metadata, без двойного результата; новая миграция соответствует текущим 001–004.
 - [ ] `EP-04`: SQL/grant tests подтверждают отсутствие межtenantских утечек до и после revoke, в том числе через top-k, исключения и LLM prompt.
 - [ ] `EP-05`: есть evidence answer с source/time; no-evidence → отказ; при неправильном citation ID/неподтверждённом контексте нет ложной уверенности.
@@ -181,9 +181,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 **Сделано по EP-00 (статическая ревизия):** [фактический контракт и карта пробелов](enterprise-platform/contracts.md), основанные на `main` @ `f926104dbc7b5d13423492ba358ec3c832156f2d`. Выполнение тестов/миграций, live audio и независимая приёмка **ещё не проведены** — галочка EP-00 остаётся открытой.
 
-**Кодовый срез EP-01/EP-02 подготовлен:** [enterprise-demo/runbook](../enterprise-demo/README.md), отдельный React-маршрут `/dashboard/enterprise-ai`, серверный локальный HMAC proxy, launcher .NET + Python worker + Vite, CI/browser contract tests. TypeScript, сборка, Node/Python и browser-stub проверки прошли локально; **живой browser→PostgreSQL→Whisper E2E не выполнен**. Пункты приёмки EP-01/EP-02 остаются открыты до настоящего запуска с моделями и проверкой прав/восстановления.
+**EP-02 принята в пределах малого синтетического WAV:** [реальный E2E, скриншот, видеозапись, команды и ограничения](../enterprise-demo/EVIDENCE-2026-11-08.md). Два браузерных прохода с Whisper+ONNX и PostgreSQL завершились успешно; дополнительные 8/8 PostgreSQL проверок worker/reclaim/lease-fencing — PASS. При последующем длительном запуске API завершился с `Out of memory`; требуется отдельная диагностика памяти/soak. Общую готовность Python-моделей `/ready` не заявляет; **EP-01 остаётся частично незакрытой**.
 
-**Следующая конкретная задача:** воспроизвести на disposable PostgreSQL приём WAV→Python inference→persisted transcript из браузера, записать SHA/лог/видео, затем добавить документный durable ingestion (EP-03) и объединённый безопасный поиск (EP-04). Без новой очереди и без преждевременных агентов.
+**Следующая конкретная задача:** выделить минимальные критерии готовности AI worker и разобраться с устойчивостью при длительной работе на RDC, затем **EP-03** — durable ingestion документов, за которым следует **EP-04** — объединённый поиск с проверкой прав. Не вводить новую очередь и агентов преждевременно.
 
 **Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
 
