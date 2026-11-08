@@ -75,10 +75,19 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: bootstrap5/package-lock.json
-      - name: Initialize disposable PostgreSQL schema
+      - name: Initialize and migrate disposable PostgreSQL schema
         env:
           PGPASSWORD: demo
-        run: psql -h 127.0.0.1 -p 5432 -U demo -d reliable_jobs -v ON_ERROR_STOP=1 -f dotnet-outbox/sql/001_init.sql
+        run: |
+          for migration in \
+            dotnet-outbox/sql/001_init.sql \
+            dotnet-outbox/sql/002_audio_jobs.sql \
+            dotnet-outbox/sql/003_audio_leases.sql \
+            dotnet-outbox/sql/004_audio_acl.sql; do
+            psql -h 127.0.0.1 -p 5432 -U demo -d reliable_jobs -v ON_ERROR_STOP=1 -f "$migration"
+          done
+          psql -h 127.0.0.1 -p 5432 -U demo -d reliable_jobs -v ON_ERROR_STOP=1 -c "SELECT kind, tenant_id FROM jobs LIMIT 0"
+          psql -h 127.0.0.1 -p 5432 -U demo -d reliable_jobs -v ON_ERROR_STOP=1 -c "SELECT job_id FROM audio_read_grants LIMIT 0"
       - name: Build real .NET worker API
         run: dotnet build -c Release dotnet-outbox/src/ReliableJobs.csproj
       - name: Install React dependencies
