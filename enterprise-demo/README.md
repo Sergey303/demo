@@ -1,6 +1,10 @@
 # Enterprise AI — WAV → durable job → Whisper → timestamped transcript
 
-**Status:** EP-01/EP-02 implementation. The source is an engineering portfolio slice, **not a production IAM or cloud service**. Unlike the existing text [Hiring Demo](../hiring-demo/README.md), this page connects to the *real audio* endpoint and a separately running Python worker.
+**Status:** first EP-02 live model-backed browser route **verified 2026-11-08** on disposable PostgreSQL; longer-running resource reliability and production IAM are not established. Unlike the existing text [Hiring Demo](../hiring-demo/README.md), this page connects to the *real audio* endpoint and a separately running Python worker. See the [acceptance evidence with screenshot and real screencast](EVIDENCE-2026-11-08.md).
+
+[![Real Chromium + Whisper result](media/enterprise-ai-real-whisper.png)](EVIDENCE-2026-11-08.md)
+
+[Watch the recorded real browser run (MP4)](media/enterprise-ai-real-whisper.mp4)
 
 ## User journey
 
@@ -67,7 +71,7 @@ cd bootstrap5 && npm run check && npm run check:e2e       # TypeScript
 npx playwright test tests/enterprise-ai.spec.ts            # stubbed browser contract ONLY
 ```
 
-### Verification record — 2026-11-08
+### Initial source/contract verification — 2026-11-08 (before model-backed acceptance)
 
 On `rdc-project` from an isolated worktree based on `main` @ `5e0192ab39954435580c490dfcd08a139df3b24e`:
 
@@ -76,6 +80,8 @@ On `rdc-project` from an isolated worktree based on `main` @ `5e0192ab3995443558
 - **PASS:** 5 Python launcher/cross-language token tests, 2 Node signer tests, `py_compile`, and `git diff --check`.
 - **PASS:** standalone real Vite proxy without `DEMO_AUTH_SECRET` returned HTTP **503** on `/enterprise-api/ready`.
 - **Known baseline:** broad `npm run lint` fails on existing `HiringDemoPage.tsx:57` with `react-hooks/set-state-in-effect`, which predated this slice. New page passes targeted ESLint.
-- **NOT RUN:** a live browser→PostgreSQL→Whisper test. The current system Python lacks `psycopg`, `faster_whisper` and `fastembed`; no model download or disposable DB initialization was attempted in this slice.
+- **Not performed in the initial coding step:** live browser→PostgreSQL→Whisper because system Python lacked `psycopg`, `faster_whisper`, `fastembed`. A separate pre-existing Python virtual environment with these dependencies was later located and reused.
 
-A real model-backed E2E requires the disposable PostgreSQL, migrations, .NET API, Python worker, cached models and browser. Until such a run is captured and recorded with its SHA and logs, **do not label EP-02 live-verified or complete**. See [contract baseline](../architecture/enterprise-platform/contracts.md) for HTTP and authorization details. The later document ingestion, unified authorized search, evidence-only answers and local LLM remain **EP-03–EP-06 future work**, not features of this page.
+### Actual model-backed acceptance and limits
+
+**Two successful real browser/Whisper runs**, eight passing PostgreSQL worker resilience tests, saved [video/screenshot](EVIDENCE-2026-11-08.md), including idempotency and revocation after genuine inference. These demonstrate the *bounded local WAV slice* and do not prove workload scalability, general speech accuracy, uptime or production readiness. A later third browser attempt encountered an .NET `Out of memory` exit after long-running high-pressure RDC operation; the launcher correctly reported service failure. See the full [evidence and reproduction instructions](EVIDENCE-2026-11-08.md) and [contract baseline](../architecture/enterprise-platform/contracts.md). The later document ingestion, unified authorized search, evidence-only answers and local LLM remain **EP-03–EP-06 future work**.
