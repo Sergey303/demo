@@ -19,6 +19,7 @@ export function HiringDemoPage() {
   const [history, setHistory] = useState<EventItem[]>([]);
   const mounted = useRef(true);
   const lastStatus = useRef<Record<string, string>>({});
+  const activeJobId = useRef<string | null>(null);
   const addEvent = useCallback((label: string, kind: EventItem["kind"] = "info") => {
     setHistory((previous) => [{ time: new Date().toLocaleTimeString(), label, kind }, ...previous].slice(0, 16));
   }, []);
@@ -38,7 +39,7 @@ export function HiringDemoPage() {
       const response = await fetch(API + "/jobs/" + encodeURIComponent(id), { cache: "no-store", signal: AbortSignal.timeout(4000) });
       if (!response.ok) throw new Error("GET /jobs/" + id + " → HTTP " + response.status);
       const value = (await response.json()) as Job;
-      if (!mounted.current) return;
+      if (!mounted.current || activeJobId.current !== id || value.id !== id) return;
       const previousStatus = lastStatus.current[value.id];
       if (previousStatus && previousStatus !== value.status) {
         addEvent("Job " + value.id.slice(0, 8) + " → " + value.status, value.status === "done" ? "ok" : "info");
@@ -86,6 +87,7 @@ export function HiringDemoPage() {
       } else if (response.ok && typeof value === "object" && value !== null && "id" in value && typeof value.id === "string") {
         const data = value as Job;
         if (job && job.id !== data.id) addEvent("WARNING: retry returned different ID", "error");
+        activeJobId.current = data.id;
         lastStatus.current[data.id] = data.status;
         setJob(data);
         addEvent(response.status + " · " + data.status + " · job " + data.id.slice(0, 8) + " · " + latency + " ms", "ok");
@@ -103,6 +105,7 @@ export function HiringDemoPage() {
   function newScenario() {
     setKey(initialKey());
     setInput(SAMPLE);
+    activeJobId.current = null;
     setJob(null);
     setHistory([]);
     addEvent("New scenario · new idempotency key");
@@ -137,7 +140,7 @@ export function HiringDemoPage() {
               </div>
               <label htmlFor="demo-payload" className="form-label mt-3">Текст задачи (1–2000 символов)</label>
               <textarea id="demo-payload" className="form-control" value={input} rows={2} maxLength={2000}
-                onChange={(event) => setInput(event.target.value)} />
+                onChange={(event) => setInput(event.target.value)} disabled={busy || Boolean(job)} />
               <label htmlFor="demo-key" className="form-label mt-3">Idempotency-Key (сохраняется при повторе)</label>
               <input id="demo-key" className="form-control font-monospace small" value={key} readOnly />
               <div className="d-flex flex-wrap gap-2 mt-3">
