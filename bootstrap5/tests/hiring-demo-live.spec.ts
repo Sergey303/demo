@@ -46,19 +46,21 @@ async function stopApi(process: ChildProcess | null): Promise<void> {
 }
 
 test("real outbox: accepted, committed, idempotent, conflict, survives API restart", async ({ page }) => {
+  test.setTimeout(150_000); // Video deliberately holds each real state for the reviewer.
   let api: ChildProcess | null = null;
   try {
     api = startApi();
     await waitForReady(api);
     await page.goto("/dashboard/hiring-demo");
     await expect(page.getByTestId("api-status")).toContainText("ready");
+    await page.waitForTimeout(4500); // Show the live infrastructure status.
     await page.getByRole("button", { name: "POST /jobs" }).click();
     const jobId = (await page.locator("code").first().textContent())?.trim();
     expect(jobId).toMatch(/^[0-9a-f-]{36}$/i);
 
     await expect(page.getByTestId("job-status")).toHaveText("done", { timeout: 25000 });
     await expect(page.getByText(/"WordCount": 3/)).toBeVisible();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(8500);
 
     await page.getByRole("button", { name: "Повторить тот же запрос" }).click();
     await expect(page.getByText(/200 · already-accepted/)).toBeVisible();
@@ -72,7 +74,7 @@ test("real outbox: accepted, committed, idempotent, conflict, survives API resta
     await stopApi(api);
     api = null;
     await expect(page.getByTestId("api-status")).toContainText("unavailable", { timeout: 12000 });
-    await page.waitForTimeout(1100);
+    await page.waitForTimeout(11000);
 
     api = startApi();
     await waitForReady(api);
@@ -81,7 +83,7 @@ test("real outbox: accepted, committed, idempotent, conflict, survives API resta
     await expect(page.getByText(jobId!, { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Обновить из PostgreSQL" }).click();
     await expect(page.getByTestId("job-status")).toHaveText("done", { timeout: 12000 });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(9000);
   } finally {
     await stopApi(api);
   }
