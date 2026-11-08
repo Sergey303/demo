@@ -17,8 +17,23 @@ One-time setup:
 3. Start the isolated PostgreSQL database. On the Windows Docker host, from
    `demo/dotnet-outbox`, use
    `docker compose -p demo-outbox up -d --wait`. A fresh volume automatically
-   initializes `001_init.sql`. If the volume already exists, its schema must
-   have been migrated independently; the launcher does **not** modify schema.
+   initializes **only** `001_init.sql`. The current API also needs
+   `002_audio_jobs.sql`, `003_audio_leases.sql`, and `004_audio_acl.sql`.
+   Apply these existing, idempotent demo migrations in order using the
+   Docker host PowerShell (from `demo/dotnet-outbox`):
+
+   ```powershell
+   foreach ($migration in @('002_audio_jobs.sql', '003_audio_leases.sql', '004_audio_acl.sql')) {
+       Get-Content -Raw -Encoding UTF8 ".\\sql\\$migration" |
+           docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs
+       if ($LASTEXITCODE -ne 0) { throw "Migration failed: $migration" }
+   }
+   ```
+
+   This is required even for a fresh demo container because Compose mounts
+   only migration 001. The launcher does **not** mutate or migrate databases.
+   GitHub Actions independently applies all four SQL files to its disposable
+   CI database and checks that the required columns and grant table exist.
 4. Set the connection string in the terminal used to run this demo.
    - RDC Ubuntu connected to the `knowledge-pilot-dev` network:
      `export ConnectionStrings__Jobs='Host=demo-outbox-postgres;Port=5432;Database=reliable_jobs;Username=demo;Password=demo'`
@@ -107,6 +122,19 @@ The repository already contains a separate concurrent outbox check at
 [`dotnet-outbox/tests/smoke.py`](../dotnet-outbox/tests/smoke.py).
 Run it against the same local demo API to verify twenty concurrent duplicate
 submissions, one persisted job ID, conflict handling and worker completion.
+
+## Automated real PostgreSQL screencast
+
+The [Hiring demo checks workflow](../.github/workflows/hiring-demo.yml) includes
+a `live-screencast` job using a **real disposable PostgreSQL service**,
+a compiled .NET worker/API and Chromium. It creates a job, checks worker
+completion and idempotency, forces the API process to stop and restart, then
+verifies the persisted result. Playwright saves a real browser video as a
+`hiring-demo-real-postgresql-screencast` artifact, retained for 14 days,
+**only when that job actually runs**. Download it from the corresponding
+[GitHub Actions workflow runs](https://github.com/Sergey303/demo/actions/workflows/hiring-demo.yml).
+The recording is not claimed to have succeeded until the job concludes
+successfully.
 
 ## Recording the actual walkthrough
 
