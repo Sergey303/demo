@@ -12,7 +12,7 @@ These are **independent, original engineering examples, not claims of commercial
 
 **Start here for Tech Lead / Solution Architect interviews:** [Hiring Demo walkthrough](hiring-demo/README.md). The existing [React dashboard](bootstrap5/src/pages/HiringDemoPage.tsx) now has a live `/dashboard/hiring-demo` route linked to the actual .NET/PostgreSQL text-job API. The [launcher](hiring-demo/run.py) starts both localhost services after validating database readiness and supports a real API process restart via terminal command `r`.
 
-The browser shows genuine `202 Accepted`, persisted job status, idempotent `200 already-accepted`, `409 Conflict`, and API outage/recovery. **No mock data is used in normal operation.** A separately labeled browser test uses stubbed HTTP to validate the frontend contract; it does not replace the live PostgreSQL smoke. A real two-minute video has not been captured or verified yet.
+The browser shows genuine `202 Accepted`, persisted job status, idempotent `200 already-accepted`, `409 Conflict`, and API outage/recovery. **No mock data is used in normal operation.** A separately labeled browser test uses stubbed HTTP to validate the frontend contract; it does not replace the live PostgreSQL smoke. A real **1280×800, ~42-second** PostgreSQL-backed Chromium screencast was captured and verified by [GitHub Actions E2E](https://github.com/Sergey303/demo/actions/runs/42452435834) (all jobs passed). The [recording artifact](https://github.com/Sergey303/demo/actions/runs/42452435834/artifacts/13606193230) is available for 14 days; see the repeatable two-minute manual interview walkthrough in the runbook.
 
 ## Strongest code evidence
 
