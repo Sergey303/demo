@@ -26,7 +26,7 @@ from evidence_answer import REFUSAL
 SERVER = Path(__file__).with_name("mcp_evidence_server.py")
 TOOL_NAMES = {"search_evidence", "propose_review_note"}
 MAX_TOOL_RESULT_BYTES = 6_000
-MAX_TOOL_ARGS_BYTES = 1_000
+MAX_TOOL_ARGS_BYTES = 2_300  # 500 Unicode scalars up to 4 UTF-8 bytes plus JSON keys/UUID
 MAX_REQUEST_BYTES = 14_000
 
 
@@ -109,8 +109,13 @@ def _tool_call(message: dict, expected: str) -> dict:
     if not isinstance(fn,dict) or fn.get("name")!=expected:
         raise ValueError("Tool name forbidden or unexpected")
     args=fn.get("arguments")
-    if not isinstance(args,dict) or len(json.dumps(args))>MAX_TOOL_ARGS_BYTES:
+    if not isinstance(args,dict):
         raise ValueError("Invalid tool arguments")
+    # Budget the actual UTF-8 wire representation. ASCII-escaped JSON turns
+    # one Cyrillic character into six bytes and rejects legitimate requests.
+    raw = json.dumps(args,ensure_ascii=False,separators=(",",":")).encode("utf-8","strict")
+    if len(raw)>MAX_TOOL_ARGS_BYTES:
+        raise ValueError("Tool arguments exceed UTF-8 budget")
     if expected=="search_evidence":
         if set(args)-{"question","top_k"}:
             raise ValueError("Unsupported search arguments")

@@ -453,3 +453,23 @@ def test_saved_note_read_rechecks_every_original_source_after_revoke(monkeypatch
         assert client.get(f"/agent/notes/{a}",headers=headers).json()=={"notes":[]}
     finally:
         delete(dsn,[a,b])
+
+
+def test_multilingual_tool_arguments_use_utf8_budget_not_ascii_escape_length():
+    """Codex P2: 500 Cyrillic/emoji characters fit within advertised limits."""
+    job=str(uuid4())
+    def proposal(note):
+        return {"tool_calls":[{"function":{"name":"propose_review_note",
+            "arguments":{"job_id":job,"note":note}}}]}
+    for note in ("Примечание о сроке возврата. " * 8,
+                 "Ж"*500, "📌"*500):
+        assert len(note)<=500
+        args=host._tool_call(proposal(note),"propose_review_note")
+        assert args["note"]==note
+    with pytest.raises(ValueError):
+        host._tool_call(proposal("Ж"*501),"propose_review_note")
+
+    question="Каков срок возврата товара?"
+    query={"tool_calls":[{"function":{"name":"search_evidence",
+        "arguments":{"question":question,"top_k":3}}}]}
+    assert host._tool_call(query,"search_evidence")["question"]==question
