@@ -1,0 +1,528 @@
+{
+  "DomainKey": "permissions",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/permissions",
+      "Kind": "query",
+      "ControllerName": "PermissionController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/permissions",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "List(ListPermissionRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/permissions",
+      "Kind": "mutation",
+      "ControllerName": "PermissionController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/permissions",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Create"
+      ],
+      "ErrorRefs": [
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/permissions",
+        "get:/api/permissions/lookup",
+        "get:/api/permissions/options/{field}",
+        "get:/api/permissions/suggest/{field}",
+        "get:/api/permissions/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Create(CreatePermissionRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-permission-create",
+        "PayloadSchemaVersion": 6561342889967763,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/permissions/lookup",
+      "Kind": "query",
+      "ControllerName": "PermissionController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/permissions/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupPermissionRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Lookup(LookupPermissionRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/permissions/options/{field}",
+      "Kind": "query",
+      "ControllerName": "PermissionController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/permissions/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/permissions/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "PermissionController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/permissions/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestPermissionRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Suggest(String field, SuggestPermissionRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/permissions/{id}",
+      "Kind": "mutation",
+      "ControllerName": "PermissionController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/permissions/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Delete"
+      ],
+      "ErrorRefs": [
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/permissions",
+        "get:/api/permissions/lookup",
+        "get:/api/permissions/options/{field}",
+        "get:/api/permissions/suggest/{field}",
+        "get:/api/permissions/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-permission-delete",
+        "PayloadSchemaVersion": 5529879886381218,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/permissions/{id}",
+      "Kind": "query",
+      "ControllerName": "PermissionController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/permissions/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Read"
+      ],
+      "ErrorRefs": [
+        "permission.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/permissions/{id}",
+      "Kind": "mutation",
+      "ControllerName": "PermissionController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/permissions/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Permission.Update"
+      ],
+      "ErrorRefs": [
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.not_found",
+        "permission.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/permissions",
+        "get:/api/permissions/lookup",
+        "get:/api/permissions/options/{field}",
+        "get:/api/permissions/suggest/{field}",
+        "get:/api/permissions/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "permissions"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "MethodClrSignature": "Update(Guid id, UpdatePermissionRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-permission-update",
+        "PayloadSchemaVersion": 8288396880467264,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    AppForge 42b21c06 emits .NET 10 / EF Core 10 but its EF design dependency
+    resolves a vulnerable transitive System.Security.Cryptography.Pkcs 9.0.0.
+    Keep the generated source unchanged and pin the patched 10.x package
+    for this demo's backend build. See README.md for the security advisory.
+  -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'TelegramOperationsAdmin.Persistence'">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+</Project>

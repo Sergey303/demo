@@ -1,0 +1,80 @@
+{
+  "endpointKey": "post:/api/rolepermissions",
+  "domainKey": "rolepermissions",
+  "kind": "mutation",
+  "controllerName": "RolePermissionController",
+  "methodName": "Create",
+  "httpMethod": "POST",
+  "routeTemplate": "/api/rolepermissions",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "json",
+    "requestContentType": "application/json",
+    "responseKind": "json",
+    "responseContentType": "application/json",
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "idempotencyKey",
+        "bindingSource": "header",
+        "name": "idempotencyKey",
+        "wireName": "Idempotency-Key",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": "runtime-operation-id"
+      }
+    ],
+    "requestBody": {
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest",
+      "required": true
+    },
+    "multipartParts": [],
+    "response": {
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "contentDisposition": null,
+      "fileNameSource": null
+    }
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "RolePermission.Create"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [
+    "role.permission.idempotency_conflict",
+    "role.permission.idempotency_key_invalid",
+    "role.permission.idempotency_key_required",
+    "role.permission.validation_failed"
+  ],
+  "invalidatesEndpointKeys": [
+    "get:/api/rolepermissions",
+    "get:/api/rolepermissions/lookup",
+    "get:/api/rolepermissions/options/{field}",
+    "get:/api/rolepermissions/suggest/{field}",
+    "get:/api/rolepermissions/{id}"
+  ],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest",
+  "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+  "invalidatedByRealtimeEventKeys": []
+}

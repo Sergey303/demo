@@ -1,0 +1,528 @@
+{
+  "DomainKey": "campaignstatuses",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/campaignstatuses",
+      "Kind": "query",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/campaignstatuses",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListCampaignStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListCampaignStatusResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListCampaignStatusResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "List(ListCampaignStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/campaignstatuses",
+      "Kind": "mutation",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/campaignstatuses",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreateCampaignStatusRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateCampaignStatusRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Create"
+      ],
+      "ErrorRefs": [
+        "campaign.status.idempotency_conflict",
+        "campaign.status.idempotency_key_invalid",
+        "campaign.status.idempotency_key_required",
+        "campaign.status.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/campaignstatuses",
+        "get:/api/campaignstatuses/lookup",
+        "get:/api/campaignstatuses/options/{field}",
+        "get:/api/campaignstatuses/suggest/{field}",
+        "get:/api/campaignstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Create(CreateCampaignStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-campaignstatus-create",
+        "PayloadSchemaVersion": 2083179688592838,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/campaignstatuses/lookup",
+      "Kind": "query",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/campaignstatuses/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupCampaignStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Lookup(LookupCampaignStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/campaignstatuses/options/{field}",
+      "Kind": "query",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/campaignstatuses/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/campaignstatuses/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/campaignstatuses/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestCampaignStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.CampaignStatusSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Suggest(String field, SuggestCampaignStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/campaignstatuses/{id}",
+      "Kind": "mutation",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/campaignstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Delete"
+      ],
+      "ErrorRefs": [
+        "campaign.status.idempotency_conflict",
+        "campaign.status.idempotency_key_invalid",
+        "campaign.status.idempotency_key_required",
+        "campaign.status.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/campaignstatuses",
+        "get:/api/campaignstatuses/lookup",
+        "get:/api/campaignstatuses/options/{field}",
+        "get:/api/campaignstatuses/suggest/{field}",
+        "get:/api/campaignstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-campaignstatus-delete",
+        "PayloadSchemaVersion": 2451263957617998,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/campaignstatuses/{id}",
+      "Kind": "query",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/campaignstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Read"
+      ],
+      "ErrorRefs": [
+        "campaign.status.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/campaignstatuses/{id}",
+      "Kind": "mutation",
+      "ControllerName": "CampaignStatusController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/campaignstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateCampaignStatusRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateCampaignStatusRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.CampaignStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "CampaignStatus.Update"
+      ],
+      "ErrorRefs": [
+        "campaign.status.idempotency_conflict",
+        "campaign.status.idempotency_key_invalid",
+        "campaign.status.idempotency_key_required",
+        "campaign.status.not_found",
+        "campaign.status.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/campaignstatuses",
+        "get:/api/campaignstatuses/lookup",
+        "get:/api/campaignstatuses/options/{field}",
+        "get:/api/campaignstatuses/suggest/{field}",
+        "get:/api/campaignstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "campaignstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.CampaignStatusController",
+        "MethodClrSignature": "Update(Guid id, UpdateCampaignStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-campaignstatus-update",
+        "PayloadSchemaVersion": 5356025298579994,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

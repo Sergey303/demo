@@ -1,0 +1,76 @@
+{
+  "endpointKey": "get:/api/subscribers/suggest/{field}",
+  "domainKey": "subscribers",
+  "kind": "query",
+  "controllerName": "SubscriberController",
+  "methodName": "Suggest",
+  "httpMethod": "GET",
+  "routeTemplate": "/api/subscribers/suggest/{field}",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "none",
+    "requestContentType": null,
+    "responseKind": "json",
+    "responseContentType": "application/json",
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "field",
+        "bindingSource": "route",
+        "name": "field",
+        "wireName": "field",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": null
+      },
+      {
+        "inputKey": "request",
+        "bindingSource": "query",
+        "name": "request",
+        "wireName": "request",
+        "typeRef": "Demo.TelegramOperations.Api.Contracts.SuggestSubscriberRequest",
+        "nullable": false,
+        "required": true,
+        "valueSource": null
+      }
+    ],
+    "requestBody": null,
+    "multipartParts": [],
+    "response": {
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "typeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberSuggestionDto>",
+      "contentDisposition": null,
+      "fileNameSource": null
+    }
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "Subscriber.Read"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [],
+  "invalidatesEndpointKeys": [],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": null,
+  "responseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberSuggestionDto>",
+  "invalidatedByRealtimeEventKeys": []
+}

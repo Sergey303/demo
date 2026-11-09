@@ -1,0 +1,528 @@
+{
+  "DomainKey": "subscriberstatuses",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/subscriberstatuses",
+      "Kind": "query",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/subscriberstatuses",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListSubscriberStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListSubscriberStatusResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListSubscriberStatusResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "List(ListSubscriberStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/subscriberstatuses",
+      "Kind": "mutation",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/subscriberstatuses",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreateSubscriberStatusRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateSubscriberStatusRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Create"
+      ],
+      "ErrorRefs": [
+        "subscriber.status.idempotency_conflict",
+        "subscriber.status.idempotency_key_invalid",
+        "subscriber.status.idempotency_key_required",
+        "subscriber.status.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/subscriberstatuses",
+        "get:/api/subscriberstatuses/lookup",
+        "get:/api/subscriberstatuses/options/{field}",
+        "get:/api/subscriberstatuses/suggest/{field}",
+        "get:/api/subscriberstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Create(CreateSubscriberStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-subscriberstatus-create",
+        "PayloadSchemaVersion": 3156655866792480,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/subscriberstatuses/lookup",
+      "Kind": "query",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/subscriberstatuses/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupSubscriberStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Lookup(LookupSubscriberStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/subscriberstatuses/options/{field}",
+      "Kind": "query",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/subscriberstatuses/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/subscriberstatuses/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/subscriberstatuses/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestSubscriberStatusRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.SubscriberStatusSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Suggest(String field, SuggestSubscriberStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/subscriberstatuses/{id}",
+      "Kind": "mutation",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/subscriberstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Delete"
+      ],
+      "ErrorRefs": [
+        "subscriber.status.idempotency_conflict",
+        "subscriber.status.idempotency_key_invalid",
+        "subscriber.status.idempotency_key_required",
+        "subscriber.status.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/subscriberstatuses",
+        "get:/api/subscriberstatuses/lookup",
+        "get:/api/subscriberstatuses/options/{field}",
+        "get:/api/subscriberstatuses/suggest/{field}",
+        "get:/api/subscriberstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-subscriberstatus-delete",
+        "PayloadSchemaVersion": 1702057406661458,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/subscriberstatuses/{id}",
+      "Kind": "query",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/subscriberstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Read"
+      ],
+      "ErrorRefs": [
+        "subscriber.status.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/subscriberstatuses/{id}",
+      "Kind": "mutation",
+      "ControllerName": "SubscriberStatusController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/subscriberstatuses/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateSubscriberStatusRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateSubscriberStatusRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "SubscriberStatus.Update"
+      ],
+      "ErrorRefs": [
+        "subscriber.status.idempotency_conflict",
+        "subscriber.status.idempotency_key_invalid",
+        "subscriber.status.idempotency_key_required",
+        "subscriber.status.not_found",
+        "subscriber.status.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/subscriberstatuses",
+        "get:/api/subscriberstatuses/lookup",
+        "get:/api/subscriberstatuses/options/{field}",
+        "get:/api/subscriberstatuses/suggest/{field}",
+        "get:/api/subscriberstatuses/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "subscriberstatuses"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.SubscriberStatusController",
+        "MethodClrSignature": "Update(Guid id, UpdateSubscriberStatusRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-subscriberstatus-update",
+        "PayloadSchemaVersion": 4783999644603108,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

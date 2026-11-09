@@ -1,0 +1,56 @@
+{
+  "kind": "appforge-generated-admin-production-package",
+  "version": 2,
+  "generatedAtUtc": "2026-11-09T09:22:49.5719665Z",
+  "spec": {
+    "inputPath": "/workspace/demo/appforge-admin/telegram-operations.md",
+    "fullPath": "/workspace/demo/appforge-admin/telegram-operations.md",
+    "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+  },
+  "generator": {
+    "name": "AppForge.MdToDomain",
+    "version": "0.1.0",
+    "entrypoint": "scripts/quality/run-md-ef-core-production-package.ps1"
+  },
+  "generatedIdentity": {
+    "modelId": "Telegram Operations Admin",
+    "solutionName": "TelegramOperationsAdmin",
+    "solutionFileName": "TelegramOperationsAdmin.slnx",
+    "projectName": "TelegramOperationsAdmin.Persistence",
+    "projectFileName": "TelegramOperationsAdmin.Persistence.csproj",
+    "assemblyName": "TelegramOperationsAdmin.Persistence",
+    "assemblyFileName": "TelegramOperationsAdmin.Persistence.dll",
+    "rootNamespace": "TelegramOperationsAdmin",
+    "dbContextName": "TelegramOperationsAdminDbContext",
+    "databaseName": "telegram_operations_admin"
+  },
+  "runtimeProfile": "production",
+  "generatedOutputRoots": {
+    "packageRoot": "/workspace/demo/appforge-admin/generated",
+    "backend": "/workspace/demo/appforge-admin/generated/backend",
+    "backendContract": "/workspace/demo/appforge-admin/generated/backend-contract",
+    "frontend": "/workspace/demo/appforge-admin/generated/frontend",
+    "frontendApp": "/workspace/demo/appforge-admin/generated/frontend-app",
+    "deploy": "/workspace/demo/appforge-admin/generated/deploy/production",
+    "manifest": "/workspace/demo/appforge-admin/generated/manifest",
+    "docs": "/workspace/demo/appforge-admin/generated/docs"
+  },
+  "verificationCommands": [
+    "dotnet build \"/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.Persistence.csproj\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.slnx\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/backend/Migrations/AppForgeGeneratedMigrations.idempotent.sql\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/backend-contract/meta/domains.json\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/frontend/runtime/httpClient.ts\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/frontend-app/dist/index.html\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/deploy/production/docker-compose.production.yml\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/deploy/production/.env.production.example\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/manifest/package-manifest.json\""
+  ],
+  "notes": [
+    "Project, solution, assembly, database and DbContext identity are derived from the source model and stored in the backend generation manifest.",
+    "This package preserves an existing EF migration chain when a previous package is supplied or the same OutputRoot is regenerated with -Clean.",
+    "This package includes full-chain idempotent migration SQL under backend/Migrations.",
+    "This package includes canonical backend-contract JSON, domain-scoped TypeScript, generated React/PrimeReact admin components and pages, and a built Vite bundle.",
+    "This package includes a self-contained single-VPS Docker Compose deploy preset under deploy/production."
+  ]
+}

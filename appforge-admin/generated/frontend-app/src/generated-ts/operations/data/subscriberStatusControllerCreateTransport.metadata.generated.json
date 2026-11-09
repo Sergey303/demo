@@ -1,0 +1,80 @@
+{
+  "endpointKey": "post:/api/subscriberstatuses",
+  "domainKey": "subscriberstatuses",
+  "kind": "mutation",
+  "controllerName": "SubscriberStatusController",
+  "methodName": "Create",
+  "httpMethod": "POST",
+  "routeTemplate": "/api/subscriberstatuses",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "json",
+    "requestContentType": "application/json",
+    "responseKind": "json",
+    "responseContentType": "application/json",
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "idempotencyKey",
+        "bindingSource": "header",
+        "name": "idempotencyKey",
+        "wireName": "Idempotency-Key",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": "runtime-operation-id"
+      }
+    ],
+    "requestBody": {
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.CreateSubscriberStatusRequest",
+      "required": true
+    },
+    "multipartParts": [],
+    "response": {
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto",
+      "contentDisposition": null,
+      "fileNameSource": null
+    }
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "SubscriberStatus.Create"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [
+    "subscriber.status.idempotency_conflict",
+    "subscriber.status.idempotency_key_invalid",
+    "subscriber.status.idempotency_key_required",
+    "subscriber.status.validation_failed"
+  ],
+  "invalidatesEndpointKeys": [
+    "get:/api/subscriberstatuses",
+    "get:/api/subscriberstatuses/lookup",
+    "get:/api/subscriberstatuses/options/{field}",
+    "get:/api/subscriberstatuses/suggest/{field}",
+    "get:/api/subscriberstatuses/{id}"
+  ],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateSubscriberStatusRequest",
+  "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.SubscriberStatusDto",
+  "invalidatedByRealtimeEventKeys": []
+}

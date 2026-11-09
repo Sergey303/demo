@@ -1,0 +1,84 @@
+{
+  "Campaign.Create": {
+    "PolicyKey": "Campaign.Create",
+    "DomainKey": "campaigns",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "post:/api/campaigns"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Campaign.Delete": {
+    "PolicyKey": "Campaign.Delete",
+    "DomainKey": "campaigns",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "delete:/api/campaigns/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Campaign.Read": {
+    "PolicyKey": "Campaign.Read",
+    "DomainKey": "campaigns",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaigns"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaigns/lookup"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaigns/options/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaigns/suggest/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaigns/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Campaign.Update": {
+    "PolicyKey": "Campaign.Update",
+    "DomainKey": "campaigns",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "put:/api/campaigns/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "CampaignStatus.Create": {
+    "PolicyKey": "CampaignStatus.Create",
+    "DomainKey": "campaignstatuses",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "post:/api/campaignstatuses"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "CampaignStatus.Delete": {
+    "PolicyKey": "CampaignStatus.Delete",
+    "DomainKey": "campaignstatuses",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "delete:/api/campaignstatuses/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  }
+}

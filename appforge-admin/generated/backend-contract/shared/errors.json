@@ -1,0 +1,339 @@
+{
+  "Errors": [
+    {
+      "ErrorFamilyKey": "CampaignApi",
+      "Codes": [
+        "campaign.idempotency_conflict",
+        "campaign.idempotency_key_invalid",
+        "campaign.idempotency_key_required",
+        "campaign.not_found",
+        "campaign.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "campaign.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "CampaignStatusApi",
+      "Codes": [
+        "campaign.status.idempotency_conflict",
+        "campaign.status.idempotency_key_invalid",
+        "campaign.status.idempotency_key_required",
+        "campaign.status.not_found",
+        "campaign.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "campaign.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "LeadApi",
+      "Codes": [
+        "lead.idempotency_conflict",
+        "lead.idempotency_key_invalid",
+        "lead.idempotency_key_required",
+        "lead.not_found",
+        "lead.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "lead.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "LeadStatusApi",
+      "Codes": [
+        "lead.status.idempotency_conflict",
+        "lead.status.idempotency_key_invalid",
+        "lead.status.idempotency_key_required",
+        "lead.status.not_found",
+        "lead.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "lead.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "PermissionApi",
+      "Codes": [
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.not_found",
+        "permission.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "permission.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "RoleApi",
+      "Codes": [
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.not_found",
+        "role.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "role.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "RolePermissionApi",
+      "Codes": [
+        "role.permission.idempotency_conflict",
+        "role.permission.idempotency_key_invalid",
+        "role.permission.idempotency_key_required",
+        "role.permission.not_found",
+        "role.permission.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "role.permission.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "SubscriberApi",
+      "Codes": [
+        "subscriber.idempotency_conflict",
+        "subscriber.idempotency_key_invalid",
+        "subscriber.idempotency_key_required",
+        "subscriber.not_found",
+        "subscriber.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "subscriber.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "SubscriberStatusApi",
+      "Codes": [
+        "subscriber.status.idempotency_conflict",
+        "subscriber.status.idempotency_key_invalid",
+        "subscriber.status.idempotency_key_required",
+        "subscriber.status.not_found",
+        "subscriber.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "subscriber.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    }
+  ],
+  "Codes": [
+    "campaign.idempotency_conflict",
+    "campaign.idempotency_key_invalid",
+    "campaign.idempotency_key_required",
+    "campaign.not_found",
+    "campaign.status.idempotency_conflict",
+    "campaign.status.idempotency_key_invalid",
+    "campaign.status.idempotency_key_required",
+    "campaign.status.not_found",
+    "campaign.status.validation_failed",
+    "campaign.validation_failed",
+    "lead.idempotency_conflict",
+    "lead.idempotency_key_invalid",
+    "lead.idempotency_key_required",
+    "lead.not_found",
+    "lead.status.idempotency_conflict",
+    "lead.status.idempotency_key_invalid",
+    "lead.status.idempotency_key_required",
+    "lead.status.not_found",
+    "lead.status.validation_failed",
+    "lead.validation_failed",
+    "permission.idempotency_conflict",
+    "permission.idempotency_key_invalid",
+    "permission.idempotency_key_required",
+    "permission.not_found",
+    "permission.validation_failed",
+    "role.idempotency_conflict",
+    "role.idempotency_key_invalid",
+    "role.idempotency_key_required",
+    "role.not_found",
+    "role.permission.idempotency_conflict",
+    "role.permission.idempotency_key_invalid",
+    "role.permission.idempotency_key_required",
+    "role.permission.not_found",
+    "role.permission.validation_failed",
+    "role.validation_failed",
+    "subscriber.idempotency_conflict",
+    "subscriber.idempotency_key_invalid",
+    "subscriber.idempotency_key_required",
+    "subscriber.not_found",
+    "subscriber.status.idempotency_conflict",
+    "subscriber.status.idempotency_key_invalid",
+    "subscriber.status.idempotency_key_required",
+    "subscriber.status.not_found",
+    "subscriber.status.validation_failed",
+    "subscriber.validation_failed"
+  ]
+}

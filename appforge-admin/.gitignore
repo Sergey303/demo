@@ -1,0 +1,12 @@
+# Reproducible build outputs, not source or contract artifacts.
+generated/**/bin/
+generated/**/obj/
+generated/**/node_modules/
+generated/frontend-app/dist/
+generated/**/.lighthouse/
+generated/**/.performance-diagnostics/
+generated/**/.env
+generated/**/.env.production
+*.log
+
+generated/**/*.tsbuildinfo

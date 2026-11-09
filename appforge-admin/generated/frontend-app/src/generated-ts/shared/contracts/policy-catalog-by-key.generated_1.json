@@ -1,0 +1,100 @@
+{
+  "CampaignStatus.Read": {
+    "PolicyKey": "CampaignStatus.Read",
+    "DomainKey": "campaignstatuses",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaignstatuses"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaignstatuses/lookup"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaignstatuses/options/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaignstatuses/suggest/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/campaignstatuses/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "CampaignStatus.Update": {
+    "PolicyKey": "CampaignStatus.Update",
+    "DomainKey": "campaignstatuses",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "put:/api/campaignstatuses/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Lead.Create": {
+    "PolicyKey": "Lead.Create",
+    "DomainKey": "leads",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "post:/api/leads"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Lead.Delete": {
+    "PolicyKey": "Lead.Delete",
+    "DomainKey": "leads",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "delete:/api/leads/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Lead.Read": {
+    "PolicyKey": "Lead.Read",
+    "DomainKey": "leads",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/leads"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/leads/lookup"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/leads/options/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/leads/suggest/{field}"
+      },
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "get:/api/leads/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  },
+  "Lead.Update": {
+    "PolicyKey": "Lead.Update",
+    "DomainKey": "leads",
+    "DeclaredBy": [
+      {
+        "SourceKind": "endpoint",
+        "SourceKey": "put:/api/leads/{id}"
+      }
+    ],
+    "PolicyKind": "availability"
+  }
+}

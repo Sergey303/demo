@@ -1,0 +1,129 @@
+{
+  "kind": "appforge-md-ef-core-generation",
+  "version": 4,
+  "modelId": "Telegram Operations Admin",
+  "identity": {
+    "solutionName": "TelegramOperationsAdmin",
+    "solutionFileName": "TelegramOperationsAdmin.slnx",
+    "projectName": "TelegramOperationsAdmin.Persistence",
+    "projectFileName": "TelegramOperationsAdmin.Persistence.csproj",
+    "assemblyName": "TelegramOperationsAdmin.Persistence",
+    "assemblyFileName": "TelegramOperationsAdmin.Persistence.dll",
+    "rootNamespace": "TelegramOperationsAdmin",
+    "dbContextName": "TelegramOperationsAdminDbContext",
+    "databaseName": "telegram_operations_admin"
+  },
+  "runtimeProfile": "production",
+  "databaseProvider": "PostgreSQL",
+  "databaseProviderKey": "postgres",
+  "databaseMigration": {
+    "adapterKind": "dotnet-ef",
+    "relativeRoot": "DatabaseMigrator",
+    "projectFileName": "TelegramOperationsAdmin.Persistence.Migrator.csproj",
+    "assemblyFileName": "TelegramOperationsAdmin.Persistence.Migrator.dll",
+    "startupMigrationsForbidden": true,
+    "exclusiveMigrationOwner": true
+  },
+  "generationCapabilities": {},
+  "generationInputs": [
+    {
+      "path": "/workspace/demo/appforge-admin/telegram-operations.md",
+      "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+    }
+  ],
+  "features": {
+    "enabled": []
+  },
+  "entities": [
+    {
+      "name": "Subscriber",
+      "table": "Subscribers",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "SubscriberStatus",
+      "table": "SubscriberStatuses",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "Lead",
+      "table": "Leads",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "LeadStatus",
+      "table": "LeadStatuses",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "Campaign",
+      "table": "Campaigns",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "CampaignStatus",
+      "table": "CampaignStatuses",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "Role",
+      "table": "Roles",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "Permission",
+      "table": "Permissions",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    },
+    {
+      "name": "RolePermission",
+      "table": "RolePermissions",
+      "generationMode": "Crud",
+      "apiSurface": "Crud",
+      "metadata": {},
+      "mutationOwner": null,
+      "concurrencyToken": null,
+      "mutationLock": null
+    }
+  ]
+}

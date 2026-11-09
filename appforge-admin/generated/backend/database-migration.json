@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "ownerId": "appforge-telegram-operations-admin",
+  "databaseId": "telegram_operations_admin",
+  "adapterKind": "dotnet-ef",
+  "apply": {
+    "argv": [
+      "dotnet",
+      "TelegramOperationsAdmin.Persistence.Migrator.dll"
+    ],
+    "timeoutSeconds": 300
+  },
+  "connection": {
+    "contract": "ConnectionStrings__Default"
+  },
+  "policy": {
+    "startupMigrationsForbidden": true,
+    "exclusiveMigrationOwner": true,
+    "phase": "expand"
+  }
+}

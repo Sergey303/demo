@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -b",
+    "build": "tsc -b && vite build",
+    "test:lighthouse": "npm run build && node ./scripts/lighthouse/run.mjs",
+    "lighthouse:diagnostic": "npm run build && node ./scripts/lighthouse/run.mjs --diagnostic",
+    "lighthouse:baseline": "npm run build && node ./scripts/lighthouse/run.mjs --baseline",
+    "performance:diagnostic": "npm run build && node ./scripts/performance-diagnostic/run.mjs",
+    "performance:diagnostic:authenticated": "npm run build && node ./scripts/performance-diagnostic/authenticated.mjs"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "lighthouse": "^13.4.1",
+    "playwright": "1.62.1",
+    "typescript": "^5.9.0",
+    "vite": "^7.0.0"
+  }
+}

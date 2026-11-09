@@ -1,0 +1,500 @@
+{
+  "DomainKey": "leads",
+  "Types": [
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.CreateLeadRequest",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CreatedAt",
+          "WireName": "createdAt",
+          "TypeRef": "shared:datetimeoffset",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Owner",
+          "WireName": "owner",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "StatusId",
+          "WireName": "statusId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Subject",
+          "WireName": "subject",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "SubscriberId",
+          "WireName": "subscriberId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LeadDto",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CreatedAt",
+          "WireName": "createdAt",
+          "TypeRef": "shared:datetimeoffset",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "WireName": "id",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Owner",
+          "WireName": "owner",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "StatusCode",
+          "WireName": "statusCode",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "StatusId",
+          "WireName": "statusId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "StatusName",
+          "WireName": "statusName",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Subject",
+          "WireName": "subject",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "SubscriberId",
+          "WireName": "subscriberId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LeadLookupDto",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LeadOptionDto",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LeadSuggestionDto",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListLeadFilter",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Operator",
+          "WireName": "operator",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Values",
+          "WireName": "values",
+          "TypeRef": "array<shared:string>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListLeadRequest",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Filters",
+          "WireName": "filters",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListLeadFilter>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Sort",
+          "WireName": "sort",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListLeadSort>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListLeadResult",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Items",
+          "WireName": "items",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.LeadDto>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "TotalCount",
+          "WireName": "totalCount",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListLeadSort",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Direction",
+          "WireName": "direction",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LookupLeadRequest",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.SuggestLeadRequest",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.TelegramOperations.Api.Contracts.UpdateLeadRequest",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CreatedAt",
+          "WireName": "createdAt",
+          "TypeRef": "shared:datetimeoffset",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Owner",
+          "WireName": "owner",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "StatusId",
+          "WireName": "statusId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Subject",
+          "WireName": "subject",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "SubscriberId",
+          "WireName": "subscriberId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.LeadDto>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.LeadDto"
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.LeadLookupDto>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.LeadLookupDto"
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.LeadOptionDto>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.LeadOptionDto"
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.LeadSuggestionDto>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.LeadSuggestionDto"
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListLeadFilter>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListLeadFilter"
+    },
+    {
+      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListLeadSort>",
+      "OwningDomainKey": "leads",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListLeadSort"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "post:/api/campaigns": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Create"
+    ]
+  },
+  "post:/api/campaignstatuses": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Create"
+    ]
+  },
+  "post:/api/leads": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Create"
+    ]
+  },
+  "post:/api/leadstatuses": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Create"
+    ]
+  },
+  "post:/api/permissions": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Create"
+    ]
+  },
+  "post:/api/rolepermissions": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Create"
+    ]
+  },
+  "post:/api/roles": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Create"
+    ]
+  },
+  "post:/api/subscribers": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Subscriber.Create"
+    ]
+  },
+  "post:/api/subscriberstatuses": {
+    "featureKeys": [],
+    "policyKeys": [
+      "SubscriberStatus.Create"
+    ]
+  },
+  "put:/api/campaigns/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Update"
+    ]
+  },
+  "put:/api/campaignstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Update"
+    ]
+  },
+  "put:/api/leads/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Update"
+    ]
+  },
+  "put:/api/leadstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Update"
+    ]
+  },
+  "put:/api/permissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Update"
+    ]
+  },
+  "put:/api/rolepermissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Update"
+    ]
+  },
+  "put:/api/roles/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Update"
+    ]
+  },
+  "put:/api/subscribers/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Subscriber.Update"
+    ]
+  },
+  "put:/api/subscriberstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "SubscriberStatus.Update"
+    ]
+  }
+}

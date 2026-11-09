@@ -1,0 +1,110 @@
+{
+  "delete:/api/campaigns/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Delete"
+    ]
+  },
+  "delete:/api/campaignstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Delete"
+    ]
+  },
+  "delete:/api/leads/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Delete"
+    ]
+  },
+  "delete:/api/leadstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Delete"
+    ]
+  },
+  "delete:/api/permissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Delete"
+    ]
+  },
+  "delete:/api/rolepermissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Delete"
+    ]
+  },
+  "delete:/api/roles/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Delete"
+    ]
+  },
+  "delete:/api/subscribers/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Subscriber.Delete"
+    ]
+  },
+  "delete:/api/subscriberstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "SubscriberStatus.Delete"
+    ]
+  },
+  "get:/api/campaigns": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Read"
+    ]
+  },
+  "get:/api/campaigns/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Read"
+    ]
+  },
+  "get:/api/campaigns/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Read"
+    ]
+  },
+  "get:/api/campaigns/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Read"
+    ]
+  },
+  "get:/api/campaigns/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Campaign.Read"
+    ]
+  },
+  "get:/api/campaignstatuses": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Read"
+    ]
+  },
+  "get:/api/campaignstatuses/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Read"
+    ]
+  },
+  "get:/api/campaignstatuses/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Read"
+    ]
+  },
+  "get:/api/campaignstatuses/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Read"
+    ]
+  }
+}

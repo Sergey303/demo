@@ -1,0 +1,38 @@
+{
+  "RolePermission.Update": {
+    "policyKey": "RolePermission.Update",
+    "policyKind": "availability"
+  },
+  "Subscriber.Create": {
+    "policyKey": "Subscriber.Create",
+    "policyKind": "availability"
+  },
+  "Subscriber.Delete": {
+    "policyKey": "Subscriber.Delete",
+    "policyKind": "availability"
+  },
+  "Subscriber.Read": {
+    "policyKey": "Subscriber.Read",
+    "policyKind": "availability"
+  },
+  "Subscriber.Update": {
+    "policyKey": "Subscriber.Update",
+    "policyKind": "availability"
+  },
+  "SubscriberStatus.Create": {
+    "policyKey": "SubscriberStatus.Create",
+    "policyKind": "availability"
+  },
+  "SubscriberStatus.Delete": {
+    "policyKey": "SubscriberStatus.Delete",
+    "policyKind": "availability"
+  },
+  "SubscriberStatus.Read": {
+    "policyKey": "SubscriberStatus.Read",
+    "policyKind": "availability"
+  },
+  "SubscriberStatus.Update": {
+    "policyKey": "SubscriberStatus.Update",
+    "policyKind": "availability"
+  }
+}

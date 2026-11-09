@@ -1,0 +1,86 @@
+{
+  "Policies": [
+    {
+      "PolicyKey": "LeadStatus.Create",
+      "DomainKey": "leadstatuses",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "post:/api/leadstatuses"
+        }
+      ],
+      "PolicyKind": "availability"
+    },
+    {
+      "PolicyKey": "LeadStatus.Delete",
+      "DomainKey": "leadstatuses",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "delete:/api/leadstatuses/{id}"
+        }
+      ],
+      "PolicyKind": "availability"
+    },
+    {
+      "PolicyKey": "LeadStatus.Read",
+      "DomainKey": "leadstatuses",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "get:/api/leadstatuses"
+        },
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "get:/api/leadstatuses/lookup"
+        },
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "get:/api/leadstatuses/options/{field}"
+        },
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "get:/api/leadstatuses/suggest/{field}"
+        },
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "get:/api/leadstatuses/{id}"
+        }
+      ],
+      "PolicyKind": "availability"
+    },
+    {
+      "PolicyKey": "LeadStatus.Update",
+      "DomainKey": "leadstatuses",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "put:/api/leadstatuses/{id}"
+        }
+      ],
+      "PolicyKind": "availability"
+    },
+    {
+      "PolicyKey": "Permission.Create",
+      "DomainKey": "permissions",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "post:/api/permissions"
+        }
+      ],
+      "PolicyKind": "availability"
+    },
+    {
+      "PolicyKey": "Permission.Delete",
+      "DomainKey": "permissions",
+      "DeclaredBy": [
+        {
+          "SourceKind": "endpoint",
+          "SourceKey": "delete:/api/permissions/{id}"
+        }
+      ],
+      "PolicyKind": "availability"
+    }
+  ]
+}

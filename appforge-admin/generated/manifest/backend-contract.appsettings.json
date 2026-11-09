@@ -1,0 +1,26 @@
+{
+  "Assemblies": {
+    "Api": "/workspace/demo/appforge-admin/generated/backend/bin/Debug/net10.0/TelegramOperationsAdmin.Persistence.dll",
+    "Realtime": null,
+    "Contracts": []
+  },
+  "Output": {
+    "Root": "/workspace/demo/appforge-admin/generated/backend-contract"
+  },
+  "Environment": {
+    "EnvironmentKey": "generated-admin-production-package"
+  },
+  "Passes": {
+    "EmitCodeContract": true
+  },
+  "Domains": {
+    "ControllerOverrides": {},
+    "TypeOverrides": {},
+    "FeatureOverrides": {},
+    "PolicyOverrides": {},
+    "CapabilityOverrides": {},
+    "ProviderOverrides": {},
+    "DisabledReasonOverrides": {},
+    "EndpointKindOverrides": {}
+  }
+}

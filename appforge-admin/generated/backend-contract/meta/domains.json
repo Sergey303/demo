@@ -1,0 +1,84 @@
+{
+  "Domains": [
+    {
+      "DomainKey": "campaigns",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "campaignstatuses",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "leads",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "leadstatuses",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "permissions",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "rolepermissions",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "roles",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "subscribers",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    },
+    {
+      "DomainKey": "subscriberstatuses",
+      "Files": [
+        "endpoints.json",
+        "types.json"
+      ]
+    }
+  ],
+  "SharedFiles": [
+    "capability-catalog.json",
+    "disabled-reasons.json",
+    "enums.json",
+    "errors.json",
+    "feature-catalog.json",
+    "policy-catalog.json",
+    "primitive-types.json",
+    "provider-catalog.json",
+    "realtime-shared.json",
+    "types.json"
+  ],
+  "MetaFiles": [
+    "build.json",
+    "domains.json",
+    "generator.json"
+  ]
+}

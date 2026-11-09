@@ -1,0 +1,100 @@
+{
+  "Errors": [
+    {
+      "ErrorFamilyKey": "CampaignApi",
+      "Codes": [
+        "campaign.idempotency_conflict",
+        "campaign.idempotency_key_invalid",
+        "campaign.idempotency_key_required",
+        "campaign.not_found",
+        "campaign.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "campaign.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "CampaignStatusApi",
+      "Codes": [
+        "campaign.status.idempotency_conflict",
+        "campaign.status.idempotency_key_invalid",
+        "campaign.status.idempotency_key_required",
+        "campaign.status.not_found",
+        "campaign.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "campaign.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "campaign.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "LeadApi",
+      "Codes": [
+        "lead.idempotency_conflict",
+        "lead.idempotency_key_invalid",
+        "lead.idempotency_key_required",
+        "lead.not_found",
+        "lead.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "lead.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    }
+  ]
+}

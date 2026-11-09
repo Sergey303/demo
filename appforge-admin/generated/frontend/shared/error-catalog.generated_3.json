@@ -1,0 +1,100 @@
+{
+  "Errors": [
+    {
+      "ErrorFamilyKey": "RolePermissionApi",
+      "Codes": [
+        "role.permission.idempotency_conflict",
+        "role.permission.idempotency_key_invalid",
+        "role.permission.idempotency_key_required",
+        "role.permission.not_found",
+        "role.permission.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "role.permission.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.permission.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "SubscriberApi",
+      "Codes": [
+        "subscriber.idempotency_conflict",
+        "subscriber.idempotency_key_invalid",
+        "subscriber.idempotency_key_required",
+        "subscriber.not_found",
+        "subscriber.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "subscriber.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "SubscriberStatusApi",
+      "Codes": [
+        "subscriber.status.idempotency_conflict",
+        "subscriber.status.idempotency_key_invalid",
+        "subscriber.status.idempotency_key_required",
+        "subscriber.status.not_found",
+        "subscriber.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "subscriber.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "subscriber.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    }
+  ]
+}

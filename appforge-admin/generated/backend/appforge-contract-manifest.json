@@ -1,0 +1,29 @@
+{
+  "kind": "appforge-contract-generation",
+  "version": 8,
+  "generationProvenance": {
+    "schemaVersion": 1,
+    "generator": "AppForge",
+    "contractManifestVersion": 8,
+    "generationInputSha256": "117126859653ae267c52b1d74260bbaff8f5e170e6ff195fd8e54ca2001d888f",
+    "inputs": [
+      {
+        "path": "/workspace/demo/appforge-admin/telegram-operations.md",
+        "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+      }
+    ]
+  },
+  "modelId": "Telegram Operations Admin",
+  "defaultMutationLock": null,
+  "webOutputLayout": null,
+  "repositoryOwnership": null,
+  "generationCapabilities": {},
+  "closedSets": [],
+  "dtoContracts": [],
+  "operations": [],
+  "hostPorts": [],
+  "workflowPages": [],
+  "adminResources": [],
+  "protocolProfiles": [],
+  "controlPlaneResources": []
+}

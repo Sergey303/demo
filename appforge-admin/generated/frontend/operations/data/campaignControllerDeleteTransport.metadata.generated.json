@@ -1,0 +1,81 @@
+{
+  "endpointKey": "delete:/api/campaigns/{id}",
+  "domainKey": "campaigns",
+  "kind": "mutation",
+  "controllerName": "CampaignController",
+  "methodName": "Delete",
+  "httpMethod": "DELETE",
+  "routeTemplate": "/api/campaigns/{id}",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "none",
+    "requestContentType": null,
+    "responseKind": "none",
+    "responseContentType": null,
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "idempotencyKey",
+        "bindingSource": "header",
+        "name": "idempotencyKey",
+        "wireName": "Idempotency-Key",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": "runtime-operation-id"
+      },
+      {
+        "inputKey": "id",
+        "bindingSource": "route",
+        "name": "id",
+        "wireName": "id",
+        "typeRef": "shared:guid",
+        "nullable": false,
+        "required": true,
+        "valueSource": null
+      }
+    ],
+    "requestBody": null,
+    "multipartParts": [],
+    "response": null
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "Campaign.Delete"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [
+    "campaign.idempotency_conflict",
+    "campaign.idempotency_key_invalid",
+    "campaign.idempotency_key_required",
+    "campaign.not_found"
+  ],
+  "invalidatesEndpointKeys": [
+    "get:/api/campaigns",
+    "get:/api/campaigns/lookup",
+    "get:/api/campaigns/options/{field}",
+    "get:/api/campaigns/suggest/{field}",
+    "get:/api/campaigns/{id}"
+  ],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": null,
+  "responseTypeRef": null,
+  "invalidatedByRealtimeEventKeys": []
+}

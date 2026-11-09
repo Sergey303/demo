@@ -1,0 +1,110 @@
+{
+  "get:/api/campaignstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "CampaignStatus.Read"
+    ]
+  },
+  "get:/api/leads": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Read"
+    ]
+  },
+  "get:/api/leads/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Read"
+    ]
+  },
+  "get:/api/leads/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Read"
+    ]
+  },
+  "get:/api/leads/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Read"
+    ]
+  },
+  "get:/api/leads/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Lead.Read"
+    ]
+  },
+  "get:/api/leadstatuses": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Read"
+    ]
+  },
+  "get:/api/leadstatuses/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Read"
+    ]
+  },
+  "get:/api/leadstatuses/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Read"
+    ]
+  },
+  "get:/api/leadstatuses/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Read"
+    ]
+  },
+  "get:/api/leadstatuses/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "LeadStatus.Read"
+    ]
+  },
+  "get:/api/permissions": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/permissions/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/permissions/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/permissions/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/permissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/rolepermissions": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Read"
+    ]
+  },
+  "get:/api/rolepermissions/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Read"
+    ]
+  }
+}

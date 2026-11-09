@@ -1,0 +1,80 @@
+{
+  "endpointKey": "post:/api/leadstatuses",
+  "domainKey": "leadstatuses",
+  "kind": "mutation",
+  "controllerName": "LeadStatusController",
+  "methodName": "Create",
+  "httpMethod": "POST",
+  "routeTemplate": "/api/leadstatuses",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "json",
+    "requestContentType": "application/json",
+    "responseKind": "json",
+    "responseContentType": "application/json",
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "idempotencyKey",
+        "bindingSource": "header",
+        "name": "idempotencyKey",
+        "wireName": "Idempotency-Key",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": "runtime-operation-id"
+      }
+    ],
+    "requestBody": {
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.CreateLeadStatusRequest",
+      "required": true
+    },
+    "multipartParts": [],
+    "response": {
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "typeRef": "Demo.TelegramOperations.Api.Contracts.LeadStatusDto",
+      "contentDisposition": null,
+      "fileNameSource": null
+    }
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "LeadStatus.Create"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [
+    "lead.status.idempotency_conflict",
+    "lead.status.idempotency_key_invalid",
+    "lead.status.idempotency_key_required",
+    "lead.status.validation_failed"
+  ],
+  "invalidatesEndpointKeys": [
+    "get:/api/leadstatuses",
+    "get:/api/leadstatuses/lookup",
+    "get:/api/leadstatuses/options/{field}",
+    "get:/api/leadstatuses/suggest/{field}",
+    "get:/api/leadstatuses/{id}"
+  ],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateLeadStatusRequest",
+  "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.LeadStatusDto",
+  "invalidatedByRealtimeEventKeys": []
+}

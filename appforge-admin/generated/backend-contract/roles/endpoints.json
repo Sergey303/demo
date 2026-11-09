@@ -1,0 +1,528 @@
+{
+  "DomainKey": "roles",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/roles",
+      "Kind": "query",
+      "ControllerName": "RoleController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/roles",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "List(ListRoleRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/roles",
+      "Kind": "mutation",
+      "ControllerName": "RoleController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/roles",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Create"
+      ],
+      "ErrorRefs": [
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/roles",
+        "get:/api/roles/lookup",
+        "get:/api/roles/options/{field}",
+        "get:/api/roles/suggest/{field}",
+        "get:/api/roles/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Create(CreateRoleRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-role-create",
+        "PayloadSchemaVersion": 2595037546549002,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/roles/lookup",
+      "Kind": "query",
+      "ControllerName": "RoleController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/roles/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupRoleRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Lookup(LookupRoleRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/roles/options/{field}",
+      "Kind": "query",
+      "ControllerName": "RoleController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/roles/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/roles/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "RoleController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/roles/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestRoleRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Suggest(String field, SuggestRoleRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/roles/{id}",
+      "Kind": "mutation",
+      "ControllerName": "RoleController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/roles/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Delete"
+      ],
+      "ErrorRefs": [
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/roles",
+        "get:/api/roles/lookup",
+        "get:/api/roles/options/{field}",
+        "get:/api/roles/suggest/{field}",
+        "get:/api/roles/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-role-delete",
+        "PayloadSchemaVersion": 3926672780670426,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/roles/{id}",
+      "Kind": "query",
+      "ControllerName": "RoleController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/roles/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Read"
+      ],
+      "ErrorRefs": [
+        "role.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/roles/{id}",
+      "Kind": "mutation",
+      "ControllerName": "RoleController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/roles/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest",
+      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Role.Update"
+      ],
+      "ErrorRefs": [
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.not_found",
+        "role.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/roles",
+        "get:/api/roles/lookup",
+        "get:/api/roles/options/{field}",
+        "get:/api/roles/suggest/{field}",
+        "get:/api/roles/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "roles"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "MethodClrSignature": "Update(Guid id, UpdateRoleRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-role-update",
+        "PayloadSchemaVersion": 1271262929869256,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

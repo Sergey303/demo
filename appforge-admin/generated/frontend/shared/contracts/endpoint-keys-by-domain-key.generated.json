@@ -1,0 +1,92 @@
+{
+  "campaigns": [
+    "get:/api/campaigns",
+    "post:/api/campaigns",
+    "get:/api/campaigns/lookup",
+    "get:/api/campaigns/options/{field}",
+    "get:/api/campaigns/suggest/{field}",
+    "delete:/api/campaigns/{id}",
+    "get:/api/campaigns/{id}",
+    "put:/api/campaigns/{id}"
+  ],
+  "campaignstatuses": [
+    "get:/api/campaignstatuses",
+    "post:/api/campaignstatuses",
+    "get:/api/campaignstatuses/lookup",
+    "get:/api/campaignstatuses/options/{field}",
+    "get:/api/campaignstatuses/suggest/{field}",
+    "delete:/api/campaignstatuses/{id}",
+    "get:/api/campaignstatuses/{id}",
+    "put:/api/campaignstatuses/{id}"
+  ],
+  "leads": [
+    "get:/api/leads",
+    "post:/api/leads",
+    "get:/api/leads/lookup",
+    "get:/api/leads/options/{field}",
+    "get:/api/leads/suggest/{field}",
+    "delete:/api/leads/{id}",
+    "get:/api/leads/{id}",
+    "put:/api/leads/{id}"
+  ],
+  "leadstatuses": [
+    "get:/api/leadstatuses",
+    "post:/api/leadstatuses",
+    "get:/api/leadstatuses/lookup",
+    "get:/api/leadstatuses/options/{field}",
+    "get:/api/leadstatuses/suggest/{field}",
+    "delete:/api/leadstatuses/{id}",
+    "get:/api/leadstatuses/{id}",
+    "put:/api/leadstatuses/{id}"
+  ],
+  "permissions": [
+    "get:/api/permissions",
+    "post:/api/permissions",
+    "get:/api/permissions/lookup",
+    "get:/api/permissions/options/{field}",
+    "get:/api/permissions/suggest/{field}",
+    "delete:/api/permissions/{id}",
+    "get:/api/permissions/{id}",
+    "put:/api/permissions/{id}"
+  ],
+  "rolepermissions": [
+    "get:/api/rolepermissions",
+    "post:/api/rolepermissions",
+    "get:/api/rolepermissions/lookup",
+    "get:/api/rolepermissions/options/{field}",
+    "get:/api/rolepermissions/suggest/{field}",
+    "delete:/api/rolepermissions/{id}",
+    "get:/api/rolepermissions/{id}",
+    "put:/api/rolepermissions/{id}"
+  ],
+  "roles": [
+    "get:/api/roles",
+    "post:/api/roles",
+    "get:/api/roles/lookup",
+    "get:/api/roles/options/{field}",
+    "get:/api/roles/suggest/{field}",
+    "delete:/api/roles/{id}",
+    "get:/api/roles/{id}",
+    "put:/api/roles/{id}"
+  ],
+  "subscribers": [
+    "get:/api/subscribers",
+    "post:/api/subscribers",
+    "get:/api/subscribers/lookup",
+    "get:/api/subscribers/options/{field}",
+    "get:/api/subscribers/suggest/{field}",
+    "delete:/api/subscribers/{id}",
+    "get:/api/subscribers/{id}",
+    "put:/api/subscribers/{id}"
+  ],
+  "subscriberstatuses": [
+    "get:/api/subscriberstatuses",
+    "post:/api/subscriberstatuses",
+    "get:/api/subscriberstatuses/lookup",
+    "get:/api/subscriberstatuses/options/{field}",
+    "get:/api/subscriberstatuses/suggest/{field}",
+    "delete:/api/subscriberstatuses/{id}",
+    "get:/api/subscriberstatuses/{id}",
+    "put:/api/subscriberstatuses/{id}"
+  ]
+}

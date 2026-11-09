@@ -12,6 +12,8 @@
 
 **For full-stack / product hiring:** explore the [React dashboard](bootstrap5/README.md) and [GosVet veterinary-clinic prototype](GosVet/README.md).
 
+**For rapid model-driven admin generation:** [Telegram Operations Admin](appforge-admin/README.md) is a deliberately bounded **AppForge-generated** .NET 10/EF/PostgreSQL + TypeScript + React/PrimeReact CRUD admin panel. [95-line subject spec](appforge-admin/telegram-operations.md) → [generated API](appforge-admin/generated/backend/Api/) → [generated React pages](appforge-admin/generated/frontend-app/src/generated-ts/subscribers/pages/SubscribersPage.generated.tsx). A local clean generation pass took **277 seconds**; not a benchmark or a live Telegram integration.
+
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
 ## Working Enterprise AI Platform — one user journey

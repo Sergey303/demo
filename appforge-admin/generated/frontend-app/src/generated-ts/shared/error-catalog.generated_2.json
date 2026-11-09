@@ -1,0 +1,100 @@
+{
+  "Errors": [
+    {
+      "ErrorFamilyKey": "LeadStatusApi",
+      "Codes": [
+        "lead.status.idempotency_conflict",
+        "lead.status.idempotency_key_invalid",
+        "lead.status.idempotency_key_required",
+        "lead.status.not_found",
+        "lead.status.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "lead.status.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "lead.status.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "PermissionApi",
+      "Codes": [
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.not_found",
+        "permission.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "permission.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "permission.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    },
+    {
+      "ErrorFamilyKey": "RoleApi",
+      "Codes": [
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.not_found",
+        "role.validation_failed"
+      ],
+      "Entries": [
+        {
+          "Code": "role.idempotency_conflict",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.idempotency_key_invalid",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.idempotency_key_required",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.not_found",
+          "Domain": "shared"
+        },
+        {
+          "Code": "role.validation_failed",
+          "Domain": "shared"
+        }
+      ]
+    }
+  ]
+}
