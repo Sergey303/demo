@@ -1,0 +1,36 @@
+name: Hiring review map
+
+on:
+  push:
+    paths:
+      - 'AI-CAPABILITIES.md'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'architecture/README.md'
+      - 'architecture/ENTERPRISE-AI-PLATFORM-PLAN.md'
+      - 'architecture/adr/003-retrieval-quality-cost.md'
+      - 'python-ai/README.md'
+      - 'scripts/check_hiring_review_links.py'
+      - '.github/workflows/hiring-review-map.yml'
+  pull_request:
+    paths:
+      - 'AI-CAPABILITIES.md'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'architecture/README.md'
+      - 'architecture/ENTERPRISE-AI-PLATFORM-PLAN.md'
+      - 'architecture/adr/003-retrieval-quality-cost.md'
+      - 'python-ai/README.md'
+      - 'scripts/check_hiring_review_links.py'
+      - '.github/workflows/hiring-review-map.yml'
+
+jobs:
+  review-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify employer-agent evidence links and known stale claims
+        run: python3 scripts/check_hiring_review_links.py
