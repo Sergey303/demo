@@ -407,3 +407,49 @@ def test_host_injects_both_source_ids_and_model_cannot_choose_them(monkeypatch):
         assert agent_actions.list_notes(dsn,"mcp-team","alice",target)==[]
     finally:
         delete(dsn,[a,b])
+
+
+def test_saved_note_read_rechecks_every_original_source_after_revoke(monkeypatch):
+    """Codex P1: a saved note derived from A+B must disappear if B is revoked."""
+    import psycopg
+    from fastapi.testclient import TestClient
+    from audio_access import grant_read
+    from search_api import app
+
+    dsn,token=setup(monkeypatch)
+    a=insert(dsn,"document","mcp-team","policy-a.md",
+             "Customers may request a refund within 30 days.",[.6,.8],subject="alice")
+    b=insert(dsn,"document","mcp-team","policy-b.md",
+             "A refund request may be submitted within thirty days.",[.6,.8],subject="alice")
+    headers={"Authorization":"Bearer "+token}
+    client=TestClient(app)
+    try:
+        proposal=agent_actions.propose(
+            dsn,"mcp-team","alice",str(a),
+            "Combined note: refund can be submitted within thirty days.",
+            source_job_ids=[str(a),str(b)])
+        saved=agent_actions.confirm(dsn,"mcp-team","alice",
+                                    proposal["approval_token"],"approve")
+        assert saved["status"]=="written"
+        before=client.get(f"/agent/notes/{a}",headers=headers)
+        assert before.status_code==200
+        assert len(before.json()["notes"])==1
+
+        with psycopg.connect(dsn) as db:
+            db.execute("DELETE FROM audio_read_grants WHERE job_id=%s",(b,))
+            db.commit()
+        revoked=client.get(f"/agent/notes/{a}",headers=headers)
+        assert revoked.status_code==200
+        assert revoked.json()=={"notes":[]}
+        assert agent_actions.list_notes(dsn,"mcp-team","alice",str(a))==[]
+
+        # Restored explicit grant can make it visible again.
+        grant_read(dsn,b,"mcp-team","alice")
+        restored=client.get(f"/agent/notes/{a}",headers=headers)
+        assert len(restored.json()["notes"])==1
+        with psycopg.connect(dsn) as db:
+            db.execute("DELETE FROM audio_read_grants WHERE job_id=%s",(a,))
+            db.commit()
+        assert client.get(f"/agent/notes/{a}",headers=headers).json()=={"notes":[]}
+    finally:
+        delete(dsn,[a,b])

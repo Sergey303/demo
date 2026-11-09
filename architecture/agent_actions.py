@@ -136,12 +136,24 @@ def list_notes(dsn: str, tenant: str, subject: str, job_id: str) -> list[dict]:
         rows = db.execute("""
             SELECT n.id::text, n.note_text
             FROM agent_review_notes n
+            JOIN agent_note_actions a ON a.id=n.approval_id
+              AND a.job_id=n.job_id AND a.tenant_id=n.tenant_id
+              AND a.subject_id=n.subject_id
             JOIN jobs j ON j.id=n.job_id AND j.tenant_id=n.tenant_id
             WHERE n.job_id=%s AND n.tenant_id=%s AND n.subject_id=%s
               AND j.status='done' AND j.kind IN ('document','audio')
-              AND EXISTS(SELECT 1 FROM audio_read_grants g
-                WHERE g.job_id=j.id AND g.tenant_id=j.tenant_id
-                  AND g.subject_id=%s)
+              -- A saved note may paraphrase BOTH prompt sources. If ANY
+              -- source loses its grant, hide the entire note on every read.
+              AND NOT EXISTS (
+                SELECT 1 FROM unnest(a.source_job_ids) AS src(job_id)
+                WHERE NOT EXISTS (
+                  SELECT 1 FROM jobs sj
+                  JOIN audio_read_grants g ON g.job_id=sj.id
+                    AND g.tenant_id=sj.tenant_id AND g.subject_id=n.subject_id
+                  WHERE sj.id=src.job_id AND sj.tenant_id=n.tenant_id
+                    AND sj.status='done' AND sj.kind IN ('document','audio')
+                )
+              )
             ORDER BY n.created_at DESC,n.id LIMIT 5
-        """,(job,tenant,subject,subject)).fetchall()
+        """,(job,tenant,subject)).fetchall()
     return [{"id":i,"note":note} for i,note in rows]
