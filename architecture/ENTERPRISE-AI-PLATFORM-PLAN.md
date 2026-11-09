@@ -1,33 +1,33 @@
-# Enterprise AI Platform — план объединения сервисов demo
+# Enterprise AI Platform — фактическое состояние и дальнейший план
 
-**Статус:** PLAN / единый продукт не реализован; EP-00 source inventory зафиксирован, проверки и первый вертикальный срез впереди.  
-**Дата среза:** 2026-11-08. **Исходная ветка:** `Sergey303/demo:main`; перед выполнением каждого пакета фиксировать актуальный SHA.  
+**Статус на 2026-11-09 (`main` @ `7485f93e3a06ece675c2e961058a0635c7ba6f53`):** интегрированный, **ограниченный локальный** путь EP-02–EP-05 реализован и проверен на реальных PostgreSQL/Whisper/ONNX/Chromium. EP-00 контрактная инвентаризация выполнена как историческая основа; EP-01 частично закрыт (готовность моделей не доказана); EP-06 длительная надёжность/trace ещё не принята. В части отдельных моделей есть Ollama/Qwen, но **встроенного LLM-generated answer в этот путь нет**. [Карта проверяемых AI-компетенций](../AI-CAPABILITIES.md) · [реальный E2E](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
+**Дата первоначального плана:** 2026-11-08. Перед каждой новой задачей фиксировать актуальный SHA `main` и не считать старый baseline текущим.
 **Цель:** превратить работающие изолированные примеры в **одну проверяемую Enterprise Knowledge & Meeting Evidence Platform** для демонстрации компетенций .NET Tech Lead / Solution Architect / AI Architect, а не создать ещё один учебный микросервис.
 
-**Главный результат (P0):** пользователь в одном React-интерфейсе, с одной удостоверенной идентичностью, загружает небольшой WAV и документ, видит долговременную обработку, находит разрешённые фрагменты с источниками/таймкодами, задаёт вопрос и получает корректный ответ или отказ. Перезапуск API/worker не теряет принятую работу. Всё подтверждено **реальным PostgreSQL + локальными моделями**, тестами и коротким видео. Ни один шаг не подменяется предзаписанным ответом.
+**Реализованный ограниченный P0-срез:** один React-интерфейс с **фиксированным доверенным локальным demo principal**, WAV + UTF-8 Markdown/.txt, долговременная обработка, SQL grant-first поиск и **дословная цитата или отказ**. Сквозной реальный PostgreSQL/Whisper/ONNX/Chromium-путь подтверждён на синтетических данных; проверка длительной устойчивости, обобщённые ответы LLM, production IAM и полноценная наблюдаемость — **не подтверждены**. Падение API с `Out of memory` под высокой нагрузкой RDC остаётся открытым эксплуатационным риском.
 
-## 1. Что уже есть и чего нет
+## 1. Текущее состояние (вместо первоначальной инвентаризации 2026-11-08)
 
-Это инвентаризация кода, **не** утверждение, что компоненты работают вместе в едином продукте.
+Дальнейшие пакеты в §4 отражают **историческую последовательность работ**, а не то, что EP-02–EP-05 ещё нужно реализовать. Для просмотра кода по требованиям вакансии используйте [матрицу компетенций](../AI-CAPABILITIES.md).
 
-| Слой | Реализованная основа в demo | Дефицит до единой платформы |
+| Слой | Что **реально интегрировано** на 2026-11-09 | Что **осталось вне этого пути** |
 | --- | --- | --- |
-| UI | [React/TS dashboard](../bootstrap5/src/App.tsx), [живое .NET demo](../hiring-demo/README.md), рабочий E2E/screencast | Нет экрана загрузки WAV/документов, истории AI-job, общего поиска/ответов и защищённой пользовательской сессии |
-| Долговременная очередь | [.NET Jobs API](../dotnet-outbox/src/Program.cs), [outbox](../dotnet-outbox/src/OutboxWorker.cs), [SQL 001–004](../dotnet-outbox/sql), идемпотентность | Текстовый `/jobs` остаётся публичным; нет единого контракта для документов и связанных событий обработки |
-| Аудио | `POST /audio-jobs`, [Python WAV worker](audio_worker.py), Whisper/ONNX, timestamped passages/vector, lease/fencing/heartbeat, [E2E](DURABLE-AUDIO.md) | Только маленький WAV; нет UI, объединённого authenticated search API и индекса по документам |
-| Аудиоправа | [HMAC identity + PostgreSQL grants](AUDIO-ACCESS.md), tenant/subject and revocation checks; реальный локальный E2E | Demo HMAC — не OIDC, нет общего authoritative policy для аудио и документов; DB-owning role/RLS не доказаны |
-| Документы/RAG | [FastAPI RAG](../python-ai/rag-docs/app/main.py), per-source ACL manifest, evidence / guarded / exact-copy claim modes, локальный Ollama | Документы пока читаются локально и индексируются отдельно; ACL manifest не синхронизирован с PostgreSQL grant/revocation; нет durable document ingestion |
-| Retrieval/quality | [Audio search + reranking](../python-ai/audio-search/README.md), [RAG eval](../python-ai/rag-docs/QUALITY-EVAL.md), [blind eval workflow](../python-ai/rag-docs/BLIND-EVAL.md) | Нет общего авторизованного поиска двух типов контента; независимых пользовательских метрик качества ещё нет |
-| Инструменты/агенты | [Restricted tool agent](../python-ai/tool-agent/README.md), approval boundary in prototype | Нет end-to-end агентной оркестрации и server-side approval; **не P0** |
-| Эксплуатация | `/health`, `/ready`, CI проверяет реальную .NET/PostgreSQL-цепочку | Нет сквозных trace IDs, SLO и одного повторяемого запуска всей AI-цепочки |
+| UI | [Enterprise AI page](../bootstrap5/src/pages/EnterpriseAiPage.tsx), [документы](../bootstrap5/src/pages/DocumentUploadCard.tsx), [поиск и ответ](../bootstrap5/src/pages/UnifiedSearchCard.tsx), [реальный E2E](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md) | Production login и долговременная история UI; локальный фиксированный principal вместо отдельной пользовательской сессии |
+| Долговременная очередь | [.NET Jobs API](../dotnet-outbox/src/Program.cs), [общий Python worker](audio_worker.py), [SQL 001–005](../dotnet-outbox/sql/005_document_jobs.sql), idempotency/lease/fencing; [PostgreSQL tests](tests/test_documents_postgres.py) | Legacy `/jobs` остаётся публичным для старого text demo; idempotency key глобален и не scoped по tenant |
+| Аудио | `POST /audio-jobs` → [WAV/Whisper worker](audio_worker.py) → PostgreSQL→[единый поиск](unified_search.py); [real model run](../enterprise-demo/EVIDENCE-2026-11-08.md) | Только ограниченный WAV; нет diarization, потокового ASR и оценки на реальных записях |
+| Авторизация | [подписанный токен](audio_access.py), [единые SQL grants](../dotnet-outbox/sql/004_audio_acl.sql) и grant-first [retrieval](unified_search.py), revoke/wrong-tenant [тесты](tests/test_answer_postgres.py) | Нет OIDC, DB RLS, реальных многопользовательских сессий и production audit |
+| Документы/LLM | [Durable UTF-8 ingestion](document_pipeline.py) и [EP-05 extractive answer](evidence_answer.py) подключены к общей PostgreSQL; [Ollama/Qwen RAG](../python-ai/rag-docs/app/guarded.py) существует **отдельно** | В основной платформе нет генерирующего LLM; standalone manifest ACL — не источник её грантов; нет PDF/DOCX |
+| Поиск/evaluation | [EP-04 SQL-granted cosine](unified_search.py) с двумя типами источников; [BM25/RRF](../python-ai/audio-search/hybrid.py), [reranking](../python-ai/audio-search/rerank.py), [RAG evaluation](../python-ai/rag-docs/QUALITY-EVAL.md) существуют отдельно | Не интегрированы reranker/hybrid в основной путь; независимая оценка relevancy/faithfulness и большие корпуса отсутствуют |
+| Агентные инструменты | [Ограниченный executor](../python-ai/tool-agent/app/agent.py) и [HTTP boundary](../python-ai/tool-agent/app/main.py) — **отдельный прототип** | Нет MCP, LLM planner/LangGraph, серверных одноразовых разрешений; не считать агентом платформы |
+| Эксплуатация | [Launcher](../enterprise-demo/run.py), [CI](../.github/workflows/hiring-demo.yml), [опт-ин model-backed Chromium](../bootstrap5/tests/enterprise-search-live.spec.ts) и SQL fault tests | Нет model-aware readiness, подтверждённого soak/SLO и полного OTel; наблюдавшийся поздний OOM не разобран |
 
 **Существующий успешный [Hiring Demo](../hiring-demo/README.md) не заменяем:** это быстрый вход для рекрутера. Новый маршрут `/dashboard/enterprise-ai` должен дополнять его, а не усложнять и ломать показ надёжности.
 
-## 2. Чёткая продуктовая история
+## 2. Продуктовый сценарий: что реализовано и что остаётся целью
 
 **Персона:** сотрудник организации, которому нужно проверить решения и обязательства после совещания; у его коллеги и другой организации не должно быть доступа к чужим данным.
 
-**Сценарий для собеседования (3–4 минуты):**
+**Исходный целевой сценарий для собеседования (2026-11-08; НЕ полный чеклист готовности):** пункты загрузки WAV/Markdown, grant-first поиска и дословного ответа выполнены в локальном демо; отдельно обозначенные readiness всех моделей, авторизованная выдача оригинала, production login, LLM-generated guarded/claim_checked и полный crash/soak остаются не реализованы или не приняты. [Реальный маршрут EP-05](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
 
 1. Пользователь A (tenant `alpha`) открывает AI Workspace и видит readiness API, PostgreSQL, audio-worker, retrieval и локальных моделей **по отдельности**; отсутствие сервиса видно как ошибка, без фальшивой зелёной панели.
 2. Загружает небольшой, заранее подготовленный **но не предварительно обработанный** WAV; получает `202`, job ID и действительные статусы `queued → done/failed` (в текущем API нет состояния `processing`; отдельную индикацию можно добавить только с серверным контрактом), выполняет повтор с тем же idempotency key без дубля.
@@ -40,7 +40,7 @@
 
 **Критерий успеха:** этот путь реально выполняется из одного UI в изолированном окружении и описан в `README` четырьмя ссылками: «запуск», «демо», «архитектура», «доказательства».
 
-## 3. Целевая архитектура без переписывания компонентов
+## 3. Исходная целевая архитектура (намеренно НЕ as-built)
 
 ```mermaid
 flowchart LR
@@ -89,7 +89,7 @@ flowchart LR
 | **EP-08 Security/prod deployment hardening** | P1 | OIDC, DB role separation, RLS decision, retention/delete, quotas, upload parser sandbox, object storage if justified, secrets management, audit, HTTPS/reverse proxy | EP-06 | Threat model + отрицательные e2e на tenancy/expiry/revocation, доказательства безопасного удаления |
 | **EP-09 Agent approvals/MCP** | P1 | `tool-agent` как строго ограниченный инструмент чтения; для записи серверное одноразовое подтверждение, immutable digest и audit; Planner только после стабильного P0 | EP-06/08 | Тест client `approved=true` не выдаёт полномочий; повтор/подмена/expiry безопасно отклоняются |
 
-**Оптимальный первый coding пакет:** **EP-00 + минимальная часть EP-01 и EP-02 на реальном аудио**, а не новый planner и не целая облачная инфраструктура. К первому PR полезнее всего получить working browser → audio job → stored transcript + timestamps на одной модели; document ingestion добавить следующей поставкой.
+**Историческая рекомендация 2026-11-08 (уже реализована):** EP-00 + часть EP-01/EP-02, затем документы EP-03 и поиск EP-04. На 2026-11-09 все EP-02–EP-05 имеют реальные ограниченные E2E; следующие приоритеты для работодателей с AI code-review agent описаны ниже, а не равны хронологическому порядку EP.
 
 ## 5. Dependency graph / вертикальные срезы
 
@@ -108,9 +108,9 @@ flowchart TD
   I --> J["EP-09 approved agents"]
 ```
 
-**Вертикальный срез A (первый показ):** authenticated WAV → PostgreSQL job/outbox → Whisper worker → persisted transcript → React timestamps.  
-**Срез B (единая платформа):** WAV + text-document → common grant-aware search → evidence-only answer → guarded LLM if available.  
-**Срез C (архитектурное доказательство):** revoke, wrong tenant, no-source refusal, API/worker crash, idempotent recovery → CI + видео + operational dashboard.
+**Вертикальный срез A (первый показ, выполнен):** authenticated WAV → PostgreSQL job/outbox → Whisper worker → persisted transcript → React timestamps.
+**Срез B (реализована extractive часть; guarded LLM — отдельно):** WAV + text-document → common grant-aware search → evidence-only answer → guarded LLM if available.
+**Срез C (частично: revoke/ACL доказаны, полный fault+soak/trace открыт):** revoke, wrong tenant, no-source refusal, API/worker crash, idempotent recovery → CI + видео + operational dashboard.
 
 **Не расширять P0:** PDF/OCR/DOCX, видеозвонки, streaming ASR, Kubernetes, Terraform, Redis/брокер, multi-GPU/vLLM, RLS/OIDC production, stateful LLM planner, multi-region, infinite history. Всё это отдельные решения, только если есть реальные требования и доказательства ценности.
 
@@ -177,9 +177,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 | Демонстрация красиво цитирует неправду | Синтаксическая цитата ≠ entailment; строгий refusal, human review, независимая слепая разметка отдельно |
 | Излишний scope (MCP/Cloud/Kubernetes) съедает время найма | P0 — вертикальная цепочка и видео, P1 — агент/инфра лишь после подтверждённой E2E |
 
-## 10. С чего начинать прямо сейчас
+## 10. Фактические результаты и обновлённые приоритеты найма
 
-**Сделано по EP-00 (статическая ревизия):** [фактический контракт и карта пробелов](enterprise-platform/contracts.md), основанные на `main` @ `f926104dbc7b5d13423492ba358ec3c832156f2d`. Выполнение тестов/миграций, live audio и независимая приёмка **ещё не проведены** — галочка EP-00 остаётся открытой.
+**Историческая база EP-00:** [первоначальный контракт и пробелы](enterprise-platform/contracts.md), основанные на SHA `f926104...` (не текущем). На момент его составления live-приёмки ещё не было; **после этого EP-02–EP-05 были действительно выполнены и проверены** ([актуальное доказательство](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md)). Галочка EP-00 как *полная* ревизия современного SHA остаётся открытой; исходный отчёт не следует цитировать как сегодняшнюю карту пробелов.
 
 **EP-02 принята в пределах малого синтетического WAV:** [реальный E2E, скриншот, видеозапись, команды и ограничения](../enterprise-demo/EVIDENCE-2026-11-08.md). Два браузерных прохода с Whisper+ONNX и PostgreSQL завершились успешно; дополнительные 8/8 PostgreSQL проверок worker/reclaim/lease-fencing — PASS. При последующем длительном запуске API завершился с `Out of memory`; требуется отдельная диагностика памяти/soak. Общую готовность Python-моделей `/ready` не заявляет; **EP-01 остаётся частично незакрытой**.
 
@@ -189,9 +189,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 **EP-05 (2026-11-09) принят в ограниченном extractive evidence-only режиме:** [дословные цитаты, точные диапазоны, refusal, реальные E2E/negative tests, видео](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). Ответ не генерирует новые предложения; цитирование не равно независимой семантической проверке. Продолжение LLM guarded/claim_checked нельзя выдавать за завершённую часть EP-05.
 
-**Следующая конкретная задача:** **EP-06 — независимый эксплуатационный приёмочный прогон и разбор ранее наблюдавшегося .NET Out of memory**: контролируемая RAM/CPU, crash/restart/retry, долговременная готовность worker/search и единый trace/evidence. Затем независимая оценка релевантности/faithfulness, а не преждевременные агенты или дополнительная БД.
+**Новый порядок по ожидаемому эффекту для агентного анализа работодателем (2026-11-09):** сначала [проверяемая карта AI-компетенций](../AI-CAPABILITIES.md) и устранение противоречий в README/AGENTS (документационная работа), затем **интегрированный Ollama/Qwen LLM с guarded JSON/citation contract**, затем **MCP/tool-calling workflow с безопасными разрешениями**, **hybrid BM25/RRF + cross-encoder reranking**, **единый AI evaluation**. Важно переиспользовать уже существующие отдельные примеры, а не начинать новые без потребности. После — **узкий EP-06**: диагностика позднего `.NET Out of memory`, recovery и trace. Это приоритизация для найма, не утверждение, что эти интеграции сделаны.
 
-**Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
+**Исторический первый milestone выполнен:** WAV и Markdown загружены из React, по ним работают реальный worker/ONNX/Whisper, общий grant-aware поиск и извлекающий дословные цитаты ответ. [Реальный 20-секундный Chromium E2E](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). Дальнейшие работы не должны выдавать отдельно существующие LLM/agent/reranker функции за уже подключённые.
 
 ---
 

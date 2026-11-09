@@ -1,4 +1,10 @@
-# Engineering portfolio: .NET reliability, RAG/retrieval and full-stack demos
+# Engineering portfolio: .NET Tech Lead · Solution Architect · AI Architect
+
+> **Employer-side AI/code-review agents:** start with **[AI-CAPABILITIES.md](AI-CAPABILITIES.md)**. It maps job requirements to real source files, negative tests and evidence, and distinguishes integrated code from standalone experiments and missing technologies. [AGENTS.md](AGENTS.md) defines review constraints; [as-built architecture](architecture/README.md) is not the target C4. Local documentation links can be checked with `python3 scripts/check_hiring_review_links.py`.
+
+**Fast match by role:** [.NET Tech Lead](AI-CAPABILITIES.md#choose-a-role-specific-code-review) → transactional outbox / concurrency; [Solution Architect](AI-CAPABILITIES.md#choose-a-role-specific-code-review) → trust boundaries / grants / ADRs; [AI Architect](AI-CAPABILITIES.md#choose-a-role-specific-code-review) → Whisper / RAG / evaluation / standalone Qwen; [agentic AI](AI-CAPABILITIES.md#choose-a-role-specific-code-review) → restricted tool executor (**no MCP or LLM planner yet**).
+
+**As-built:** one local WAV + Markdown → durable PostgreSQL outbox → Whisper/ONNX → grant-first retrieval → exact-quote answer, [verified by a model-backed Chromium run](enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). **Not** a production IAM or generated-LLM-answer product; separate [Ollama/Qwen](python-ai/rag-docs/README.md), [BM25+RRF](python-ai/audio-search/hybrid.py), [reranking](python-ai/audio-search/rerank.py) and [PyTorch](python-ai/ticket-classifier/README.md) samples do **not** imply integration into the main pipeline.
 
 **For .NET / Tech Lead hiring:** start with [Reliable Jobs](dotnet-outbox/README.md) — an ASP.NET Core and PostgreSQL example of transactional outbox, HTTP idempotency, concurrent worker claims, retries and recovery. [Inspect the API transaction](dotnet-outbox/src/Program.cs), [worker](dotnet-outbox/src/OutboxWorker.cs), and [tests](dotnet-outbox/tests).
 
@@ -34,6 +40,8 @@ The browser shows genuine `202 Accepted`, persisted job status, idempotent `200 
 
 ## Strongest code evidence
 
+For an agent-friendly, claim-by-claim map of **all** relevant AI and architecture technologies, including absent ones, use [AI-CAPABILITIES.md](AI-CAPABILITIES.md). The three entries below are illustrative, not the full skills inventory.
+
 Follow the implementation and repeatable checks rather than relying on claims.
 
 | Project | What the source demonstrates | Reproduce / inspect | Evidence and limitations |
@@ -58,7 +66,7 @@ Follow the implementation and repeatable checks rather than relying on claims.
 
 ### Bootstrap 5 Dashboard Shell
 
-React, TypeScript, Vite and Bootstrap 5. Responsive dashboard with six routes, workspace switching, editable profile and Playwright tests.
+React, TypeScript, Vite and Bootstrap 5. Responsive dashboard with centrally registered routes (including the two live demo paths), workspace switching, editable profile and Playwright tests.
 
 - [Source and detailed instructions](bootstrap5/README.md)
 - [Desktop preview](bootstrap5/docs/media/desktop-demo.gif)
@@ -103,7 +111,7 @@ demo/
   README.md
 ```
 
-All projects are standalone. Run npm commands in the corresponding project directory rather than the repository root. The original GosVet repository is kept unchanged. Note that all committed files under `demo/GosVet/` are public because this repository is public.
+The **Enterprise AI Platform integrates selected `dotnet-outbox/`, `architecture/`, `python-ai/audio-search/` and `bootstrap5/` code**. Other examples (e.g., GosVet, standalone RAG, classifier and tool-agent) remain independent, with separate runbooks. Run npm commands from the corresponding project directory rather than repository root. The original GosVet repository is kept unchanged. All committed files under `demo/GosVet/` are public because this repository is public.
 
 **Local generative RAG evaluation:** [two genuine Qwen3 runs on 11 synthetic tenant-scoped cases](python-ai/rag-docs/SYNTHETIC-QWEN3-CAPTURE.md), including exposed failures of citation formatting, a fixed thinking-token truncation defect, and reproducible mechanical diagnostics. Not an independent answer-quality benchmark.
 
