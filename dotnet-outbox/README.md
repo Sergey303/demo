@@ -124,6 +124,10 @@ On the isolated `demo-outbox-postgres` PostgreSQL 16.15 database, after the outb
 
 **Not yet proven:** service-process crash injection between claim and commit, mid-transaction PostgreSQL disconnection, terminal handler-retry exhaustion, and external side-effect deduplication. These are distinct from testing PostgreSQL primitives and require dedicated failure-injection tests.
 
+## Durable document ingestion (EP-03, opt-in)
+
+See [reproducible real Chromium + ONNX document evidence](../enterprise-demo/EVIDENCE-2026-11-09.md). Apply **`005_document_jobs.sql` after 001–004** before launching the current Python worker. Authenticated `POST /document-jobs` accepts bounded UTF-8 `.txt/.md` (up to 24 KiB), atomically creates the document job, outbox event and owner grant, and returns 202 before local ONNX indexing. Reusing the same key+payload returns 200 and same job; changes return 409. The worker shares audio's SQL leases and retry/fencing; grants use existing `audio_read_grants` as one job-grant table. Both audio and document `GET /jobs/{id}` replies omit embedding vectors at the server. This is a trusted-localhost portfolio demo, not production IAM, PDF/OCR or unified query service.
+
 ## Durable audio extension (opt-in)
 
 See [Durable audio runbook](../architecture/DURABLE-AUDIO.md) for the required `002_audio_jobs.sql` and `003_audio_leases.sql` migrations, WAV-only API contract, Python `SKIP LOCKED` worker, model dependencies and separate DB connection-string syntax. **Apply migration before starting the updated C# worker.** The extension passed live audio smoke and 8 PostgreSQL integration tests, including heartbeat recovery and four competing workers (2026-11-07); see the verification record in the linked runbook. It is not production ready.

@@ -179,24 +179,112 @@ app.MapPost("/audio-jobs", async (AudioJobRequest? body, HttpRequest request, Np
         : Results.Conflict(new { error = "Key already used for a different job." });
 });
 
+// EP-03: text documents reuse the durable jobs/outbox and existing tenant grants.
+// The trusted demo principal is issued server-side by the localhost proxy only.
+app.MapPost("/document-jobs", async (DocumentJobRequest? body, HttpRequest request,
+    NpgsqlDataSource db, CancellationToken ct) =>
+{
+    var identity = AudioIdentity.FromAuthorization(request.Headers.Authorization.ToString(),
+        Environment.GetEnvironmentVariable("DEMO_AUTH_SECRET"));
+    if (identity is null) return Results.Unauthorized();
+    if (body?.Filename is not { Length: >= 5 and <= 100 } filename ||
+        !(filename.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
+          filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase)) ||
+        filename.Any(c => !(char.IsAsciiLetterOrDigit(c) || c is '.' or '_' or '-')) ||
+        body.Text is not { Length: > 0 } content || string.IsNullOrWhiteSpace(content) ||
+        content.Contains('\0') || System.Text.Encoding.UTF8.GetByteCount(content) > 24_576)
+        return Results.BadRequest(new { error = "Expected UTF-8 .txt/.md text of 1–24 KiB and simple ASCII filename." });
+    if (!request.Headers.TryGetValue("Idempotency-Key", out var header) ||
+        header.Count != 1 || header.ToString() is not { Length: >= 10 and <= 128 } key ||
+        key.Any(c => c < 33 || c > 126))
+        return Results.BadRequest(new { error = "Provide one printable ASCII Idempotency-Key (10–128 chars)." });
+
+    var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+        System.Text.Encoding.UTF8.GetBytes(content)));
+    await using var conn = await db.OpenConnectionAsync(ct);
+    await using var tx = await conn.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+    await using (var insert = new NpgsqlCommand(
+        "INSERT INTO jobs(id,idempotency_key,payload_sha256,input,status,kind,document_name,tenant_id) " +
+        "VALUES (@id,@key,@hash,@text,'queued','document',@name,@tenant) " +
+        "ON CONFLICT(idempotency_key) DO NOTHING RETURNING id", conn, tx))
+    {
+        insert.Parameters.AddWithValue("id", Guid.NewGuid());
+        insert.Parameters.AddWithValue("key", key);
+        insert.Parameters.AddWithValue("hash", hash);
+        insert.Parameters.AddWithValue("text", content);
+        insert.Parameters.AddWithValue("name", filename);
+        insert.Parameters.AddWithValue("tenant", identity.Tenant);
+        if (await insert.ExecuteScalarAsync(ct) is Guid created)
+        {
+            await using var ev = new NpgsqlCommand(
+                "INSERT INTO outbox(id,job_id) VALUES (@id,@job)", conn, tx);
+            ev.Parameters.AddWithValue("id", Guid.NewGuid());
+            ev.Parameters.AddWithValue("job", created);
+            await ev.ExecuteNonQueryAsync(ct);
+            // Legacy table name; the same per-job grants now cover document and audio.
+            await using var grant = new NpgsqlCommand(
+                "INSERT INTO audio_read_grants(job_id,tenant_id,subject_id) VALUES (@id,@tenant,@subject)",
+                conn, tx);
+            grant.Parameters.AddWithValue("id", created);
+            grant.Parameters.AddWithValue("tenant", identity.Tenant);
+            grant.Parameters.AddWithValue("subject", identity.Subject);
+            await grant.ExecuteNonQueryAsync(ct);
+            await tx.CommitAsync(ct);
+            return Results.Accepted($"/jobs/{created}", new { id = created, status = "queued" });
+        }
+    }
+
+    await using var lookup = new NpgsqlCommand(
+        "SELECT j.id,j.payload_sha256,j.kind,j.document_name,j.tenant_id," +
+        " EXISTS(SELECT 1 FROM audio_read_grants g WHERE g.job_id=j.id " +
+        " AND g.tenant_id=j.tenant_id AND g.subject_id=@subject) " +
+        "FROM jobs j WHERE j.idempotency_key=@key", conn, tx);
+    lookup.Parameters.AddWithValue("key", key);
+    lookup.Parameters.AddWithValue("subject", identity.Subject);
+    await using var reader = await lookup.ExecuteReaderAsync(ct);
+    if (!await reader.ReadAsync(ct))
+        throw new InvalidOperationException("Conflicting document key was not found.");
+    var existingId = reader.GetGuid(0);
+    var same = reader.GetString(2) == "document" && reader.GetString(4) == identity.Tenant &&
+        reader.GetBoolean(5) && reader.GetString(1).Trim() == hash &&
+        !reader.IsDBNull(3) && reader.GetString(3) == filename;
+    await reader.DisposeAsync();
+    await tx.CommitAsync(ct);
+    return same ? Results.Ok(new { id = existingId, status = "already-accepted" })
+        : Results.Conflict(new { error = "Key already used for a different document or job." });
+}).WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(100_000));
+
 app.MapGet("/jobs/{id:guid}", async (Guid id, HttpRequest request, NpgsqlDataSource db, CancellationToken ct) =>
 {
     var identity = AudioIdentity.FromAuthorization(request.Headers.Authorization.ToString(),
         Environment.GetEnvironmentVariable("DEMO_AUTH_SECRET"));
     await using var conn = await db.OpenConnectionAsync(ct);
     await using var cmd = new NpgsqlCommand(
-        // Text demo stays public; audio requires verified identity and current grant.
+        // Text Hiring Demo stays public; audio and documents need current tenant grants.
         // A missing/invalid/revoked grant and nonexistent ID all return 404.
-        "SELECT j.status,j.result::text FROM jobs j WHERE j.id=@id AND (j.kind='text' OR " +
-        "(j.kind='audio' AND j.tenant_id=@tenant AND EXISTS(SELECT 1 FROM audio_read_grants g " +
+        "SELECT j.kind,j.status,j.result::text FROM jobs j WHERE j.id=@id AND (j.kind='text' OR " +
+        "(j.kind IN ('audio','document') AND j.tenant_id=@tenant AND EXISTS(SELECT 1 FROM audio_read_grants g " +
         "WHERE g.job_id=j.id AND g.tenant_id=j.tenant_id AND g.subject_id=@subject)))", conn);
     cmd.Parameters.AddWithValue("id", id);
     cmd.Parameters.AddWithValue("tenant", identity?.Tenant ?? "");
     cmd.Parameters.AddWithValue("subject", identity?.Subject ?? "");
     await using var reader = await cmd.ExecuteReaderAsync(ct);
     if (!await reader.ReadAsync(ct)) return Results.NotFound();
-    return Results.Ok(new { id, status = reader.GetString(0),
-        result = reader.IsDBNull(1) ? (System.Text.Json.JsonElement?)null : System.Text.Json.JsonDocument.Parse(reader.GetString(1)).RootElement.Clone() });
+    var kind = reader.GetString(0);
+    var status = reader.GetString(1);
+    System.Text.Json.Nodes.JsonNode? result = reader.IsDBNull(2)
+        ? null : System.Text.Json.Nodes.JsonNode.Parse(reader.GetString(2));
+    if ((kind is "audio" or "document") &&
+        result is System.Text.Json.Nodes.JsonObject obj &&
+        obj["segments"] is System.Text.Json.Nodes.JsonArray segments)
+    {
+        // Embeddings are retained in PostgreSQL for trusted search, never
+        // serialized to browsers (not even for an authorized transcript).
+        foreach (var segment in segments)
+            if (segment is System.Text.Json.Nodes.JsonObject item)
+                item.Remove("embedding");
+    }
+    return Results.Ok(new { id, status, result });
 });
 
 app.Run();
@@ -204,3 +292,5 @@ app.Run();
 public sealed record JobRequest(string Text);
 
 public sealed record AudioJobRequest(string Filename, string WavBase64);
+
+public sealed record DocumentJobRequest(string Filename, string Text);

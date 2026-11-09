@@ -44,7 +44,7 @@ test("real audio submission, stored Whisper evidence, retry and revoke", async (
   const unauthenticated = await request.get("http://127.0.0.1:5077/jobs/" + id);
   expect(unauthenticated.status()).toBe(404);
 
-  await page.getByRole("button", { name: "Повторить тот же запрос" }).click();
+  await page.getByRole("button", { name: "Повторить тот же запрос" }).first().click();
   await expect(page.getByTestId("enterprise-post")).toContainText("200 already-accepted");
   await expect(page.getByTestId("enterprise-job-id")).toHaveText(id);
   await page.waitForTimeout(1500);
@@ -60,7 +60,7 @@ test("real audio submission, stored Whisper evidence, retry and revoke", async (
     "-c", adminScript, id, path.join(repo, "architecture"),
   ], { cwd: repo, env: process.env, timeout: 15_000, stdio: "pipe" });
 
-  await page.getByRole("button", { name: "Перечитать из PostgreSQL" }).click();
+  await page.getByRole("button", { name: "Перечитать из PostgreSQL" }).first().click();
   await expect(page.getByRole("alert")).toContainText("доступ к ней отозван");
   await expect(page.getByTestId("enterprise-job-id")).toHaveCount(0);
   await expect(page.getByText(/Customers can request a refund/i)).toHaveCount(0);

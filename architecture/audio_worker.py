@@ -1,4 +1,4 @@
-"""Durable local AI worker for WAV jobs accepted by dotnet-outbox.
+"""Shared durable AI worker for WAV and UTF-8 document jobs accepted by dotnet-outbox.
 
 Worker claims a PostgreSQL lease in a short transaction, runs inference
 outside the transaction with a heartbeat, and fences finalization by lease token.
@@ -59,7 +59,7 @@ def search_result(result, question, encoder, k=3):
             for score,_,i in nlargest(k,scores)]
 
 
-def process_one(connection_string, *, processor=process_audio, lease_seconds=180, on_event=None, heartbeat=True):
+def process_one(connection_string, *, processor=process_audio, document_processor=None, lease_seconds=180, on_event=None, heartbeat=True):
     """Short claim and finalize transactions; token prevents stale result writes."""
     import psycopg
     from uuid import uuid4
@@ -78,9 +78,10 @@ def process_one(connection_string, *, processor=process_audio, lease_seconds=180
     with psycopg.connect(connection_string) as conn:
         with conn.transaction():
             with conn.cursor() as cur:
-                cur.execute("""SELECT o.id, o.job_id, j.audio_payload, j.audio_name
+                cur.execute("""SELECT o.id, o.job_id, j.kind, j.audio_payload, j.audio_name,
+                                      j.input, j.document_name
                                FROM outbox o JOIN jobs j ON j.id=o.job_id
-                               WHERE j.kind='audio' AND o.processed_at IS NULL
+                               WHERE j.kind IN ('audio','document') AND o.processed_at IS NULL
                                AND o.next_attempt_at <= now()
                                AND (o.lease_until IS NULL OR o.lease_until <= now())
                                ORDER BY o.next_attempt_at,o.created_at
@@ -88,7 +89,7 @@ def process_one(connection_string, *, processor=process_audio, lease_seconds=180
                 row = cur.fetchone()
                 if row is None:
                     return False
-                event_id, job_id, blob, name = row
+                event_id, job_id, kind, blob, name, document_text, document_name = row
                 cur.execute("""UPDATE outbox SET lease_token=%s,
                                lease_until=now()+(%s*interval '1 second') WHERE id=%s""",
                             (token, lease_seconds, event_id))
@@ -100,7 +101,13 @@ def process_one(connection_string, *, processor=process_audio, lease_seconds=180
         renewal.start()
     try:
         try:
-            result = processor(bytes(blob), name)
+            if kind == 'document':
+                if document_processor is None:
+                    from document_pipeline import process_document
+                    document_processor = process_document
+                result = document_processor(document_text, document_name)
+            else:
+                result = processor(bytes(blob), name)
             error = None
         except Exception as exc:
             result = None

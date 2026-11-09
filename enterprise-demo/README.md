@@ -1,20 +1,24 @@
 # Enterprise AI — WAV → durable job → Whisper → timestamped transcript
 
-**Status:** first EP-02 live model-backed browser route **verified 2026-11-08** on disposable PostgreSQL; longer-running resource reliability and production IAM are not established. Unlike the existing text [Hiring Demo](../hiring-demo/README.md), this page connects to the *real audio* endpoint and a separately running Python worker. See the [acceptance evidence with screenshot and real screencast](EVIDENCE-2026-11-08.md).
+**Status:** bounded local **EP-02 audio** and **EP-03 document** browser pipelines verified against disposable PostgreSQL and real local models. Longer-running resource reliability and production IAM are not established. The same page serves real WAV and UTF-8 document ingestion through a shared `jobs`/`outbox`/lease worker, unlike the separate text [Hiring Demo](../hiring-demo/README.md). See [EP-02 WAV evidence](EVIDENCE-2026-11-08.md) and [EP-03 document evidence](EVIDENCE-2026-11-09.md).
 
 [![Real Chromium + Whisper result](media/enterprise-ai-real-whisper.png)](EVIDENCE-2026-11-08.md)
 
-[Watch the recorded real browser run (MP4)](media/enterprise-ai-real-whisper.mp4)
+[Watch real audio E2E (MP4)](media/enterprise-ai-real-whisper.mp4) · [Watch real document E2E (MP4)](media/enterprise-document-live.mp4) · [Document screenshot](media/enterprise-document-live.png)
 
 ## User journey
 
-Open `http://127.0.0.1:4173/dashboard/enterprise-ai`. Choose a **small local WAV** (44–262,144 bytes), submit it and observe an actual `202 Accepted` and UUID. A separately running Python worker takes the job from PostgreSQL, runs local Whisper/ONNX inference and stores a timestamped transcript. The page polls the real `GET /jobs/{id}`, showing `queued`, `done` or `failed`; no "processing" state is invented. Repeating the same file and key should return `200 already-accepted` with the **same UUID**. The UI discards embedding vectors from the response. **Known limitation:** the existing `GET /jobs/{id}` still serializes authorized audio embeddings to the browser over HTTP; a narrower API-side transcript projection is needed before production use or larger documents.
+Open `http://127.0.0.1:4173/dashboard/enterprise-ai`. Choose a **small local WAV** (44–262,144 bytes), submit it and observe an actual `202 Accepted` and UUID. A separately running Python worker takes the job from PostgreSQL, runs local Whisper/ONNX inference and stores a timestamped transcript. The page polls the real `GET /jobs/{id}`, showing `queued`, `done` or `failed`; no "processing" state is invented. Repeating the same file and key should return `200 already-accepted` with the **same UUID**. The API now **removes embedding vectors** from authorized `GET /jobs/{id}` responses for both WAV and document jobs, retaining them only in PostgreSQL for later search.
 
 **Security boundary:** The browser connects only to the localhost Vite `/enterprise-api` reverse proxy; it **does not** receive or generate the bearer token. On every proxied request Vite creates a 5-minute HMAC-signed demo identity for the *fixed* `tenant=demo-team, sub=interviewer` using the server-side `DEMO_AUTH_SECRET`, overwriting any browser-supplied Authorization. If secret is missing/short, the enterprise proxy fails with 503. This grants **every browser able to reach the Vite server** the same fixed demo identity: use on **trusted localhost only**, never expose it or use with real sensitive data. This is **not login, OIDC or per-user production authorization**. The existing `/demo-api` proxy remains unchanged.
 
+### Document ingestion — EP-03
+
+On the same page, upload a real UTF-8 `.txt` or `.md` document (1 byte–24 KiB, simple ASCII filename). `POST /document-jobs` returns 202 after atomically saving source text, filename, tenant grant and outbox event; the **same Python worker** creates local BGE-small ONNX chunk embeddings and the browser reads stored evidence with source and character ranges. Same-file/key retry returns 200, different content with the same key 409, and revoked/wrong-tenant reads return 404. See the [actual document video, screenshot, PostgreSQL and E2E proof](EVIDENCE-2026-11-09.md). No PDF/OCR, unified search, LLM, or production IAM is implied.
+
 ## Prerequisites
 
-- A disposable `reliable_jobs` PostgreSQL database, with all four migrations `dotnet-outbox/sql/001_init.sql` → `004_audio_acl.sql`. Compose initializes **only 001 on a new volume**. The launcher checks schema read-only and **never** creates, alters or drops a DB.
+- A disposable `reliable_jobs` PostgreSQL database, with all five migrations `dotnet-outbox/sql/001_init.sql` → `005_document_jobs.sql`. Compose initializes **only 001 on a new volume**. The launcher checks schema read-only and **never** creates, alters or drops a DB.
 - .NET 10 SDK; Node version supported by `bootstrap5/package.json`; Python with dependencies from `architecture/audio-requirements.txt`. Real inference also needs FFmpeg and cached `faster-whisper` + `fastembed` weights. The launcher never installs dependencies or downloads weights itself; **the underlying inference libraries may download model weights on first processing if they are not already cached**, so pre-warm/cache them deliberately if disk or networking is restricted.
 - A secret of at least 32 UTF-8 bytes, shared by API and Vite. Set it **in the terminal**, not in `.env` committed files or any `VITE_*` frontend variable.
 
@@ -25,7 +29,7 @@ At the repo root, on the machine that has Docker:
 ```bash
 docker compose -p demo-outbox -f dotnet-outbox/compose.yaml up -d --wait
 # Use this only on the isolated demo DB; 001 is initialized by Compose for NEW volumes.
-for migration in 002_audio_jobs.sql 003_audio_leases.sql 004_audio_acl.sql; do
+for migration in 002_audio_jobs.sql 003_audio_leases.sql 004_audio_acl.sql 005_document_jobs.sql; do
   docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs < "dotnet-outbox/sql/$migration"
 done
 ```
@@ -84,4 +88,4 @@ On `rdc-project` from an isolated worktree based on `main` @ `5e0192ab3995443558
 
 ### Actual model-backed acceptance and limits
 
-**Two successful real browser/Whisper runs**, eight passing PostgreSQL worker resilience tests, saved [video/screenshot](EVIDENCE-2026-11-08.md), including idempotency and revocation after genuine inference. These demonstrate the *bounded local WAV slice* and do not prove workload scalability, general speech accuracy, uptime or production readiness. A later third browser attempt encountered an .NET `Out of memory` exit after long-running high-pressure RDC operation; the launcher correctly reported service failure. See the full [evidence and reproduction instructions](EVIDENCE-2026-11-08.md) and [contract baseline](../architecture/enterprise-platform/contracts.md). The later document ingestion, unified authorized search, evidence-only answers and local LLM remain **EP-03–EP-06 future work**.
+**Two successful real browser/Whisper runs**, eight passing PostgreSQL worker resilience tests, saved [video/screenshot](EVIDENCE-2026-11-08.md), including idempotency and revocation after genuine inference. These demonstrate the *bounded local WAV slice* and do not prove workload scalability, general speech accuracy, uptime or production readiness. A later third browser attempt encountered an .NET `Out of memory` exit after long-running high-pressure RDC operation; the launcher correctly reported service failure. See the full [evidence and reproduction instructions](EVIDENCE-2026-11-08.md) and [contract baseline](../architecture/enterprise-platform/contracts.md). **EP-03 is now verified for a bounded synthetic text document**, with real browser→.NET→PostgreSQL→Python ONNX processing and audio regression ([evidence](EVIDENCE-2026-11-09.md)). Unified authorized search, evidence-only answers and local LLM remain **EP-04–EP-06 future work**.

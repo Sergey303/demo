@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DocumentUploadCard } from "./DocumentUploadCard";
 
 type JobStatus = "queued" | "done" | "failed";
 type Segment = { source: string; start: number; end: number; text: string };
@@ -215,8 +216,8 @@ export function EnterpriseAiPage() {
     <section className="container-fluid p-0" data-testid="enterprise-ai">
       <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
         <div>
-          <span className="text-uppercase small fw-bold text-primary">Enterprise AI · реальный audio pipeline</span>
-          <h1 className="display-6 fw-semibold mt-2 mb-2">Аудио → доказательства</h1>
+          <span className="text-uppercase small fw-bold text-primary">Enterprise AI · audio &amp; document pipeline</span>
+          <h1 className="display-6 fw-semibold mt-2 mb-2">Аудио и документы → доказательства</h1>
           <p className="text-secondary mb-0">React · ASP.NET Core · PostgreSQL outbox · Python Whisper · ONNX</p>
         </div>
         <span className={"badge fs-6 " + (ready === "ready" ? "text-bg-success" :
@@ -329,13 +330,14 @@ export function EnterpriseAiPage() {
                 Браузер не выбирает tenant и не получает bearer. Это демонстрационный,
                 а не production-вход.</p>
               <p className="small mb-0 text-secondary">
-                Источник отображается как обычный текст. Векторы embeddings не выводятся.
+                Источник отображается как обычный текст. Векторы embeddings не передаются из API в браузер.
                 Отзыв доступа проверяется на каждом серверном чтении.
               </p>
             </div>
           </div>
         </div>
       </div>
+      <DocumentUploadCard />
     </section>
   );
 }

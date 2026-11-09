@@ -75,7 +75,7 @@ def grant_read(dsn, job_id, tenant, subject):
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             cur.execute("""INSERT INTO audio_read_grants(job_id,tenant_id,subject_id)
-                           SELECT id,%s,%s FROM jobs WHERE id=%s AND kind='audio'
+                           SELECT id,%s,%s FROM jobs WHERE id=%s AND kind IN ('audio','document')
                              AND tenant_id=%s
                            ON CONFLICT DO NOTHING RETURNING job_id""",
                         (tenant,subject,job_id,tenant))
@@ -106,7 +106,7 @@ def assign_tenant(dsn, job_id, tenant):
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             cur.execute("""UPDATE jobs SET tenant_id=%s WHERE id=%s
-                           AND kind='audio' AND tenant_id='unassigned'
+                           AND kind IN ('audio','document') AND tenant_id='unassigned'
                            RETURNING id""", (tenant,job_id))
             if cur.fetchone() is None:
                 raise AccessDenied('Access denied')
