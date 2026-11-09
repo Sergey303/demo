@@ -5,4 +5,5 @@ numpy>=1.26,<3
 pytest>=8,<10
 fastapi>=0.115,<1
 httpx>=0.27,<1  # bounded, loopback-only Ollama transport; also TestClient
+mcp>=2.3,<2.4  # official Python MCP v2 SDK for stdio server/client tools
 uvicorn>=0.30,<1
