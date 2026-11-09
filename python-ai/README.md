@@ -22,6 +22,6 @@ Each subproject has specific run and test instructions. Review implementations a
 
 ## Validation and packaging
 
-Dockerfiles provide reproducible build entry points, but image builds and all model-backed paths have not been verified in every environment. GitHub Actions has not been enabled: repository push credentials do not currently permit publishing workflow files. Tests can be run from each subproject with `python -m pytest -q tests` after installing its requirements.
+Dockerfiles provide reproducible build entry points, but image builds and all model-backed paths have **not** been verified in every environment. **GitHub Actions is enabled** for selected Python projects [rag-docs, ticket-classifier and tool-agent](../.github/workflows/python-ai.yml); the integrated Enterprise AI path is checked separately by the [hiring-demo workflow](../.github/workflows/hiring-demo.yml), with real-model browser E2E deliberately opt-in. Tests can also be run per project with `python -m pytest -q tests` after installing its requirements. See the [reviewer capabilities map](../AI-CAPABILITIES.md) for integrated vs standalone boundaries.
 
 **Retrieval access controls:** the audio evidence API uses current PostgreSQL grants, while standalone document RAG reloads an operator-managed per-source ACL file for each request. Both validate signed principal claims. These are narrow demos, not production OIDC/RLS implementations.

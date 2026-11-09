@@ -86,9 +86,9 @@ python -m pytest -q architecture/tests
 
 The generated JSON is intentionally local and should not be committed as authoritative evidence without recording environment, dates and model versions. `ELIGIBLE_FOR_FURTHER_REVIEW` means **not yet approved**: statistical uncertainty, security, per-tenant access, cost and end-to-end user outcomes are additional gates. See [ADR-003](adr/003-retrieval-quality-cost.md).
 
-## Runnable cross-project slice: actual ASR → durable text receipt → semantic search
+## Historical standalone CLI (not EP-02): ASR → durable text receipt → semantic search
 
-[`evidence_flow.py`](evidence_flow.py) connects **existing actual interfaces**, rather than simulating the architecture on slides. It locally runs `faster-whisper` on an audio file, sends the timestamped transcript to `POST /jobs` with a stable SHA-256-derived idempotency key, waits for the .NET outbox worker's persisted digest to match, then retrieves timestamped semantic hits with `fastembed` neural embeddings. The runner rejects empty/oversized transcripts and refuses remote API destinations. [Contract tests](tests/test_evidence_flow.py) cover deterministic repeat submission, no-speech rejection, digest mismatch, URL restrictions and request bounds.
+**This older independent experiment is not the currently integrated EP-02→EP-05 path.** [`evidence_flow.py`](evidence_flow.py) connects actual pre-existing interfaces without simulating them on slides. It locally runs `faster-whisper` on an audio file, sends the timestamped transcript to `POST /jobs` with a stable SHA-256-derived idempotency key, waits for the .NET outbox worker's persisted digest to match, then retrieves timestamped semantic hits with `fastembed` neural embeddings. The runner rejects empty/oversized transcripts and refuses remote API destinations. [Contract tests](tests/test_evidence_flow.py) cover deterministic repeat submission, no-speech rejection, digest mismatch, URL restrictions and request bounds.
 
 ```bash
 # In one terminal, from dotnet-outbox/, with the demo-only PostgreSQL available:
@@ -102,9 +102,9 @@ python architecture/evidence_flow.py /tmp/evidence-sample.wav --question 'How lo
 python -m pytest -q architecture/tests
 ```
 
-**Critical trust/durability boundary:** ASR is performed **before** acceptance into the durable job. If the process dies during ASR, the accepted-work guarantee does not apply to that audio. The .NET worker verifies/persists the *transcript text* as its existing deterministic word-count/SHA job; it does **not** run Whisper, maintain a shared index, or commit vector embeddings transactionally. The transient search index exists only during this CLI invocation. This slice demonstrates real interface interoperability, not end-to-end durable AI ingestion, multi-tenant authorization, or production SLOs.
+**Critical trust/durability boundary of this historical CLI only:** ASR is performed **before** acceptance into its durable *text* job. The newer [EP-02 WAV workflow](../enterprise-demo/README.md) accepts audio **before** Whisper inference. If the process dies during ASR, the accepted-work guarantee does not apply to that audio. The .NET worker verifies/persists the *transcript text* as its existing deterministic word-count/SHA job; it does **not** run Whisper, maintain a shared index, or commit vector embeddings transactionally. The transient search index exists only during this CLI invocation. This slice demonstrates real interface interoperability, not end-to-end durable AI ingestion, multi-tenant authorization, or production SLOs.
 
-**Evidence status (2026-11-06):** 10/10 contract/decision tests passed. A new live PostgreSQL + model run was **blocked** by temporary DNS failure for `demo-outbox-postgres` in RDC; do not count the cross-project E2E as validated until the database is reachable again. The individual PostgreSQL Outbox E2E was previously validated on 2026-11-05 (separate run).
+**Historical evidence for this standalone CLI (2026-11-06):** 10/10 contract/decision tests passed, but its dedicated live run was blocked by temporary RDC Docker DNS failure. This is **not** the later [successful full integrated EP-05 E2E](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). Do not transfer results between these different code paths.
 
 ## Tenant-aware audio access
 
