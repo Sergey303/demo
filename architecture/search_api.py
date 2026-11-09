@@ -1,13 +1,13 @@
-"""Local-only signed-identity semantic search API for EP-04.
+"""Local-only signed search with exact citations and optional Qwen generation.
 
-Run with the same trusted secret as .NET and the Vite server. Not production
-OIDC, not a public endpoint and not a replacement for PostgreSQL authorization.
-No cloud LLM or generative "answers" are invoked.
+Not production IAM. Ollama requests are loopback-only and always use the
+same PostgreSQL tenant/subject ACL as the extractive endpoint.
 """
 from __future__ import annotations
 
 import logging
 import os
+from typing import Literal
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import JSONResponse
@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from audio_access import AccessDenied, verify_token
 from unified_search import retrieve_authorized
 from evidence_answer import evidence_answer
+from guarded_generation import generated_answer, ModelUnavailable
 
 app = FastAPI(
     title="Portfolio authorized evidence search",
@@ -27,6 +28,10 @@ class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=500)
     top_k: int = Field(default=3, ge=1, le=5)
+
+
+class AnswerRequest(SearchRequest):
+    mode: Literal["evidence", "generated"] = "evidence"
 
 
 @app.middleware("http")
@@ -86,14 +91,35 @@ def search(body: SearchRequest, authorization: str | None = Header(default=None)
 
 
 @app.post("/answer")
-def answer(body: SearchRequest, authorization: str | None = Header(default=None)):
-    """Re-read current PostgreSQL ACL for EVERY answer request.
+def answer(body: AnswerRequest, authorization: str | None = Header(default=None)):
+    """Default evidence-only; optional generated answer shares the same ACL.
 
-    Only a deterministic exact quote from this request's authorized hits can
-    be returned; the client cannot submit its own citations or source text.
-    No LLM is run, and citation provenance is NOT semantic entailment.
+    Citations validate provenance, NOT semantic entailment or factual truth.
     """
-    return evidence_answer(_authorized_retrieval(body, authorization), question=body.question)
+    retrieval = _authorized_retrieval(body, authorization)
+    if body.mode == "evidence":
+        return evidence_answer(retrieval, question=body.question)
+
+    try:
+        tenant, subject = verify_token(authorization.removeprefix("Bearer "))
+    except AccessDenied:
+        raise HTTPException(status_code=401, detail="Unauthorized") from None
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Search unavailable") from None
+
+    dsn = os.environ.get("JOBS_TEST_CONNECTION", "")
+    try:
+        response = generated_answer(retrieval, body.question, dsn, tenant, subject)
+        # A short-lived signed token may expire during CPU inference.
+        verify_token(authorization.removeprefix("Bearer "))
+        return response
+    except AccessDenied:
+        raise HTTPException(status_code=401, detail="Unauthorized") from None
+    except ModelUnavailable:
+        raise HTTPException(status_code=503, detail="Local LLM unavailable") from None
+    except Exception as exc:
+        logging.warning("Optional generation failed: %s", type(exc).__name__)
+        raise HTTPException(status_code=503, detail="Generation unavailable") from None
 
 
 if __name__ == "__main__":

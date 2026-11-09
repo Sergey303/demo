@@ -43,23 +43,27 @@ function validateSearch(value: unknown): { hits: Evidence[]; abstained: boolean 
 
 type ExactCitation = Omit<Evidence, "text"> & { quote: string };
 type EvidenceAnswer = {
+  mode: "evidence" | "generated";
+  model?: string;
   answer: string;
   abstained: boolean;
   reason: string;
   citations: ExactCitation[];
 };
 
-function validateAnswer(value: unknown): EvidenceAnswer {
+function validateAnswer(value: unknown, expectedMode: "evidence" | "generated" = "evidence"): EvidenceAnswer {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new Error("Некорректный доказательный ответ");
   const row = value as Record<string, unknown>;
-  if (row.mode !== "evidence" || row.semantic_verified !== false ||
+  if (row.mode !== expectedMode || row.semantic_verified !== false ||
+      (expectedMode === "generated" && row.model !== "qwen3:8b") ||
       typeof row.answer !== "string" || typeof row.abstained !== "boolean" ||
       typeof row.reason !== "string" || !Array.isArray(row.citations) ||
       row.citations.length > 2) throw new Error("Некорректный контракт ответа");
   if (row.abstained) {
     if (row.citations.length !== 0) throw new Error("Цитаты при отказе запрещены");
-    return { answer: row.answer, abstained: true, reason: row.reason, citations: [] };
+    return { mode: expectedMode, model: expectedMode === "generated" ? "qwen3:8b" : undefined,
+      answer: row.answer, abstained: true, reason: row.reason, citations: [] };
   }
   if (row.citations.length === 0) throw new Error("Ответ без проверяемых цитат");
   const citations = row.citations.map((raw: unknown): ExactCitation => {
@@ -82,9 +86,12 @@ function validateAnswer(value: unknown): EvidenceAnswer {
         item.char_start < 0 || item.char_end <= item.char_start) throw new Error("Нет диапазона символов");
     return { ...base, char_start: item.char_start, char_end: item.char_end };
   });
-  if (row.answer !== citations.map(c => c.quote).join("\n"))
+  if (expectedMode === "evidence" && row.answer !== citations.map(c => c.quote).join("\n"))
     throw new Error("Ответ не совпадает с цитатами");
-  return { answer: row.answer, abstained: false, reason: row.reason, citations };
+  if (expectedMode === "generated" && (!row.answer.trim() || row.answer.length > 1000))
+    throw new Error("Неправильный сгенерированный ответ");
+  return { mode: expectedMode, model: expectedMode === "generated" ? "qwen3:8b" : undefined,
+    answer: row.answer, abstained: false, reason: row.reason, citations };
 }
 
 export function UnifiedSearchCard() {
@@ -114,7 +121,7 @@ export function UnifiedSearchCard() {
     setLoading(false);
   }
 
-  async function search(mode: "search" | "answer" = "search") {
+  async function search(mode: "search" | "answer" | "generated" = "search") {
     const query = question.trim();
     if (!query || query.length > 500 || loading) return;
     generation.current++;
@@ -128,23 +135,27 @@ export function UnifiedSearchCard() {
     setExactAnswer(null);
     setError(null);
     try {
-      const response = await fetch("/enterprise-search/" + mode, {
+      const response = await fetch("/enterprise-search/" + (mode === "generated" ? "answer" : mode), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: query, top_k: 5 }),
+        body: JSON.stringify(mode === "generated"
+          ? { question: query, top_k: 5, mode: "generated" }
+          : { question: query, top_k: 5 }),
         signal: controller.signal,
         cache: "no-store",
       });
       if (version !== generation.current) return;
       if (!response.ok) {
         if (response.status === 401) throw new Error("Демо-идентичность не подтверждена (401).");
-        if (response.status === 503) throw new Error("Сервис поиска временно недоступен (503).");
+        if (response.status === 503) throw new Error(mode === "generated"
+          ? "Локальная модель Ollama временно недоступна или занята (503). Дословный поиск остаётся доступен."
+          : "Сервис поиска временно недоступен (503).");
         throw new Error("Ошибка поиска: HTTP " + response.status);
       }
       const payload = await response.json() as unknown;
       if (version !== generation.current) return;
-      if (mode === "answer") {
-        setExactAnswer(validateAnswer(payload));
+      if (mode === "answer" || mode === "generated") {
+        setExactAnswer(validateAnswer(payload, mode === "generated" ? "generated" : "evidence"));
       } else {
         const result = validateSearch(payload);
         setHits(result.hits);
@@ -167,7 +178,7 @@ export function UnifiedSearchCard() {
       <p className="text-secondary small">
         Один авторизованный SQL-отбор по tenant и грантам → один ONNX-эмбеддинг вопроса →
         точный косинусный top-5 по уже сохранённым фрагментам. Никаких выдуманных ответов:
-        это поиск цитат, а не генерация текста.
+        режим дословных цитат работает без LLM, а генеративный ответ Qwen3 — опционален.
       </p>
       <form onSubmit={event => { event.preventDefault(); void search(); }} className="d-flex flex-wrap gap-2 align-items-end">
         <div className="flex-grow-1">
@@ -184,18 +195,29 @@ export function UnifiedSearchCard() {
           disabled={loading || !question.trim()} onClick={() => void search("answer")}>
           Ответить дословными цитатами
         </button>
+        <button type="button" className="btn btn-outline-secondary"
+          disabled={loading || !question.trim()} onClick={() => void search("generated")}>
+          Сформировать ответ Qwen3 (локально)
+        </button>
       </form>
       {error && <div role="alert" className="alert alert-danger mt-3 mb-0">{error}</div>}
       {exactAnswer && <div className="mt-3" data-testid="enterprise-evidence-answer">
         {exactAnswer.abstained
           ? <div className="alert alert-secondary" data-testid="answer-abstained">
-              Недостаточно разрешённых доказательств для ответа.
+              {exactAnswer.mode === "generated" && exactAnswer.reason === "model_abstained"
+                ? "Qwen3 отказалась отвечать по предоставленным источникам."
+                : exactAnswer.mode === "generated" && exactAnswer.reason === "invalid_model_output"
+                ? "Ответ модели не прошёл проверку формата или цитат."
+                : "Недостаточно разрешённых доказательств для ответа."}
             </div>
           : <div data-testid="answer-result">
-              <h3 className="h6">Дословный ответ из разрешённых источников</h3>
+              <h3 className="h6">{exactAnswer.mode === "generated"
+                ? "Ответ локальной Qwen3 с авторизованными цитатами"
+                : "Дословный ответ из разрешённых источников"}</h3>
               <p className="small text-secondary">
-                Только точные выдержки, без генерации LLM. Цитирование подтверждает
-                происхождение текста, но не гарантирует, что он логически отвечает на вопрос.
+                {exactAnswer.mode === "generated"
+                  ? "Qwen3 формирует текст по разрешённым выдержкам. Сервер проверяет ID цитат и повторно проверяет права. Это НЕ доказывает истинность или логическую обоснованность ответа."
+                  : "Только точные выдержки, без генерации LLM. Цитирование подтверждает происхождение текста, но не гарантирует, что он логически отвечает на вопрос."}
               </p>
               <blockquote className="border-start border-3 ps-3" style={{ whiteSpace: "pre-wrap" }}
                 data-testid="answer-text">{exactAnswer.answer}</blockquote>

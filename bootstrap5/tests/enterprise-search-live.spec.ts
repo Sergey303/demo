@@ -74,6 +74,20 @@ test("real cross-modal search returns document and audio then enforces live revo
   await page.screenshot({path:info.outputPath("enterprise-answer-real.png"),fullPage:true});
   await page.waitForTimeout(1500);
 
+  if (process.env.LIVE_ENTERPRISE_GENERATION === "true") {
+    // EP-05b opt-in: genuine local Qwen3 CPU inference after authorized ONNX
+    // search, without stubbing Ollama, HTTP, Whisper or PostgreSQL.
+    await ui.getByRole("button",{name:"Сформировать ответ Qwen3 (локально)"}).click();
+    const generated=ui.getByTestId("answer-result");
+    await expect(generated).toBeVisible({timeout:130_000});
+    await expect(generated).toContainText("Qwen3");
+    await expect(generated).toContainText("refund-policy.md");
+    await expect(generated).toContainText(/refund-audio.wav|refund-policy.md/);
+    await expect(ui.getByTestId("answer-text")).toContainText(/30|thirty/i);
+    await page.screenshot({path:info.outputPath("enterprise-generated-real.png"),fullPage:true});
+    await page.waitForTimeout(1400);
+  }
+
   // The Python search API is not publicly authenticated: no-token access fails.
   const missingToken=await request.post("http://127.0.0.1:5088/search",{
     data:{question:"refund",top_k:5}});
@@ -95,6 +109,14 @@ test("real cross-modal search returns document and audio then enforces live revo
   });
   expect(other.status()).toBe(200);
   expect((await other.json() as {hits:unknown[]}).hits).toHaveLength(0);
+  if (process.env.LIVE_ENTERPRISE_GENERATION === "true") {
+    const otherAnswer=await request.post("http://127.0.0.1:5088/answer",{
+      headers:{Authorization:"Bearer "+wrong},
+      data:{question:"When can customers request a refund?",top_k:5,mode:"generated"},
+    });
+    expect(otherAnswer.status()).toBe(200);
+    expect((await otherAnswer.json() as {abstained:boolean}).abstained).toBe(true);
+  }
 
   revoke(docId);
   await ui.getByRole("button",{name:"Найти доказательства"}).click();
@@ -110,5 +132,11 @@ test("real cross-modal search returns document and audio then enforces live revo
   await ui.getByRole("button",{name:"Ответить дословными цитатами"}).click();
   await expect(ui.getByTestId("answer-abstained")).toContainText("Недостаточно разрешённых доказательств");
   await expect(exact).toHaveCount(0);
+  if (process.env.LIVE_ENTERPRISE_GENERATION === "true") {
+    await ui.getByRole("button",{name:"Сформировать ответ Qwen3 (локально)"}).click();
+    await expect(ui.getByTestId("answer-abstained")).toContainText(
+      "Недостаточно разрешённых доказательств",{timeout:15_000});
+    await expect(ui.getByTestId("answer-result")).toHaveCount(0);
+  }
   await page.waitForTimeout(1200);
 });
