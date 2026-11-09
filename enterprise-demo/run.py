@@ -79,7 +79,7 @@ def check_environment() -> None:
     for cmd in ("dotnet", "node", "npm"):
         if not shutil.which(cmd):
             raise RuntimeError(f"Missing {cmd} executable.")
-    for module in ("psycopg", "faster_whisper", "fastembed", "fastapi", "httpx", "uvicorn"):
+    for module in ("psycopg", "faster_whisper", "fastembed", "fastapi", "httpx", "mcp", "uvicorn"):
         if importlib.util.find_spec(module) is None:
             raise RuntimeError(f"Missing Python dependency {module}; install architecture/audio-requirements.txt.")
     if not (FRONTEND / "node_modules").is_dir():
@@ -102,6 +102,11 @@ def check_schema() -> None:
                       to_regclass('public.jobs') IS NOT NULL,
                       to_regclass('public.outbox') IS NOT NULL,
                       to_regclass('public.audio_read_grants') IS NOT NULL,
+                      to_regclass('public.agent_note_actions') IS NOT NULL,
+                      to_regclass('public.agent_review_notes') IS NOT NULL,
+                      EXISTS(SELECT 1 FROM information_schema.columns
+                        WHERE table_schema='public' AND table_name='agent_note_actions'
+                          AND column_name='source_job_ids'),
                       EXISTS(SELECT 1 FROM information_schema.columns
                         WHERE table_schema='public' AND table_name='jobs' AND column_name='kind'),
                       EXISTS(SELECT 1 FROM information_schema.columns
@@ -117,7 +122,7 @@ def check_schema() -> None:
                 """)
                 columns = cur.fetchone()
                 if not columns or not all(columns):
-                    raise RuntimeError("Demo DB schema incomplete: apply migrations 001–005 manually first.")
+                    raise RuntimeError("Demo DB schema incomplete: apply migrations 001–006 manually first.")
     except psycopg.Error as exc:
         raise RuntimeError("Cannot connect to isolated PostgreSQL with JOBS_TEST_CONNECTION.") from exc
 

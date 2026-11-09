@@ -17,6 +17,8 @@ from audio_access import AccessDenied, verify_token
 from unified_search import retrieve_authorized
 from evidence_answer import evidence_answer
 from guarded_generation import generated_answer, ModelUnavailable
+from agent_actions import confirm, list_notes
+from mcp_agent_host import run_agent
 
 app = FastAPI(
     title="Portfolio authorized evidence search",
@@ -32,6 +34,18 @@ class SearchRequest(BaseModel):
 
 class AnswerRequest(SearchRequest):
     mode: Literal["evidence", "generated"] = "evidence"
+
+
+class AgentRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    question: str = Field(min_length=1, max_length=500)
+    task: Literal["answer", "note"] = "answer"
+
+
+class AgentConfirmRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    approval_token: str = Field(min_length=70, max_length=100)
+    decision: Literal["approve", "reject"]
 
 
 @app.middleware("http")
@@ -120,6 +134,73 @@ def answer(body: AnswerRequest, authorization: str | None = Header(default=None)
     except Exception as exc:
         logging.warning("Optional generation failed: %s", type(exc).__name__)
         raise HTTPException(status_code=503, detail="Generation unavailable") from None
+
+
+def _principal(authorization: str | None):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    try:
+        return verify_token(authorization.removeprefix("Bearer "))
+    except AccessDenied:
+        raise HTTPException(status_code=401, detail="Unauthorized") from None
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Local auth unavailable") from None
+
+
+@app.post("/agent/run")
+async def agent_run(body: AgentRunRequest,
+                    authorization: str | None = Header(default=None)):
+    """Real Ollama tool_calls via MCP stdio, fixed trusted demo principal."""
+    _principal(authorization)
+    dsn = os.environ.get("JOBS_TEST_CONNECTION", "")
+    if not dsn:
+        raise HTTPException(status_code=503, detail="Agent unavailable")
+    try:
+        result = await run_agent(body.question, body.task,
+                                 authorization.removeprefix("Bearer "), dsn)
+        _principal(authorization)
+        return result
+    except AccessDenied:
+        raise HTTPException(status_code=401, detail="Unauthorized") from None
+    except ModelUnavailable:
+        raise HTTPException(status_code=503, detail="Local model unavailable") from None
+    except Exception as exc:
+        logging.warning("MCP agent unavailable: %s", type(exc).__name__)
+        raise HTTPException(status_code=503, detail="Agent unavailable") from None
+
+
+@app.post("/agent/confirm")
+def agent_confirm(body: AgentConfirmRequest,
+                  authorization: str | None = Header(default=None)):
+    tenant, subject = _principal(authorization)
+    dsn = os.environ.get("JOBS_TEST_CONNECTION", "")
+    if not dsn:
+        raise HTTPException(status_code=503, detail="Agent unavailable")
+    try:
+        return confirm(dsn, tenant, subject, body.approval_token, body.decision)
+    except AccessDenied:
+        raise HTTPException(status_code=404, detail="Approval unavailable") from None
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid approval") from None
+    except Exception as exc:
+        logging.warning("Note confirmation unavailable: %s", type(exc).__name__)
+        raise HTTPException(status_code=503, detail="Agent unavailable") from None
+
+
+@app.get("/agent/notes/{job_id}")
+def agent_notes(job_id: str,
+                authorization: str | None = Header(default=None)):
+    tenant,subject = _principal(authorization)
+    dsn = os.environ.get("JOBS_TEST_CONNECTION", "")
+    if not dsn:
+        raise HTTPException(status_code=503, detail="Agent unavailable")
+    try:
+        return {"notes":list_notes(dsn, tenant, subject, job_id)}
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Notes unavailable") from None
+    except Exception as exc:
+        logging.warning("Agent notes unavailable: %s", type(exc).__name__)
+        raise HTTPException(status_code=503, detail="Agent unavailable") from None
 
 
 if __name__ == "__main__":
