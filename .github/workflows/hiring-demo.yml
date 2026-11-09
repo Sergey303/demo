@@ -55,7 +55,7 @@ jobs:
       - name: Verify trusted proxy signer
         run: node --test tests/enterprise-auth.test.mjs
       - name: Browser contract tests (mocked HTTP)
-        run: npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts tests/enterprise-documents.spec.ts
+        run: npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts tests/enterprise-documents.spec.ts tests/enterprise-search.spec.ts
 
   live-screencast:
     runs-on: ubuntu-latest
@@ -111,12 +111,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install lightweight Python PostgreSQL test dependencies (no ML model downloads)
-        run: python -m pip install "psycopg[binary]>=3.2,<4" "pytest>=8,<10"
-      - name: Real PostgreSQL audio and document outbox/ACL contracts
+        run: python -m pip install "psycopg[binary]>=3.2,<4" "pytest>=8,<10" "fastapi>=0.115,<1" "httpx>=0.27,<1"
+      - name: Real PostgreSQL search, audio, documents, outbox and ACL
         env:
           JOBS_TEST_CONNECTION: host=127.0.0.1 port=5432 dbname=reliable_jobs user=demo password=demo
           DEMO_AUTH_SECRET: ci-ep03-only-not-a-real-credential-1234567890
-        run: python -m pytest -q architecture/tests/test_documents_postgres.py architecture/tests/test_audio_postgres.py architecture/tests/test_audio_access.py
+        run: python -m pytest -q architecture/tests/test_unified_search.py architecture/tests/test_search_postgres.py architecture/tests/test_documents_postgres.py architecture/tests/test_audio_postgres.py architecture/tests/test_audio_access.py architecture/tests/test_document_pipeline.py
       - name: Install React dependencies
         working-directory: bootstrap5
         run: npm ci
