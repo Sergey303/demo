@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in LOCAL enterprise audio demo. Does not create or migrate databases."""
+"""Opt-in LOCAL Enterprise AI demo. Does not create or migrate databases."""
 from __future__ import annotations
 
 import importlib.util
@@ -17,10 +17,12 @@ from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 API = "http://127.0.0.1:5077"
+SEARCH = "http://127.0.0.1:5088"
 WEB = "http://127.0.0.1:4173"
 FRONTEND = ROOT / "bootstrap5"
 PROJECT = ROOT / "dotnet-outbox" / "src" / "ReliableJobs.csproj"
 WORKER = ROOT / "architecture" / "audio_worker.py"
+SEARCH_APP = ROOT / "architecture" / "search_api.py"
 
 
 def is_http_ready(url: str) -> bool:
@@ -77,14 +79,14 @@ def check_environment() -> None:
     for cmd in ("dotnet", "node", "npm"):
         if not shutil.which(cmd):
             raise RuntimeError(f"Missing {cmd} executable.")
-    for module in ("psycopg", "faster_whisper", "fastembed"):
+    for module in ("psycopg", "faster_whisper", "fastembed", "fastapi", "uvicorn"):
         if importlib.util.find_spec(module) is None:
             raise RuntimeError(f"Missing Python dependency {module}; install architecture/audio-requirements.txt.")
     if not (FRONTEND / "node_modules").is_dir():
         raise RuntimeError("Run 'cd bootstrap5 && npm ci' before launching. No automatic downloads.")
-    if not PROJECT.is_file() or not WORKER.is_file():
+    if not PROJECT.is_file() or not WORKER.is_file() or not SEARCH_APP.is_file():
         raise RuntimeError("Incomplete checkout: .NET API and audio_worker.py are required.")
-    for port in (5077, 4173):
+    for port in (5077, 5088, 4173):
         check_port_free(port)
 
 
@@ -124,6 +126,7 @@ def process_commands() -> list[tuple[str, list[str], Path]]:
     return [
         ("API", ["dotnet", "run", "--project", str(PROJECT), "--urls", API], ROOT),
         ("AI media worker", [sys.executable, str(WORKER), "worker"], ROOT),
+        ("Search API", [sys.executable, str(SEARCH_APP)], ROOT),
         ("React", ["npm", "run", "dev", "--", "--host", "127.0.0.1",
                    "--port", "4173", "--strictPort"], FRONTEND),
     ]
@@ -173,10 +176,12 @@ def main() -> int:
             owned.append(proc)
             if name == "API":
                 wait_for(API + "/ready", proc, name)
+            if name == "Search API":
+                wait_for(SEARCH + "/ready", proc, name)
             if name == "React":
                 wait_for(WEB + "/dashboard/enterprise-ai", proc, name)
         print("Open " + WEB + "/dashboard/enterprise-ai", flush=True)
-        print("HTTP/DB readiness only. Worker/model readiness is verified by a real processed job.", flush=True)
+        print("Readiness checks API/DB only, NOT AI model inference or answer quality.", flush=True)
         while True:
             for proc, spec in zip(owned, process_commands()):
                 if proc.poll() is not None:

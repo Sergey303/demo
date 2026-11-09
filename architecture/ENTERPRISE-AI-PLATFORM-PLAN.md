@@ -120,7 +120,7 @@ flowchart TD
 - [ ] `EP-01`: один запуск готовит **только disposable** ресурсы и проверяет PostgreSQL, .NET, Python, retrieval; отсутствие модельного сервиса не притворяется `ready` для LLM.
 - [x] `EP-02` **ограниченный синтетический WAV-сценарий**: фактические 202/200, один job ID, Whisper→persisted transcript, запрет неавторизованного чтения и отзыв прав проверены Chromium+PG; [evidence](../enterprise-demo/EVIDENCE-2026-11-08.md). Не заявлять долгосрочную устойчивость или production-авторизацию.
 - [x] `EP-03` **малый UTF-8 .txt/.md**: документ принят и сохранён атомарно с outbox и грантом, Python ONNX индексирует реальные фрагменты, same-key 200 / changed-key 409, wrong tenant / revoked 404; [доказательства реальной модели и Chromium](../enterprise-demo/EVIDENCE-2026-11-09.md). Retry и lease/reclaim проверены PostgreSQL; это не OCR/PDF и не soak-приёмка.
-- [ ] `EP-04`: SQL/grant tests подтверждают отсутствие межtenantских утечек до и после revoke, в том числе через top-k, исключения и LLM prompt.
+- [x] `EP-04` **авторизованный exact retrieval**: один SQL materialized grant-filter до извлечения векторов, совместимый BGE-small, top-k≤5, отсутствие чужих фрагментов, отзыв гранта на следующем поиске, no-evidence → пусто. [Chromium+Whisper+ONNX+PostgreSQL live evidence](../enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md). LLM prompt проверяется в EP-05; здесь LLM не вызывается.
 - [ ] `EP-05`: есть evidence answer с source/time; no-evidence → отказ; при неправильном citation ID/неподтверждённом контексте нет ложной уверенности.
 - [ ] `EP-06`: проходит реальный CI на пустой PostgreSQL с миграциями, отдельной Python ASR и локальной моделью; fault injection в корректной фазе; доступны trace/evidence, короткий screencast и команды повтора.
 - [ ] Ограничения/известные дефекты описаны; в публичном README **не написано** «production-ready», «без галлюцинаций» или «exactly once side effects», пока это не доказано.
@@ -185,7 +185,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 **EP-03 также проверена на реальных сервисах (2026-11-09):** [document E2E, PostgreSQL/ONNX, скриншот, видео, протокол](../enterprise-demo/EVIDENCE-2026-11-09.md). В этой поставке добавлен только ограниченный тип `document`, миграция 005 и та же outbox/lease-подсистема. Старый WAV→Whisper E2E повторно прошёл. На API документ/аудио возвращаются без embeddings.
 
-**Следующая конкретная задача:** **EP-04 — единый SQL-grant-aware поиск по сохранённым audio/document segments**, одна BGE-small модель и ограниченный top-k без межtenantских утечек. Затем EP-05 — evidence-only answer. Устойчивость API в длительном RDC-soak и readiness AI worker остаются отдельными незакрытыми рисками; не вводить агентские фреймворки и вторую БД.
+**EP-04 выполнен для ограниченного синтетического корпуса:** [один настоящий браузерный маршрут, видео и SQL negative tests](../enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md): WAV + Markdown загружены, обе локальные модели проработали, единый запрос вернул два разрешённых источника; отзыв грантов последовательно удалил результаты до `abstained=true`. Реального LLM-generated answer пока нет. Исторический OOM API при длительной работе RDC и readiness AI worker остаются открытыми рисками.
+
+**Следующая конкретная задача:** **EP-05 — evidence-only (no-source → refusal) / grounded answer** с проверкой цитат и отрицательной матрицей. Для найма предпочтителен понятный 3–4-минутный проверяемый сценарий и решение проблемы долгого soak, а не ранняя интеграция тяжёлых агентов или второй БД.
 
 **Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
 
