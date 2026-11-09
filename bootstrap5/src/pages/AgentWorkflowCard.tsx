@@ -142,7 +142,7 @@ export function AgentWorkflowCard() {
       </p>
       <label htmlFor="mcp-task" className="form-label">Запрос агенту</label>
       <textarea id="mcp-task" className="form-control" rows={2} maxLength={500}
-        value={question} onChange={e=>change(e.target.value)}
+        disabled={busy} value={question} onChange={e=>change(e.target.value)}
         placeholder="Найди срок возврата и предложи заметку: обновить политику возвратов" />
       <div className="d-flex flex-wrap gap-2 mt-2">
         <button type="button" className="btn btn-outline-primary"
