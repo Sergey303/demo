@@ -1,10 +1,10 @@
-# Enterprise AI — WAV → durable job → Whisper → timestamped transcript
+# Enterprise AI — real WAV + documents → protected source evidence
 
-**Status:** bounded local **EP-02 audio** and **EP-03 document** browser pipelines verified against disposable PostgreSQL and real local models. Longer-running resource reliability and production IAM are not established. The same page serves real WAV and UTF-8 document ingestion through a shared `jobs`/`outbox`/lease worker, unlike the separate text [Hiring Demo](../hiring-demo/README.md). See [EP-02 WAV evidence](EVIDENCE-2026-11-08.md) and [EP-03 document evidence](EVIDENCE-2026-11-09.md).
+**Status:** bounded local **EP-02 audio**, **EP-03 document** and **EP-04 unified authorized search** verified against disposable PostgreSQL and real local models. Longer-running resource reliability and production IAM are not established. The same page serves real WAV and UTF-8 document ingestion through a shared `jobs`/`outbox`/lease worker, unlike the separate text [Hiring Demo](../hiring-demo/README.md). See [EP-04 real cross-modal browser evidence](EVIDENCE-2026-11-09-SEARCH.md), [EP-02 WAV evidence](EVIDENCE-2026-11-08.md) and [EP-03 document evidence](EVIDENCE-2026-11-09.md).
 
-[![Real Chromium + Whisper result](media/enterprise-ai-real-whisper.png)](EVIDENCE-2026-11-08.md)
+[![Real Chromium evidence for one question across WAV and Markdown](media/enterprise-search-real.png)](EVIDENCE-2026-11-09-SEARCH.md)
 
-[Watch real audio E2E (MP4)](media/enterprise-ai-real-whisper.mp4) · [Watch real document E2E (MP4)](media/enterprise-document-live.mp4) · [Document screenshot](media/enterprise-document-live.png)
+[**Watch unified search E2E (MP4)**](media/enterprise-search-real.mp4) · [Watch real audio E2E (MP4)](media/enterprise-ai-real-whisper.mp4) · [Watch real document E2E (MP4)](media/enterprise-document-live.mp4) · [Document screenshot](media/enterprise-document-live.png)
 
 ## User journey
 
@@ -14,7 +14,11 @@ Open `http://127.0.0.1:4173/dashboard/enterprise-ai`. Choose a **small local WAV
 
 ### Document ingestion — EP-03
 
-On the same page, upload a real UTF-8 `.txt` or `.md` document (1 byte–24 KiB, simple ASCII filename). `POST /document-jobs` returns 202 after atomically saving source text, filename, tenant grant and outbox event; the **same Python worker** creates local BGE-small ONNX chunk embeddings and the browser reads stored evidence with source and character ranges. Same-file/key retry returns 200, different content with the same key 409, and revoked/wrong-tenant reads return 404. See the [actual document video, screenshot, PostgreSQL and E2E proof](EVIDENCE-2026-11-09.md). No PDF/OCR, unified search, LLM, or production IAM is implied.
+On the same page, upload a real UTF-8 `.txt` or `.md` document (1 byte–24 KiB, simple ASCII filename). `POST /document-jobs` returns 202 after atomically saving source text, filename, tenant grant and outbox event; the **same Python worker** creates local BGE-small ONNX chunk embeddings and the browser reads stored evidence with source and character ranges. Same-file/key retry returns 200, different content with the same key 409, and revoked/wrong-tenant reads return 404. See the [actual document video, screenshot, PostgreSQL and E2E proof](EVIDENCE-2026-11-09.md). No PDF/OCR, LLM or production IAM is implied; the separate EP-04 section below documents the implemented unified search.
+
+### Unified authorized evidence retrieval — EP-04
+
+After uploading WAV and/or documents, ask a question in the **same page**. A localhost-only search API on `127.0.0.1:5088` receives only the short-lived signed principal minted by Vite; body contains only `question` and bounded `top_k`. Its **MATERIALIZED SQL authorization** filters tenant + current `audio_read_grants` before flattening stored JSONB segments, then one cached BGE-small encoder and exact cosine return at most five **authorized** source snippets (audio timestamps or document character ranges). Cross-tenant, revoked, missing-token and no-evidence cases are tested. **No generated answer or LLM claim.** See [real browser screencast, screenshot, SQL security tests and reproduction](EVIDENCE-2026-11-09-SEARCH.md).
 
 ## Prerequisites
 
@@ -51,7 +55,7 @@ python3 enterprise-demo/run.py
 
 **RDC/network variant:** If PostgreSQL is reachable inside the trusted `knowledge-pilot-dev` Docker network, change the host in both DSNs to `demo-outbox-postgres` and port to `5432`. .NET needs **Npgsql semicolon syntax**; Python `psycopg` needs **libpq space-separated syntax**. Set the same secret in the single launcher environment (its children inherit it). Do not print or record the secret.
 
-The launcher starts and supervises exactly **its own** .NET API (`127.0.0.1:5077`), Python audio worker and Vite (`127.0.0.1:4173`) and terminates its child process groups on exit. It fails for missing dependencies, mismatched DB schema, blocked ports, or dead children. **`/ready` only proves .NET + PostgreSQL**, not worker/model readiness. A real finished job proves that the worker processed *that* job.
+The launcher starts and supervises exactly **its own** four services: .NET API (`127.0.0.1:5077`), shared Python media worker, Python authorized search API (`127.0.0.1:5088`) and React Vite (`127.0.0.1:4173`); it terminates only its child process groups on exit. It fails for missing dependencies, mismatched database schema, occupied ports, or dead children. **Both `/ready` endpoints establish only database connectivity**, not Whisper/ONNX model readiness, semantic relevance or production availability. A real finished ingestion plus cross-source search is the model-backed acceptance test.
 
 ### Produce a new, not preprocessed, WAV
 
@@ -88,4 +92,4 @@ On `rdc-project` from an isolated worktree based on `main` @ `5e0192ab3995443558
 
 ### Actual model-backed acceptance and limits
 
-**Two successful real browser/Whisper runs**, eight passing PostgreSQL worker resilience tests, saved [video/screenshot](EVIDENCE-2026-11-08.md), including idempotency and revocation after genuine inference. These demonstrate the *bounded local WAV slice* and do not prove workload scalability, general speech accuracy, uptime or production readiness. A later third browser attempt encountered an .NET `Out of memory` exit after long-running high-pressure RDC operation; the launcher correctly reported service failure. See the full [evidence and reproduction instructions](EVIDENCE-2026-11-08.md) and [contract baseline](../architecture/enterprise-platform/contracts.md). **EP-03 is now verified for a bounded synthetic text document**, with real browser→.NET→PostgreSQL→Python ONNX processing and audio regression ([evidence](EVIDENCE-2026-11-09.md)). Unified authorized search, evidence-only answers and local LLM remain **EP-04–EP-06 future work**.
+**Two successful real browser/Whisper runs**, eight passing PostgreSQL worker resilience tests, saved [video/screenshot](EVIDENCE-2026-11-08.md), including idempotency and revocation after genuine inference. These demonstrate the *bounded local WAV slice* and do not prove workload scalability, general speech accuracy, uptime or production readiness. A later third browser attempt encountered an .NET `Out of memory` exit after long-running high-pressure RDC operation; the launcher correctly reported service failure. See the full [evidence and reproduction instructions](EVIDENCE-2026-11-08.md) and [contract baseline](../architecture/enterprise-platform/contracts.md). **EP-03 is now verified for a bounded synthetic text document**, with real browser→.NET→PostgreSQL→Python ONNX processing and audio regression ([evidence](EVIDENCE-2026-11-09.md)). Unified authorized retrieval (EP-04) is now live-verified on synthetic sources ([evidence](EVIDENCE-2026-11-09-SEARCH.md)); grounded natural-language answer/LLM/agent work remains **EP-05–EP-06 future work**.

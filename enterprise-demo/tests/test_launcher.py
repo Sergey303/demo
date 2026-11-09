@@ -68,9 +68,11 @@ class LauncherTests(unittest.TestCase):
 
     def test_commands_are_scoped_to_existing_components(self):
         cmds = launcher.process_commands()
-        self.assertEqual([item[0] for item in cmds], ["API", "AI media worker", "React"])
+        self.assertEqual([item[0] for item in cmds], ["API", "AI media worker", "Search API", "React"])
         self.assertIn("audio_worker.py", " ".join(cmds[1][1]))
-        self.assertIn("127.0.0.1", " ".join(cmds[2][1]))
+        self.assertIn("search_api.py", " ".join(cmds[2][1]))
+        self.assertIn("127.0.0.1", " ".join(cmds[3][1]))
+        self.assertEqual(launcher.SEARCH, "http://127.0.0.1:5088")
         self.assertEqual(cmds[0][2], launcher.ROOT)
 
 

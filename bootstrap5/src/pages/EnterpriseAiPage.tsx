@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DocumentUploadCard } from "./DocumentUploadCard";
+import { UnifiedSearchCard } from "./UnifiedSearchCard";
 
 type JobStatus = "queued" | "done" | "failed";
 type Segment = { source: string; start: number; end: number; text: string };
@@ -318,8 +319,8 @@ export function EnterpriseAiPage() {
                 сохранение распознанных фрагментов проверяются по фактическим HTTP-ответам.
                 Повтор отправки должен вернуть прежний UUID.</p>
               <p className="small mb-0 text-secondary">
-                Сквозной поиск по документам, обобщение ответа и Ollama пока не подключены.
-                Текущая страница не утверждает, что они уже работают.
+                Авторизованный поиск по аудио и документам доступен ниже; он возвращает только
+                фрагменты источников. Генерация ответа, Ollama и агенты пока не подключены.
               </p>
             </div>
           </div>
@@ -338,6 +339,7 @@ export function EnterpriseAiPage() {
         </div>
       </div>
       <DocumentUploadCard />
+      <UnifiedSearchCard />
     </section>
   );
 }

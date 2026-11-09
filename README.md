@@ -6,15 +6,25 @@
 
 **For full-stack / product hiring:** explore the [React dashboard](bootstrap5/README.md) and [GosVet veterinary-clinic prototype](GosVet/README.md).
 
-These are **independent, original engineering examples, not claims of commercial production deployments**. Each has its own dependencies and runbook. Commercial X5 and CASESTUDIO achievements are described in the resume rather than inferred from this code.
+These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
+
+## Working Enterprise AI Platform — one user journey
+
+**Start with the real browser demonstration:** [**WAV + document → one authorized semantic evidence search**](enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md) · [**Watch real Chromium MP4**](enterprise-demo/media/enterprise-search-real.mp4) · [**Inspect the exact screenshots**](enterprise-demo/media/enterprise-search-real.png).
+
+[![Real verified cross-modal browser screenshot — WAV, Markdown and source evidence](enterprise-demo/media/enterprise-search-real.png)](enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md)
+
+In this single localhost-only journey, a WAV is transcribed by **Whisper** and a Markdown document is indexed by **BGE-small ONNX**; both persist through the **same .NET/PostgreSQL outbox and Python worker**. A signed demo user asks one question; **PostgreSQL applies current tenant and explicit read grants before returning segments**, then one local encoder ranks the two sources and the browser shows exact source/time/character citations. Revoking either grant removes it on the next search. A user with no authorized evidence receives **no invented answer**. See the [reproducible 2026-11-09 acceptance and hard limits](enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md).
+
+This is a **bounded synthetic engineering demonstration**, **not** a commercial deployment: fixed localhost identity, no production OIDC/RLS, no multi-user login, no PDF/OCR, no LLM-generated answers, no real-world relevance benchmark, and a previously observed .NET out-of-memory under prolonged high RDC load remains unresolved. Architecture decisions and verification evidence are available in the source and CI.
 
 ## Enterprise AI Platform integration roadmap
 
-**Next major portfolio milestone:** [Enterprise AI Platform — executable integration plan](architecture/ENTERPRISE-AI-PLATFORM-PLAN.md). It turns the already validated .NET outbox, durable Whisper audio jobs, PostgreSQL grants, document RAG and React demos into one user-facing, tenant-safe product. Includes the 10 EP work packages, dependency graph, release gates, security and crash tests, a 3–4-minute interview scenario, and honest status separation. **This is a plan, not a claim of an already integrated production platform.**
+**Architecture and next milestones:** [Enterprise AI Platform implementation plan](architecture/ENTERPRISE-AI-PLATFORM-PLAN.md) tracks EP-00–EP-09, acceptance and security gates. **EP-02/03/04 have real, bounded browser/DB/model evidence; EP-05 answer synthesis and later hardening remain planned.** This is an integrated *local hiring demo*, not a commercial production deployment.
 
 **First implementation increment (EP-01/EP-02):** [Enterprise WAV-to-transcript browser demo](enterprise-demo/README.md) adds a separate `/dashboard/enterprise-ai` route, localhost-only trusted demo proxy, real audio-job HTTP client and Python-worker launcher. **Now independently exercised on 2026-11-08 against a real disposable PostgreSQL, local Whisper/ONNX and Chromium**: [actual screenshot, playable video, repeatable test, exact evidence and limitations](enterprise-demo/EVIDENCE-2026-11-08.md). These synthetic, bounded runs are **not** production readiness; prolonged RDC operation later hit an API memory-allocation failure, recorded in the evidence. The original two-minute text-job Hiring Demo remains a separate, CI-backed interview route.
 
-**New: EP-03 durable document ingestion (9 Nov 2026).** The same page now also accepts bounded real UTF-8 `.md/.txt` files, persists them atomically in PostgreSQL, indexes chunks with the existing Python ONNX worker, and proves idempotent retry, wrong-tenant/revoked denial and **server-side exclusion of embedding vectors**. [Real Chromium demo, screenshot and verification report](enterprise-demo/EVIDENCE-2026-11-09.md). Unified cross-source search/answers remain planned EP-04/05, not claimed as complete.
+**New: EP-03 durable document ingestion (9 Nov 2026).** The same page now also accepts bounded real UTF-8 `.md/.txt` files, persists them atomically in PostgreSQL, indexes chunks with the existing Python ONNX worker, and proves idempotent retry, wrong-tenant/revoked denial and **server-side exclusion of embedding vectors**. [Real Chromium demo, screenshot and verification report](enterprise-demo/EVIDENCE-2026-11-09.md). EP-04 **unified authorized retrieval** is now demonstrated on both source types ([real browser evidence](enterprise-demo/EVIDENCE-2026-11-09-SEARCH.md)); EP-05 grounded answer synthesis is still planned, not implemented.
 
 ## Two-minute live interview demo
 
