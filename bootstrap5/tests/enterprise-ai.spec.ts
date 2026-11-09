@@ -74,12 +74,12 @@ test("enterprise audio upload, real-status polling, retry and revoke UI", async 
   await expect(page.locator("body")).not.toContainText("0.123456");
   await expect(page.locator("body")).not.toContainText("INTERNAL");
 
-  await page.getByRole("button", { name: "Повторить тот же запрос" }).click();
+  await page.getByRole("button", { name: "Повторить тот же запрос" }).first().click();
   await expect(page.getByTestId("enterprise-post")).toContainText("200 already-accepted");
   await expect(page.getByTestId("enterprise-job-id")).toHaveText(id);
   expect(posts).toBe(2);
   revoked = true;
-  await page.getByRole("button", { name: "Перечитать из PostgreSQL" }).click();
+  await page.getByRole("button", { name: "Перечитать из PostgreSQL" }).first().click();
   await expect(page.getByRole("alert")).toContainText("доступ к ней отозван");
   await expect(page.getByText(/Customers can request a refund/)).toHaveCount(0);
 });

@@ -119,7 +119,7 @@ flowchart TD
 - [ ] `EP-00`: SHA/контракт/матрица реализованного зафиксированы; все относительные ссылки/команды в документации работают; старые режимы не ломаются.
 - [ ] `EP-01`: один запуск готовит **только disposable** ресурсы и проверяет PostgreSQL, .NET, Python, retrieval; отсутствие модельного сервиса не притворяется `ready` для LLM.
 - [x] `EP-02` **ограниченный синтетический WAV-сценарий**: фактические 202/200, один job ID, Whisper→persisted transcript, запрет неавторизованного чтения и отзыв прав проверены Chromium+PG; [evidence](../enterprise-demo/EVIDENCE-2026-11-08.md). Не заявлять долгосрочную устойчивость или production-авторизацию.
-- [ ] `EP-03`: document POST/worker/retry/crash при сохранённых payload/metadata, без двойного результата; новая миграция соответствует текущим 001–004.
+- [x] `EP-03` **малый UTF-8 .txt/.md**: документ принят и сохранён атомарно с outbox и грантом, Python ONNX индексирует реальные фрагменты, same-key 200 / changed-key 409, wrong tenant / revoked 404; [доказательства реальной модели и Chromium](../enterprise-demo/EVIDENCE-2026-11-09.md). Retry и lease/reclaim проверены PostgreSQL; это не OCR/PDF и не soak-приёмка.
 - [ ] `EP-04`: SQL/grant tests подтверждают отсутствие межtenantских утечек до и после revoke, в том числе через top-k, исключения и LLM prompt.
 - [ ] `EP-05`: есть evidence answer с source/time; no-evidence → отказ; при неправильном citation ID/неподтверждённом контексте нет ложной уверенности.
 - [ ] `EP-06`: проходит реальный CI на пустой PostgreSQL с миграциями, отдельной Python ASR и локальной моделью; fault injection в корректной фазе; доступны trace/evidence, короткий screencast и команды повтора.
@@ -183,7 +183,9 @@ cd ../bootstrap5 && npm run build && npx playwright test tests/hiring-demo.spec.
 
 **EP-02 принята в пределах малого синтетического WAV:** [реальный E2E, скриншот, видеозапись, команды и ограничения](../enterprise-demo/EVIDENCE-2026-11-08.md). Два браузерных прохода с Whisper+ONNX и PostgreSQL завершились успешно; дополнительные 8/8 PostgreSQL проверок worker/reclaim/lease-fencing — PASS. При последующем длительном запуске API завершился с `Out of memory`; требуется отдельная диагностика памяти/soak. Общую готовность Python-моделей `/ready` не заявляет; **EP-01 остаётся частично незакрытой**.
 
-**Следующая конкретная задача:** выделить минимальные критерии готовности AI worker и разобраться с устойчивостью при длительной работе на RDC, затем **EP-03** — durable ingestion документов, за которым следует **EP-04** — объединённый поиск с проверкой прав. Не вводить новую очередь и агентов преждевременно.
+**EP-03 также проверена на реальных сервисах (2026-11-09):** [document E2E, PostgreSQL/ONNX, скриншот, видео, протокол](../enterprise-demo/EVIDENCE-2026-11-09.md). В этой поставке добавлен только ограниченный тип `document`, миграция 005 и та же outbox/lease-подсистема. Старый WAV→Whisper E2E повторно прошёл. На API документ/аудио возвращаются без embeddings.
+
+**Следующая конкретная задача:** **EP-04 — единый SQL-grant-aware поиск по сохранённым audio/document segments**, одна BGE-small модель и ограниченный top-k без межtenantских утечек. Затем EP-05 — evidence-only answer. Устойчивость API в длительном RDC-soak и readiness AI worker остаются отдельными незакрытыми рисками; не вводить агентские фреймворки и вторую БД.
 
 **Первый публичный milestone:** authenticated upload WAV из нового React экрана + worker-backed persisted transcript and timestamps + correct retry/revoke tests, проверенные на пустой disposable PostgreSQL. Только после этого добавлять документы и unified answer.
 

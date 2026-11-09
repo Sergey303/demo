@@ -109,11 +109,13 @@ def check_schema() -> None:
                       EXISTS(SELECT 1 FROM information_schema.columns
                         WHERE table_schema='public' AND table_name='outbox' AND column_name='lease_token'),
                       EXISTS(SELECT 1 FROM information_schema.columns
-                        WHERE table_schema='public' AND table_name='outbox' AND column_name='lease_until')
+                        WHERE table_schema='public' AND table_name='outbox' AND column_name='lease_until'),
+                      EXISTS(SELECT 1 FROM information_schema.columns
+                        WHERE table_schema='public' AND table_name='jobs' AND column_name='document_name')
                 """)
                 columns = cur.fetchone()
                 if not columns or not all(columns):
-                    raise RuntimeError("Demo DB schema incomplete: apply migrations 001–004 manually first.")
+                    raise RuntimeError("Demo DB schema incomplete: apply migrations 001–005 manually first.")
     except psycopg.Error as exc:
         raise RuntimeError("Cannot connect to isolated PostgreSQL with JOBS_TEST_CONNECTION.") from exc
 
@@ -121,7 +123,7 @@ def check_schema() -> None:
 def process_commands() -> list[tuple[str, list[str], Path]]:
     return [
         ("API", ["dotnet", "run", "--project", str(PROJECT), "--urls", API], ROOT),
-        ("Audio worker", [sys.executable, str(WORKER), "worker"], ROOT),
+        ("AI media worker", [sys.executable, str(WORKER), "worker"], ROOT),
         ("React", ["npm", "run", "dev", "--", "--host", "127.0.0.1",
                    "--port", "4173", "--strictPort"], FRONTEND),
     ]
