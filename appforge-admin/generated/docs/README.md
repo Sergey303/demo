@@ -1,13 +1,13 @@
 # AppForge generated admin production package
 
-Generated at UTC: 2026-11-09T09:22:49.5719665Z
+Generated at UTC: 2026-11-09T11:07:23.0960404Z
 
 ## Source
 
-- Spec: /workspace/demo/appforge-admin/telegram-operations.md
-- Spec SHA-256: e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789
-- Model: Telegram Operations Admin
-- Project: TelegramOperationsAdmin.Persistence
+- Spec: /workspace/demo/appforge-admin/business-operations.md
+- Spec SHA-256: e5c91382352be3aeaa38bebd5a1334f6168bb783b7e94e122bd50eebe75d2877
+- Model: Business Operations Admin
+- Project: BusinessOperationsAdmin.Persistence
 - Runtime profile: production
 - Generator: AppForge.MdToDomain 0.1.0
 
@@ -26,8 +26,8 @@ docs/              Package-local runbook and delivery notes.
 ## Verification
 
 ```powershell
-dotnet build "/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.Persistence.csproj"
-Test-Path "/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.slnx"
+dotnet build "/workspace/demo/appforge-admin/generated/backend/BusinessOperationsAdmin.Persistence.csproj"
+Test-Path "/workspace/demo/appforge-admin/generated/backend/BusinessOperationsAdmin.slnx"
 Test-Path "/workspace/demo/appforge-admin/generated/backend/Migrations/AppForgeGeneratedMigrations.idempotent.sql"
 Test-Path "/workspace/demo/appforge-admin/generated/backend-contract/meta/domains.json"
 Test-Path "/workspace/demo/appforge-admin/generated/frontend/runtime/httpClient.ts"

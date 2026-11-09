@@ -1,0 +1,528 @@
+{
+  "DomainKey": "servicerequests",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/servicerequests",
+      "Kind": "query",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/servicerequests",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "List(ListServiceRequestRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/servicerequests",
+      "Kind": "mutation",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/servicerequests",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreateServiceRequestRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateServiceRequestRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Create"
+      ],
+      "ErrorRefs": [
+        "service.request.idempotency_conflict",
+        "service.request.idempotency_key_invalid",
+        "service.request.idempotency_key_required",
+        "service.request.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/servicerequests",
+        "get:/api/servicerequests/lookup",
+        "get:/api/servicerequests/options/{field}",
+        "get:/api/servicerequests/suggest/{field}",
+        "get:/api/servicerequests/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Create(CreateServiceRequestRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-servicerequest-create",
+        "PayloadSchemaVersion": 3785055088901481,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/servicerequests/lookup",
+      "Kind": "query",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/servicerequests/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupServiceRequestRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Lookup(LookupServiceRequestRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/servicerequests/options/{field}",
+      "Kind": "query",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/servicerequests/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/servicerequests/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/servicerequests/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestServiceRequestRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Suggest(String field, SuggestServiceRequestRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/servicerequests/{id}",
+      "Kind": "mutation",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/servicerequests/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Delete"
+      ],
+      "ErrorRefs": [
+        "service.request.idempotency_conflict",
+        "service.request.idempotency_key_invalid",
+        "service.request.idempotency_key_required",
+        "service.request.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/servicerequests",
+        "get:/api/servicerequests/lookup",
+        "get:/api/servicerequests/options/{field}",
+        "get:/api/servicerequests/suggest/{field}",
+        "get:/api/servicerequests/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-servicerequest-delete",
+        "PayloadSchemaVersion": 3354247637335421,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/servicerequests/{id}",
+      "Kind": "query",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/servicerequests/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Read"
+      ],
+      "ErrorRefs": [
+        "service.request.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/servicerequests/{id}",
+      "Kind": "mutation",
+      "ControllerName": "ServiceRequestController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/servicerequests/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateServiceRequestRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateServiceRequestRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "ServiceRequest.Update"
+      ],
+      "ErrorRefs": [
+        "service.request.idempotency_conflict",
+        "service.request.idempotency_key_invalid",
+        "service.request.idempotency_key_required",
+        "service.request.not_found",
+        "service.request.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/servicerequests",
+        "get:/api/servicerequests/lookup",
+        "get:/api/servicerequests/options/{field}",
+        "get:/api/servicerequests/suggest/{field}",
+        "get:/api/servicerequests/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "servicerequests"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+        "MethodClrSignature": "Update(Guid id, UpdateServiceRequestRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-servicerequest-update",
+        "PayloadSchemaVersion": 2584968402667104,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

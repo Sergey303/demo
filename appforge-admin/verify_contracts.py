@@ -1,8 +1,4 @@
-"""Fast, dependency-free source/contract check for the generated 80/20 demo.
-
-This checks that the generated contract exposes the three intended CRUD
-resources and that matching UI pages exist. It is *not* a runtime/E2E test.
-"""
+"""Dependency-free shape check. Not a substitute for live CRUD or auth tests."""
 from __future__ import annotations
 
 import json
@@ -10,29 +6,36 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "generated"
-RESOURCE_NAMES = {"subscribers": "Subscribers", "leads": "Leads", "campaigns": "Campaigns"}
+RESOURCES = {
+    "customers": "Customers",
+    "servicerequests": "Servicerequests",
+    "workitems": "Workitems",
+}
 
 
 def verify_resource(domain: str, entity: str) -> None:
-    contract = json.loads((OUT / "backend-contract" / domain / "endpoints.json").read_text(encoding="utf-8"))
-    routes = {(item["HttpMethod"], item["RouteTemplate"]) for item in contract["Endpoints"]}
-    expected = {("GET", f"/api/{domain}"), ("POST", f"/api/{domain}")}
-    assert expected <= routes, (domain, expected - routes)
-    methods = {verb for verb, path in routes if path.startswith(f"/api/{domain}")}
-    assert {"GET", "POST", "PUT", "DELETE"} <= methods, (domain, methods)
-    page = OUT / "frontend-app" / "src" / "generated-ts" / domain / "pages" / f"{entity}Page.generated.tsx"
+    contract_path = OUT / "backend-contract" / domain / "endpoints.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    routes = {(ep["HttpMethod"], ep["RouteTemplate"]) for ep in contract["Endpoints"]}
+    prefix = f"/api/{domain}"
+    assert ("GET", prefix) in routes, (domain, "list missing")
+    assert ("POST", prefix) in routes, (domain, "create missing")
+    assert any(verb == "PUT" and path.startswith(prefix + "/") for verb, path in routes), domain
+    assert any(verb == "DELETE" and path.startswith(prefix + "/") for verb, path in routes), domain
+    page = OUT / "frontend-app/src/generated-ts" / domain / "pages" / f"{entity}Page.generated.tsx"
     assert page.is_file(), page
-    text = page.read_text(encoding="utf-8")
-    assert f"function {entity}Page" in text, page
+    source = page.read_text(encoding="utf-8")
+    assert f"function {entity}Page" in source, page
+    print(f"OK: {domain}: typed CRUD contract + generated React page")
 
 
 def main() -> None:
-    for domain, entity in RESOURCE_NAMES.items():
+    for domain, entity in RESOURCES.items():
         verify_resource(domain, entity)
-        print(f"OK: {domain} CRUD contract + generated React page")
-    migr = OUT / "backend" / "Migrations" / "AppForgeGeneratedMigrations.idempotent.sql"
-    assert migr.is_file(), migr
-    print("OK: idempotent EF migration SQL present")
+    assert (OUT / "backend/Migrations/AppForgeGeneratedMigrations.idempotent.sql").is_file()
+    manifest = json.loads((OUT / "manifest/package-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["generatedIdentity"]["modelId"] == "Business Operations Admin"
+    print("OK: model identity + EF migration SQL")
 
 
 if __name__ == "__main__":

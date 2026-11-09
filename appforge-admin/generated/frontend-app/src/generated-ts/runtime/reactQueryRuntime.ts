@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MutationFunctionContext, UseMutationResult } from "@tanstack/react-query";
 import { invalidateEndpointKeys } from "./reactInvalidation";
-import { normalizeEndpointInput } from "./reactEndpointInput";
+import { normalizeEndpointInput, normalizeQueryEndpointInput } from "./reactEndpointInput";
 import { useMutationLifecycle } from "./mutationLifecycleRuntime";
 import { createMutationLifecycleVariables, readMutationLifecycleVariables, type RuntimeMutationVariables, unwrapRuntimeMutationVariables } from "./mutationLifecycleVariablesRuntime";
 import { useOperationLifecycle } from "./operationLifecycleRuntime";
@@ -19,7 +19,7 @@ export function useGeneratedQuery<TInput, TOutput, TError = unknown>(
   options?: GeneratedQueryOptions<TOutput, TError>,
 ): GeneratedQueryHookResult<TInput, TOutput, TError> {
   const availability = binding.getAvailability();
-  const normalizedInput = normalizeEndpointInput(input) as TInput;
+  const normalizedInput = normalizeQueryEndpointInput(input, binding.endpointKey) as TInput;
   const enabled = (options?.enabled ?? true) && availability.isVisible && availability.isEnabled;
   const query = useQuery<TOutput, TError, TOutput, QueryKey>({
     ...options,
@@ -30,7 +30,7 @@ export function useGeneratedQuery<TInput, TOutput, TError = unknown>(
 
   const lifecycle = useOperationLifecycle<TInput, TOutput, TError>(
     binding as unknown as Parameters<typeof useOperationLifecycle<TInput, TOutput, TError>>[0],
-    (raw: unknown) => normalizeEndpointInput(raw) as TInput,
+    (raw: unknown) => normalizeQueryEndpointInput(raw, binding.endpointKey) as TInput,
   );
 
   return {
@@ -42,7 +42,7 @@ export function useGeneratedQuery<TInput, TOutput, TError = unknown>(
     disabledReason: availability.disabledReason,
     query,
     execute: (nextInput: GeneratedEndpointInput<TInput>) =>
-      binding.execute(normalizeEndpointInput(nextInput) as TInput).promise,
+      binding.execute(normalizeQueryEndpointInput(nextInput, binding.endpointKey) as TInput).promise,
     lifecycle,
   };
 }

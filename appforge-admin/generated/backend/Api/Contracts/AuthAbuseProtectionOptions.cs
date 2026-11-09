@@ -3,7 +3,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Demo.TelegramOperations.Api.Contracts;
+namespace Demo.BusinessOperations.Api.Contracts;
 
 public sealed class AppAuthAbuseProtectionOptions
 {

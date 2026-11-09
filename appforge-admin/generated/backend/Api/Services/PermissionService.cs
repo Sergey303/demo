@@ -1,18 +1,18 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Api.Customization;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Api.Customization;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Api.Services;
+namespace Demo.BusinessOperations.Api.Services;
 
 public sealed class PermissionService
 {
     private const int MaxPageSize = 100;
     private const int MaxSuggestionCount = 20;
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IReadOnlyList<IRestCreateValidator<Permission, CreatePermissionRequest>> _createValidators;
     private readonly IReadOnlyList<IRestUpdateValidator<Permission, UpdatePermissionRequest>> _updateValidators;
     private readonly IReadOnlyList<IRestDeleteValidator<Permission>> _deleteValidators;
@@ -20,7 +20,7 @@ public sealed class PermissionService
     private readonly IRestUpdateMutator<Permission, UpdatePermissionRequest> _updateMutator;
     private readonly IRestDeleteMutator<Permission> _deleteMutator;
 
-    public PermissionService(TelegramOperationsAdminDbContext db)
+    public PermissionService(BusinessOperationsAdminDbContext db)
         : this(
             db,
             new IRestCreateValidator<Permission, CreatePermissionRequest>[]
@@ -39,7 +39,7 @@ public sealed class PermissionService
     }
 
     public PermissionService(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         IEnumerable<IRestCreateValidator<Permission, CreatePermissionRequest>> createValidators,
         IEnumerable<IRestUpdateValidator<Permission, UpdatePermissionRequest>> updateValidators,
         IEnumerable<IRestDeleteValidator<Permission>> deleteValidators,

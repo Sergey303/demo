@@ -11,4 +11,4 @@ export interface ListRoleResult {
   "pageSize": number;
   "totalCount": number;
 }
-export const ListRoleResultTypeKey = "Demo.TelegramOperations.Api.Contracts.ListRoleResult" as const;
+export const ListRoleResultTypeKey = "Demo.BusinessOperations.Api.Contracts.ListRoleResult" as const;

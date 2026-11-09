@@ -1,11 +1,11 @@
 {
   "kind": "appforge-generated-admin-production-package",
   "version": 2,
-  "generatedAtUtc": "2026-11-09T09:22:49.5719665Z",
+  "generatedAtUtc": "2026-11-09T11:07:23.0960404Z",
   "spec": {
-    "inputPath": "/workspace/demo/appforge-admin/telegram-operations.md",
-    "fullPath": "/workspace/demo/appforge-admin/telegram-operations.md",
-    "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+    "inputPath": "/workspace/demo/appforge-admin/business-operations.md",
+    "fullPath": "/workspace/demo/appforge-admin/business-operations.md",
+    "sha256": "e5c91382352be3aeaa38bebd5a1334f6168bb783b7e94e122bd50eebe75d2877"
   },
   "generator": {
     "name": "AppForge.MdToDomain",
@@ -13,16 +13,16 @@
     "entrypoint": "scripts/quality/run-md-ef-core-production-package.ps1"
   },
   "generatedIdentity": {
-    "modelId": "Telegram Operations Admin",
-    "solutionName": "TelegramOperationsAdmin",
-    "solutionFileName": "TelegramOperationsAdmin.slnx",
-    "projectName": "TelegramOperationsAdmin.Persistence",
-    "projectFileName": "TelegramOperationsAdmin.Persistence.csproj",
-    "assemblyName": "TelegramOperationsAdmin.Persistence",
-    "assemblyFileName": "TelegramOperationsAdmin.Persistence.dll",
-    "rootNamespace": "TelegramOperationsAdmin",
-    "dbContextName": "TelegramOperationsAdminDbContext",
-    "databaseName": "telegram_operations_admin"
+    "modelId": "Business Operations Admin",
+    "solutionName": "BusinessOperationsAdmin",
+    "solutionFileName": "BusinessOperationsAdmin.slnx",
+    "projectName": "BusinessOperationsAdmin.Persistence",
+    "projectFileName": "BusinessOperationsAdmin.Persistence.csproj",
+    "assemblyName": "BusinessOperationsAdmin.Persistence",
+    "assemblyFileName": "BusinessOperationsAdmin.Persistence.dll",
+    "rootNamespace": "BusinessOperationsAdmin",
+    "dbContextName": "BusinessOperationsAdminDbContext",
+    "databaseName": "business_operations_admin"
   },
   "runtimeProfile": "production",
   "generatedOutputRoots": {
@@ -36,8 +36,8 @@
     "docs": "/workspace/demo/appforge-admin/generated/docs"
   },
   "verificationCommands": [
-    "dotnet build \"/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.Persistence.csproj\"",
-    "Test-Path \"/workspace/demo/appforge-admin/generated/backend/TelegramOperationsAdmin.slnx\"",
+    "dotnet build \"/workspace/demo/appforge-admin/generated/backend/BusinessOperationsAdmin.Persistence.csproj\"",
+    "Test-Path \"/workspace/demo/appforge-admin/generated/backend/BusinessOperationsAdmin.slnx\"",
     "Test-Path \"/workspace/demo/appforge-admin/generated/backend/Migrations/AppForgeGeneratedMigrations.idempotent.sql\"",
     "Test-Path \"/workspace/demo/appforge-admin/generated/backend-contract/meta/domains.json\"",
     "Test-Path \"/workspace/demo/appforge-admin/generated/frontend/runtime/httpClient.ts\"",

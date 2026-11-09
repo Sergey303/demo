@@ -10,6 +10,6 @@ if [[ -z "$appforge" || ! -f "$appforge/scripts/quality/run-md-ef-core-productio
   exit 2
 fi
 pwsh -NoProfile -File "$appforge/scripts/quality/run-md-ef-core-production-package.ps1" \
-  -SpecPath "$here/telegram-operations.md" \
+  -SpecPath "$here/business-operations.md" \
   -OutputRoot "$here/generated" \
   -Clean

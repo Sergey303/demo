@@ -43,7 +43,7 @@
     "response": {
       "responseKind": "json",
       "responseContentType": "application/json",
-      "typeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>",
+      "typeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionOptionDto>",
       "contentDisposition": null,
       "fileNameSource": null
     }
@@ -61,6 +61,6 @@
   "realtimeLinks": [],
   "frontendAction": null,
   "requestTypeRef": null,
-  "responseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>",
+  "responseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionOptionDto>",
   "invalidatedByRealtimeEventKeys": []
 }

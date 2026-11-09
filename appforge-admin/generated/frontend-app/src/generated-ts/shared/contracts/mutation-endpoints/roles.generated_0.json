@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
       "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
     },
     "transport": {

@@ -49,14 +49,14 @@
       }
     ],
     "requestBody": {
-      "typeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRolePermissionRequest",
+      "typeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRolePermissionRequest",
       "required": true
     },
     "multipartParts": [],
     "response": {
       "responseKind": "json",
       "responseContentType": "application/json",
-      "typeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "typeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
       "contentDisposition": null,
       "fileNameSource": null
     }
@@ -85,7 +85,7 @@
   ],
   "realtimeLinks": [],
   "frontendAction": null,
-  "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRolePermissionRequest",
-  "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+  "requestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRolePermissionRequest",
+  "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
   "invalidatedByRealtimeEventKeys": []
 }

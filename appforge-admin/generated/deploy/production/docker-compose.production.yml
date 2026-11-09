@@ -4,15 +4,15 @@ x-api-build: &api-build
   context: ../..
   dockerfile: deploy/production/api.Dockerfile
   args:
-    APPFORGE_GENERATED_PROJECT: "backend/TelegramOperationsAdmin.Persistence.csproj"
-    APPFORGE_ASSEMBLY: "TelegramOperationsAdmin.Persistence.dll"
+    APPFORGE_GENERATED_PROJECT: "backend/BusinessOperationsAdmin.Persistence.csproj"
+    APPFORGE_ASSEMBLY: "BusinessOperationsAdmin.Persistence.dll"
 
 x-migrator-build: &migrator-build
   context: ../..
   dockerfile: deploy/production/migrator.Dockerfile
   args:
-    APPFORGE_MIGRATOR_PROJECT: "backend/DatabaseMigrator/TelegramOperationsAdmin.Persistence.Migrator.csproj"
-    APPFORGE_MIGRATOR_ASSEMBLY: "TelegramOperationsAdmin.Persistence.Migrator.dll"
+    APPFORGE_MIGRATOR_PROJECT: "backend/DatabaseMigrator/BusinessOperationsAdmin.Persistence.Migrator.csproj"
+    APPFORGE_MIGRATOR_ASSEMBLY: "BusinessOperationsAdmin.Persistence.Migrator.dll"
 
 x-api-environment: &api-environment
   ASPNETCORE_ENVIRONMENT: "Production"

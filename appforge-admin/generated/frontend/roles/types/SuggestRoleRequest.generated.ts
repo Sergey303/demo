@@ -7,4 +7,4 @@ export interface SuggestRoleRequest {
   "query"?: string | null;
   "take": number;
 }
-export const SuggestRoleRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.SuggestRoleRequest" as const;
+export const SuggestRoleRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.SuggestRoleRequest" as const;

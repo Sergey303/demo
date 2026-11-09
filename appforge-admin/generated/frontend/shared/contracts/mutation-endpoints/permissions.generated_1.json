@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
       "MethodClrSignature": "Create(CreatePermissionRequest request, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -48,14 +48,14 @@
         }
       ],
       "requestBody": {
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.CreatePermissionRequest",
         "required": true
       },
       "multipartParts": [],
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -79,8 +79,8 @@
     ],
     "realtimeLinks": [],
     "frontendAction": null,
-    "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
-    "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+    "requestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreatePermissionRequest",
+    "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
     "invalidatedByRealtimeEventKeys": []
   }
 }

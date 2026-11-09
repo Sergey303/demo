@@ -1,0 +1,528 @@
+{
+  "DomainKey": "customers",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/customers",
+      "Kind": "query",
+      "ControllerName": "CustomerController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/customers",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListCustomerRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListCustomerResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListCustomerResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "List(ListCustomerRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/customers",
+      "Kind": "mutation",
+      "ControllerName": "CustomerController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/customers",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreateCustomerRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateCustomerRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Create"
+      ],
+      "ErrorRefs": [
+        "customer.idempotency_conflict",
+        "customer.idempotency_key_invalid",
+        "customer.idempotency_key_required",
+        "customer.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/customers",
+        "get:/api/customers/lookup",
+        "get:/api/customers/options/{field}",
+        "get:/api/customers/suggest/{field}",
+        "get:/api/customers/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Create(CreateCustomerRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-customer-create",
+        "PayloadSchemaVersion": 821341471731109,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/customers/lookup",
+      "Kind": "query",
+      "ControllerName": "CustomerController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/customers/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupCustomerRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Lookup(LookupCustomerRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/customers/options/{field}",
+      "Kind": "query",
+      "ControllerName": "CustomerController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/customers/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/customers/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "CustomerController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/customers/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestCustomerRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.CustomerSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Suggest(String field, SuggestCustomerRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/customers/{id}",
+      "Kind": "mutation",
+      "ControllerName": "CustomerController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/customers/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Delete"
+      ],
+      "ErrorRefs": [
+        "customer.idempotency_conflict",
+        "customer.idempotency_key_invalid",
+        "customer.idempotency_key_required",
+        "customer.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/customers",
+        "get:/api/customers/lookup",
+        "get:/api/customers/options/{field}",
+        "get:/api/customers/suggest/{field}",
+        "get:/api/customers/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-customer-delete",
+        "PayloadSchemaVersion": 6767524602962193,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/customers/{id}",
+      "Kind": "query",
+      "ControllerName": "CustomerController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/customers/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Read"
+      ],
+      "ErrorRefs": [
+        "customer.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/customers/{id}",
+      "Kind": "mutation",
+      "ControllerName": "CustomerController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/customers/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateCustomerRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateCustomerRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "Customer.Update"
+      ],
+      "ErrorRefs": [
+        "customer.idempotency_conflict",
+        "customer.idempotency_key_invalid",
+        "customer.idempotency_key_required",
+        "customer.not_found",
+        "customer.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/customers",
+        "get:/api/customers/lookup",
+        "get:/api/customers/options/{field}",
+        "get:/api/customers/suggest/{field}",
+        "get:/api/customers/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "customers"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.CustomerController",
+        "MethodClrSignature": "Update(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-customer-update",
+        "PayloadSchemaVersion": 3360942364862411,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

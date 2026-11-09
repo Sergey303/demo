@@ -1,0 +1,465 @@
+{
+  "DomainKey": "workitems",
+  "Types": [
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.CreateWorkItemRequest",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Assignee",
+          "WireName": "assignee",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "ServiceRequestId",
+          "WireName": "serviceRequestId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Status",
+          "WireName": "status",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListWorkItemFilter",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Operator",
+          "WireName": "operator",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Values",
+          "WireName": "values",
+          "TypeRef": "array<shared:string>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListWorkItemRequest",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Filters",
+          "WireName": "filters",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListWorkItemFilter>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Sort",
+          "WireName": "sort",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListWorkItemSort>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListWorkItemResult",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Items",
+          "WireName": "items",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemDto>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "TotalCount",
+          "WireName": "totalCount",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListWorkItemSort",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Direction",
+          "WireName": "direction",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.LookupWorkItemRequest",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.SuggestWorkItemRequest",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.UpdateWorkItemRequest",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Assignee",
+          "WireName": "assignee",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "ServiceRequestId",
+          "WireName": "serviceRequestId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Status",
+          "WireName": "status",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.WorkItemDto",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Assignee",
+          "WireName": "assignee",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Id",
+          "WireName": "id",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Note",
+          "WireName": "note",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "ServiceRequestId",
+          "WireName": "serviceRequestId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Status",
+          "WireName": "status",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.WorkItemLookupDto",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.WorkItemOptionDto",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.WorkItemSuggestionDto",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListWorkItemFilter>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListWorkItemFilter"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListWorkItemSort>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListWorkItemSort"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.WorkItemDto>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.WorkItemLookupDto>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemLookupDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.WorkItemOptionDto>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemOptionDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.WorkItemSuggestionDto>",
+      "OwningDomainKey": "workitems",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemSuggestionDto"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Demo.TelegramOperations.Api.Contracts;
+namespace Demo.BusinessOperations.Api.Contracts;
 
 public sealed class CreateRoleRequest
 {

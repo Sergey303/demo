@@ -1,18 +1,18 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Api.Customization;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Api.Customization;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Api.Services;
+namespace Demo.BusinessOperations.Api.Services;
 
 public sealed class RolePermissionService
 {
     private const int MaxPageSize = 100;
     private const int MaxSuggestionCount = 20;
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IReadOnlyList<IRestCreateValidator<RolePermission, CreateRolePermissionRequest>> _createValidators;
     private readonly IReadOnlyList<IRestUpdateValidator<RolePermission, UpdateRolePermissionRequest>> _updateValidators;
     private readonly IReadOnlyList<IRestDeleteValidator<RolePermission>> _deleteValidators;
@@ -20,7 +20,7 @@ public sealed class RolePermissionService
     private readonly IRestUpdateMutator<RolePermission, UpdateRolePermissionRequest> _updateMutator;
     private readonly IRestDeleteMutator<RolePermission> _deleteMutator;
 
-    public RolePermissionService(TelegramOperationsAdminDbContext db)
+    public RolePermissionService(BusinessOperationsAdminDbContext db)
         : this(
             db,
             new IRestCreateValidator<RolePermission, CreateRolePermissionRequest>[]
@@ -39,7 +39,7 @@ public sealed class RolePermissionService
     }
 
     public RolePermissionService(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         IEnumerable<IRestCreateValidator<RolePermission, CreateRolePermissionRequest>> createValidators,
         IEnumerable<IRestUpdateValidator<RolePermission, UpdateRolePermissionRequest>> updateValidators,
         IEnumerable<IRestDeleteValidator<RolePermission>> deleteValidators,

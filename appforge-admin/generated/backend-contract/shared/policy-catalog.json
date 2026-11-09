@@ -1,241 +1,61 @@
 {
   "Policies": [
     {
-      "PolicyKey": "Campaign.Create",
-      "DomainKey": "campaigns",
+      "PolicyKey": "Customer.Create",
+      "DomainKey": "customers",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "post:/api/campaigns"
+          "SourceKey": "post:/api/customers"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Campaign.Delete",
-      "DomainKey": "campaigns",
+      "PolicyKey": "Customer.Delete",
+      "DomainKey": "customers",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/campaigns/{id}"
+          "SourceKey": "delete:/api/customers/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Campaign.Read",
-      "DomainKey": "campaigns",
+      "PolicyKey": "Customer.Read",
+      "DomainKey": "customers",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaigns"
+          "SourceKey": "get:/api/customers"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaigns/lookup"
+          "SourceKey": "get:/api/customers/lookup"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaigns/options/{field}"
+          "SourceKey": "get:/api/customers/options/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaigns/suggest/{field}"
+          "SourceKey": "get:/api/customers/suggest/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaigns/{id}"
+          "SourceKey": "get:/api/customers/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Campaign.Update",
-      "DomainKey": "campaigns",
+      "PolicyKey": "Customer.Update",
+      "DomainKey": "customers",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "put:/api/campaigns/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "CampaignStatus.Create",
-      "DomainKey": "campaignstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "post:/api/campaignstatuses"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "CampaignStatus.Delete",
-      "DomainKey": "campaignstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/campaignstatuses/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "CampaignStatus.Read",
-      "DomainKey": "campaignstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaignstatuses"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaignstatuses/lookup"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaignstatuses/options/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaignstatuses/suggest/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/campaignstatuses/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "CampaignStatus.Update",
-      "DomainKey": "campaignstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "put:/api/campaignstatuses/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "Lead.Create",
-      "DomainKey": "leads",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "post:/api/leads"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "Lead.Delete",
-      "DomainKey": "leads",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/leads/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "Lead.Read",
-      "DomainKey": "leads",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leads"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leads/lookup"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leads/options/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leads/suggest/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leads/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "Lead.Update",
-      "DomainKey": "leads",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "put:/api/leads/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "LeadStatus.Create",
-      "DomainKey": "leadstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "post:/api/leadstatuses"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "LeadStatus.Delete",
-      "DomainKey": "leadstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/leadstatuses/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "LeadStatus.Read",
-      "DomainKey": "leadstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leadstatuses"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leadstatuses/lookup"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leadstatuses/options/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leadstatuses/suggest/{field}"
-        },
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "get:/api/leadstatuses/{id}"
-        }
-      ],
-      "PolicyKind": "availability"
-    },
-    {
-      "PolicyKey": "LeadStatus.Update",
-      "DomainKey": "leadstatuses",
-      "DeclaredBy": [
-        {
-          "SourceKind": "endpoint",
-          "SourceKey": "put:/api/leadstatuses/{id}"
+          "SourceKey": "put:/api/customers/{id}"
         }
       ],
       "PolicyKind": "availability"
@@ -421,121 +241,121 @@
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Subscriber.Create",
-      "DomainKey": "subscribers",
+      "PolicyKey": "ServiceRequest.Create",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "post:/api/subscribers"
+          "SourceKey": "post:/api/servicerequests"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Subscriber.Delete",
-      "DomainKey": "subscribers",
+      "PolicyKey": "ServiceRequest.Delete",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/subscribers/{id}"
+          "SourceKey": "delete:/api/servicerequests/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Subscriber.Read",
-      "DomainKey": "subscribers",
+      "PolicyKey": "ServiceRequest.Read",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscribers"
+          "SourceKey": "get:/api/servicerequests"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscribers/lookup"
+          "SourceKey": "get:/api/servicerequests/lookup"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscribers/options/{field}"
+          "SourceKey": "get:/api/servicerequests/options/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscribers/suggest/{field}"
+          "SourceKey": "get:/api/servicerequests/suggest/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscribers/{id}"
+          "SourceKey": "get:/api/servicerequests/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Subscriber.Update",
-      "DomainKey": "subscribers",
+      "PolicyKey": "ServiceRequest.Update",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "put:/api/subscribers/{id}"
+          "SourceKey": "put:/api/servicerequests/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "SubscriberStatus.Create",
-      "DomainKey": "subscriberstatuses",
+      "PolicyKey": "WorkItem.Create",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "post:/api/subscriberstatuses"
+          "SourceKey": "post:/api/workitems"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "SubscriberStatus.Delete",
-      "DomainKey": "subscriberstatuses",
+      "PolicyKey": "WorkItem.Delete",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/subscriberstatuses/{id}"
+          "SourceKey": "delete:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "SubscriberStatus.Read",
-      "DomainKey": "subscriberstatuses",
+      "PolicyKey": "WorkItem.Read",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscriberstatuses"
+          "SourceKey": "get:/api/workitems"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscriberstatuses/lookup"
+          "SourceKey": "get:/api/workitems/lookup"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscriberstatuses/options/{field}"
+          "SourceKey": "get:/api/workitems/options/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscriberstatuses/suggest/{field}"
+          "SourceKey": "get:/api/workitems/suggest/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/subscriberstatuses/{id}"
+          "SourceKey": "get:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "SubscriberStatus.Update",
-      "DomainKey": "subscriberstatuses",
+      "PolicyKey": "WorkItem.Update",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "put:/api/subscriberstatuses/{id}"
+          "SourceKey": "put:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"

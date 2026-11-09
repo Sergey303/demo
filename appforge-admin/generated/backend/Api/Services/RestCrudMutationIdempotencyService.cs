@@ -2,11 +2,11 @@
 
 using System.Security.Cryptography;
 using System.Text.Json;
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Api.Services;
+namespace Demo.BusinessOperations.Api.Services;
 
 public sealed record RestCrudMutationResult<T>(T Value, bool Replayed);
 
@@ -23,9 +23,9 @@ public sealed class RestCrudMutationIdempotencyService
     private const int CleanupBatchSize = 128;
     private static readonly TimeSpan ReceiptRetention = TimeSpan.FromDays(30);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public RestCrudMutationIdempotencyService(TelegramOperationsAdminDbContext db)
+    public RestCrudMutationIdempotencyService(BusinessOperationsAdminDbContext db)
     {
         ArgumentNullException.ThrowIfNull(db);
         _db = db;

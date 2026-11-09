@@ -7,4 +7,4 @@ export interface LookupRoleRequest {
   "query"?: string | null;
   "take": number;
 }
-export const LookupRoleRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.LookupRoleRequest" as const;
+export const LookupRoleRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.LookupRoleRequest" as const;

@@ -7,4 +7,4 @@ export interface PermissionSuggestionDto {
   "label": string;
   "value": string;
 }
-export const PermissionSuggestionDtoTypeKey = "Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto" as const;
+export const PermissionSuggestionDtoTypeKey = "Demo.BusinessOperations.Api.Contracts.PermissionSuggestionDto" as const;

@@ -12,4 +12,4 @@ export interface ListRoleRequest {
   "pageSize": number;
   "sort": ListRoleSort[];
 }
-export const ListRoleRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.ListRoleRequest" as const;
+export const ListRoleRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.ListRoleRequest" as const;

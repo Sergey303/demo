@@ -1,110 +1,74 @@
 {
-  "get:/api/rolepermissions/options/{field}": {
+  "post:/api/customers": {
     "featureKeys": [],
     "policyKeys": [
-      "RolePermission.Read"
+      "Customer.Create"
     ]
   },
-  "get:/api/rolepermissions/suggest/{field}": {
+  "post:/api/permissions": {
     "featureKeys": [],
     "policyKeys": [
-      "RolePermission.Read"
+      "Permission.Create"
     ]
   },
-  "get:/api/rolepermissions/{id}": {
+  "post:/api/rolepermissions": {
     "featureKeys": [],
     "policyKeys": [
-      "RolePermission.Read"
+      "RolePermission.Create"
     ]
   },
-  "get:/api/roles": {
+  "post:/api/roles": {
     "featureKeys": [],
     "policyKeys": [
-      "Role.Read"
+      "Role.Create"
     ]
   },
-  "get:/api/roles/lookup": {
+  "post:/api/servicerequests": {
     "featureKeys": [],
     "policyKeys": [
-      "Role.Read"
+      "ServiceRequest.Create"
     ]
   },
-  "get:/api/roles/options/{field}": {
+  "post:/api/workitems": {
     "featureKeys": [],
     "policyKeys": [
-      "Role.Read"
+      "WorkItem.Create"
     ]
   },
-  "get:/api/roles/suggest/{field}": {
+  "put:/api/customers/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Role.Read"
+      "Customer.Update"
     ]
   },
-  "get:/api/roles/{id}": {
+  "put:/api/permissions/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Role.Read"
+      "Permission.Update"
     ]
   },
-  "get:/api/subscribers": {
+  "put:/api/rolepermissions/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Subscriber.Read"
+      "RolePermission.Update"
     ]
   },
-  "get:/api/subscribers/lookup": {
+  "put:/api/roles/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Subscriber.Read"
+      "Role.Update"
     ]
   },
-  "get:/api/subscribers/options/{field}": {
+  "put:/api/servicerequests/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Subscriber.Read"
+      "ServiceRequest.Update"
     ]
   },
-  "get:/api/subscribers/suggest/{field}": {
+  "put:/api/workitems/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Subscriber.Read"
-    ]
-  },
-  "get:/api/subscribers/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Subscriber.Read"
-    ]
-  },
-  "get:/api/subscriberstatuses": {
-    "featureKeys": [],
-    "policyKeys": [
-      "SubscriberStatus.Read"
-    ]
-  },
-  "get:/api/subscriberstatuses/lookup": {
-    "featureKeys": [],
-    "policyKeys": [
-      "SubscriberStatus.Read"
-    ]
-  },
-  "get:/api/subscriberstatuses/options/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "SubscriberStatus.Read"
-    ]
-  },
-  "get:/api/subscriberstatuses/suggest/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "SubscriberStatus.Read"
-    ]
-  },
-  "get:/api/subscriberstatuses/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "SubscriberStatus.Read"
+      "WorkItem.Update"
     ]
   }
 }

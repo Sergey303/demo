@@ -1,8 +1,8 @@
-using Demo.TelegramOperations;
+using Demo.BusinessOperations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Demo.TelegramOperations.Persistence.Configurations;
+namespace Demo.BusinessOperations.Persistence.Configurations;
 
 public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {

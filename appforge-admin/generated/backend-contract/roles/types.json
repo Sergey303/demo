@@ -2,7 +2,7 @@
   "DomainKey": "roles",
   "Types": [
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.CreateRoleRequest",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -26,7 +26,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRoleFilter",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRoleFilter",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -64,7 +64,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRoleRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRoleRequest",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -73,7 +73,7 @@
         {
           "Name": "Filters",
           "WireName": "filters",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListRoleFilter>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListRoleFilter>",
           "Nullable": false,
           "Required": true
         },
@@ -94,7 +94,7 @@
         {
           "Name": "Sort",
           "WireName": "sort",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListRoleSort>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListRoleSort>",
           "Nullable": false,
           "Required": true
         }
@@ -102,7 +102,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRoleResult",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRoleResult",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -111,7 +111,7 @@
         {
           "Name": "Items",
           "WireName": "items",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleDto>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleDto>",
           "Nullable": false,
           "Required": true
         },
@@ -140,7 +140,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRoleSort",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRoleSort",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -164,7 +164,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LookupRoleRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.LookupRoleRequest",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -188,7 +188,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RoleDto",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -219,7 +219,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RoleLookupDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RoleLookupDto",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -243,7 +243,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RoleOptionDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RoleOptionDto",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -267,7 +267,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RoleSuggestionDto",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -291,7 +291,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.SuggestRoleRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.SuggestRoleRequest",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -315,7 +315,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.UpdateRoleRequest",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "object",
@@ -339,64 +339,64 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListRoleFilter>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListRoleFilter>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleFilter"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRoleFilter"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListRoleSort>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListRoleSort>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleSort"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRoleSort"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RoleDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RoleDto>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RoleLookupDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RoleLookupDto>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleLookupDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleLookupDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RoleOptionDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RoleOptionDto>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleOptionDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleOptionDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RoleSuggestionDto>",
       "OwningDomainKey": "roles",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleSuggestionDto"
     }
   ]
 }

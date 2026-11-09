@@ -7,8 +7,6 @@ import policiesCatalogJson0 from "./policies.generated_0.json";
 import policiesCatalogJson1 from "./policies.generated_1.json";
 import policiesCatalogJson2 from "./policies.generated_2.json";
 import policiesCatalogJson3 from "./policies.generated_3.json";
-import policiesCatalogJson4 from "./policies.generated_4.json";
-import policiesCatalogJson5 from "./policies.generated_5.json";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -33,5 +31,5 @@ function mergeCatalogFragments(...fragments: readonly Record<string, unknown>[])
   return merged;
 }
 
-const policiesCatalogMergedJson = mergeCatalogFragments(policiesCatalogJson0, policiesCatalogJson1, policiesCatalogJson2, policiesCatalogJson3, policiesCatalogJson4, policiesCatalogJson5);
+const policiesCatalogMergedJson = mergeCatalogFragments(policiesCatalogJson0, policiesCatalogJson1, policiesCatalogJson2, policiesCatalogJson3);
 export const policiesCatalog: Readonly<typeof policiesCatalogMergedJson> = policiesCatalogMergedJson;

@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="TelegramOperationsAdmin.Persistence.csproj" />
-  <Project Path="DatabaseMigrator/TelegramOperationsAdmin.Persistence.Migrator.csproj" />
-</Solution>

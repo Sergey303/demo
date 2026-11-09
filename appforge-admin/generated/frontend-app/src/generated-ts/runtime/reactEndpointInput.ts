@@ -34,3 +34,23 @@ export function normalizeEndpointInput<TInput>(input: GeneratedEndpointInput<TIn
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
+
+/**
+ * A GET endpoint can declare a complex [FromQuery] parameter literally named
+ * "request". Preserve that binding key when adapting the React hook input;
+ * the mutation-style normalization would wrongly turn { request: filters }
+ * into filters, causing transportInputs to reject a missing query argument.
+ * The legacy { args, request } shape keeps route args alongside the query.
+ */
+export function normalizeQueryEndpointInput<TInput>(
+  input: GeneratedEndpointInput<TInput>,
+  endpointKey: string,
+): unknown {
+  if (endpointKey.startsWith("get:") && isRecord(input) &&
+      Object.prototype.hasOwnProperty.call(input, "request")) {
+    const args = isRecord(input.args) ? input.args : {};
+    const { args: _args, ...rest } = input;
+    return { ...args, ...rest };
+  }
+  return normalizeEndpointInput(input);
+}

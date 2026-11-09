@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
       "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -52,7 +52,7 @@
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -68,7 +68,7 @@
     "realtimeLinks": [],
     "frontendAction": null,
     "requestTypeRef": null,
-    "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+    "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
     "invalidatedByRealtimeEventKeys": []
   }
 }

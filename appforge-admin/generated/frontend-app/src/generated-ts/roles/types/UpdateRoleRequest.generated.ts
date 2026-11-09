@@ -7,4 +7,4 @@ export interface UpdateRoleRequest {
   "code": string;
   "name": string;
 }
-export const UpdateRoleRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest" as const;
+export const UpdateRoleRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.UpdateRoleRequest" as const;

@@ -1,6 +1,6 @@
 #nullable enable
 
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,17 +17,17 @@ if (string.IsNullOrWhiteSpace(connectionString))
         throw new InvalidOperationException("Database migrator requires ConnectionStrings:Default.");
     }
 
-    using var previewDatabase = new TelegramOperationsAdminDbContextFactory().CreateDbContext(args);
+    using var previewDatabase = new BusinessOperationsAdminDbContextFactory().CreateDbContext(args);
     await previewDatabase.Database.MigrateAsync(CancellationToken.None);
     return;
 }
 
-builder.Services.AddDbContext<TelegramOperationsAdminDbContext>(options =>
+builder.Services.AddDbContext<BusinessOperationsAdminDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
 
 using var host = builder.Build();
 using var scope = host.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<TelegramOperationsAdminDbContext>();
+var db = scope.ServiceProvider.GetRequiredService<BusinessOperationsAdminDbContext>();
 await db.Database.MigrateAsync(CancellationToken.None);

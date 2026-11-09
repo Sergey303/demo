@@ -19,7 +19,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -28,11 +28,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionResult"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionResult"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionResult",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionResult",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Read"
@@ -48,7 +48,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "List(ListRolePermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -79,19 +79,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreateRolePermissionRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateRolePermissionRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Create"
@@ -118,14 +118,14 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Create(CreateRolePermissionRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-rolepermission-create",
-        "PayloadSchemaVersion": 6400625799418860,
+        "PayloadSchemaVersion": 688561883157089,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,
@@ -153,7 +153,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupRolePermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupRolePermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -162,11 +162,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Read"
@@ -182,7 +182,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Lookup(LookupRolePermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -214,11 +214,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionOptionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionOptionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionOptionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionOptionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Read"
@@ -234,7 +234,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -266,7 +266,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestRolePermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestRolePermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -275,11 +275,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionSuggestionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionSuggestionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionSuggestionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionSuggestionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Read"
@@ -295,7 +295,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Suggest(String field, SuggestRolePermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -361,7 +361,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
@@ -405,11 +405,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Read"
@@ -427,7 +427,7 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -467,19 +467,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRolePermissionRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRolePermissionRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRolePermissionRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRolePermissionRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "RolePermission.Update"
@@ -507,14 +507,14 @@
         "rolepermissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RolePermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RolePermissionController",
         "MethodClrSignature": "Update(Guid id, UpdateRolePermissionRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-rolepermission-update",
-        "PayloadSchemaVersion": 545595250555307,
+        "PayloadSchemaVersion": 814895835387578,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,

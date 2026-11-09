@@ -1,11 +1,11 @@
 #nullable enable
 
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Auth;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Demo.TelegramOperations.Api.Controllers;
+namespace Demo.BusinessOperations.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]

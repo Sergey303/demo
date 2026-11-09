@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
       "MethodClrSignature": "Update(Guid id, UpdatePermissionRequest request, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -58,14 +58,14 @@
         }
       ],
       "requestBody": {
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.UpdatePermissionRequest",
         "required": true
       },
       "multipartParts": [],
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -90,8 +90,8 @@
     ],
     "realtimeLinks": [],
     "frontendAction": null,
-    "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
-    "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+    "requestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdatePermissionRequest",
+    "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
     "invalidatedByRealtimeEventKeys": []
   }
 }

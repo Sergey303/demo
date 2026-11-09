@@ -1,0 +1,444 @@
+{
+  "DomainKey": "servicerequests",
+  "Types": [
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.CreateServiceRequestRequest",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CustomerId",
+          "WireName": "customerId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "WireName": "description",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Priority",
+          "WireName": "priority",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestFilter",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Operator",
+          "WireName": "operator",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Values",
+          "WireName": "values",
+          "TypeRef": "array<shared:string>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestRequest",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Filters",
+          "WireName": "filters",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListServiceRequestFilter>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Sort",
+          "WireName": "sort",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListServiceRequestSort>",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestResult",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Items",
+          "WireName": "items",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestDto>",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Page",
+          "WireName": "page",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "PageSize",
+          "WireName": "pageSize",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "TotalCount",
+          "WireName": "totalCount",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestSort",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Direction",
+          "WireName": "direction",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Field",
+          "WireName": "field",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.LookupServiceRequestRequest",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CustomerId",
+          "WireName": "customerId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "WireName": "description",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Id",
+          "WireName": "id",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Priority",
+          "WireName": "priority",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ServiceRequestLookupDto",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ServiceRequestSuggestionDto",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Label",
+          "WireName": "label",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "WireName": "value",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.SuggestServiceRequestRequest",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "Query",
+          "WireName": "query",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Take",
+          "WireName": "take",
+          "TypeRef": "shared:int32",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.UpdateServiceRequestRequest",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "object",
+      "Nullable": false,
+      "Properties": [
+        {
+          "Name": "CustomerId",
+          "WireName": "customerId",
+          "TypeRef": "shared:guid",
+          "Nullable": false,
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "WireName": "description",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Priority",
+          "WireName": "priority",
+          "TypeRef": "shared:string",
+          "Nullable": true,
+          "Required": false
+        },
+        {
+          "Name": "Title",
+          "WireName": "title",
+          "TypeRef": "shared:string",
+          "Nullable": false,
+          "Required": true
+        }
+      ],
+      "TypeArguments": []
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListServiceRequestFilter>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestFilter"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListServiceRequestSort>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListServiceRequestSort"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestDto>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestLookupDto>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestLookupDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto"
+    },
+    {
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestSuggestionDto>",
+      "OwningDomainKey": "servicerequests",
+      "IsShared": false,
+      "Kind": "array",
+      "Nullable": false,
+      "Properties": [],
+      "TypeArguments": [],
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ServiceRequestSuggestionDto"
+    }
+  ]
+}

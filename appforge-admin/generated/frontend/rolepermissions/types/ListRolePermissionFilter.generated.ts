@@ -9,4 +9,4 @@ export interface ListRolePermissionFilter {
   "value"?: string | null;
   "values": string[];
 }
-export const ListRolePermissionFilterTypeKey = "Demo.TelegramOperations.Api.Contracts.ListRolePermissionFilter" as const;
+export const ListRolePermissionFilterTypeKey = "Demo.BusinessOperations.Api.Contracts.ListRolePermissionFilter" as const;

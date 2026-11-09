@@ -1,110 +1,110 @@
 {
-  "get:/api/campaignstatuses/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "CampaignStatus.Read"
-    ]
-  },
-  "get:/api/leads": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Read"
-    ]
-  },
-  "get:/api/leads/lookup": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Read"
-    ]
-  },
-  "get:/api/leads/options/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Read"
-    ]
-  },
-  "get:/api/leads/suggest/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Read"
-    ]
-  },
-  "get:/api/leads/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Read"
-    ]
-  },
-  "get:/api/leadstatuses": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Read"
-    ]
-  },
-  "get:/api/leadstatuses/lookup": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Read"
-    ]
-  },
-  "get:/api/leadstatuses/options/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Read"
-    ]
-  },
-  "get:/api/leadstatuses/suggest/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Read"
-    ]
-  },
-  "get:/api/leadstatuses/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Read"
-    ]
-  },
-  "get:/api/permissions": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Permission.Read"
-    ]
-  },
-  "get:/api/permissions/lookup": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Permission.Read"
-    ]
-  },
-  "get:/api/permissions/options/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Permission.Read"
-    ]
-  },
-  "get:/api/permissions/suggest/{field}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Permission.Read"
-    ]
-  },
-  "get:/api/permissions/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Permission.Read"
-    ]
-  },
-  "get:/api/rolepermissions": {
+  "get:/api/rolepermissions/options/{field}": {
     "featureKeys": [],
     "policyKeys": [
       "RolePermission.Read"
     ]
   },
-  "get:/api/rolepermissions/lookup": {
+  "get:/api/rolepermissions/suggest/{field}": {
     "featureKeys": [],
     "policyKeys": [
       "RolePermission.Read"
+    ]
+  },
+  "get:/api/rolepermissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Read"
+    ]
+  },
+  "get:/api/roles": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Read"
+    ]
+  },
+  "get:/api/roles/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Read"
+    ]
+  },
+  "get:/api/roles/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Read"
+    ]
+  },
+  "get:/api/roles/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Read"
+    ]
+  },
+  "get:/api/roles/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Role.Read"
+    ]
+  },
+  "get:/api/servicerequests": {
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ]
+  },
+  "get:/api/servicerequests/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ]
+  },
+  "get:/api/servicerequests/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ]
+  },
+  "get:/api/servicerequests/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ]
+  },
+  "get:/api/servicerequests/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ]
+  },
+  "get:/api/workitems": {
+    "featureKeys": [],
+    "policyKeys": [
+      "WorkItem.Read"
+    ]
+  },
+  "get:/api/workitems/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "WorkItem.Read"
+    ]
+  },
+  "get:/api/workitems/options/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "WorkItem.Read"
+    ]
+  },
+  "get:/api/workitems/suggest/{field}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "WorkItem.Read"
+    ]
+  },
+  "get:/api/workitems/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "WorkItem.Read"
     ]
   }
 }

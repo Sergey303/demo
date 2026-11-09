@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
       "MethodClrSignature": "Lookup(LookupPermissionRequest request, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -41,7 +41,7 @@
           "bindingSource": "query",
           "name": "request",
           "wireName": "request",
-          "typeRef": "Demo.TelegramOperations.Api.Contracts.LookupPermissionRequest",
+          "typeRef": "Demo.BusinessOperations.Api.Contracts.LookupPermissionRequest",
           "nullable": false,
           "required": true,
           "valueSource": null
@@ -52,7 +52,7 @@
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>",
+        "typeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionLookupDto>",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -66,7 +66,7 @@
     "realtimeLinks": [],
     "frontendAction": null,
     "requestTypeRef": null,
-    "responseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>",
+    "responseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionLookupDto>",
     "invalidatedByRealtimeEventKeys": []
   }
 }

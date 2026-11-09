@@ -1,96 +1,16 @@
 #nullable enable
 
-using Demo.TelegramOperations;
+using Demo.BusinessOperations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Persistence;
+namespace Demo.BusinessOperations.Persistence;
 
 internal static class PreviewSeedData
 {
     public static async Task SeedAsync(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         CancellationToken cancellationToken = default)
     {
-        var subscriberStatusActive = new SubscriberStatus
-        {
-            Id = Guid.Parse("2cfaef9b-bad3-5ecd-a968-43b76a923278"),
-            Code = "active",
-            Name = "Active",
-            SortOrder = 10,
-        };
-
-        var subscriberStatusPaused = new SubscriberStatus
-        {
-            Id = Guid.Parse("3855f1fa-c1ae-5b51-ba6e-4e8799850de8"),
-            Code = "paused",
-            Name = "Paused",
-            SortOrder = 20,
-        };
-
-        var subscriberStatusBlocked = new SubscriberStatus
-        {
-            Id = Guid.Parse("f912619c-a7ee-5b6b-b1fc-8b820d37d551"),
-            Code = "blocked",
-            Name = "Blocked",
-            SortOrder = 30,
-        };
-
-        var leadStatusNew = new LeadStatus
-        {
-            Id = Guid.Parse("f38ab1fd-b399-53cc-9938-533db8d572d6"),
-            Code = "new",
-            Name = "New",
-            SortOrder = 10,
-        };
-
-        var leadStatusContacted = new LeadStatus
-        {
-            Id = Guid.Parse("6664dc48-0bfa-53d6-91a8-b36f1467161a"),
-            Code = "contacted",
-            Name = "Contacted",
-            SortOrder = 20,
-        };
-
-        var leadStatusQualified = new LeadStatus
-        {
-            Id = Guid.Parse("9b8032c0-effc-50ce-963f-240b6d6dd8d6"),
-            Code = "qualified",
-            Name = "Qualified",
-            SortOrder = 30,
-        };
-
-        var leadStatusClosed = new LeadStatus
-        {
-            Id = Guid.Parse("b9448d5b-15a3-5473-9d3a-229a20c07735"),
-            Code = "closed",
-            Name = "Closed",
-            SortOrder = 40,
-        };
-
-        var campaignStatusDraft = new CampaignStatus
-        {
-            Id = Guid.Parse("35938e2b-2eb3-5f35-937f-0d19787545f7"),
-            Code = "draft",
-            Name = "Draft",
-            SortOrder = 10,
-        };
-
-        var campaignStatusApproved = new CampaignStatus
-        {
-            Id = Guid.Parse("1422a695-c5bc-54ae-bcbf-48eca520445c"),
-            Code = "approved",
-            Name = "Approved",
-            SortOrder = 20,
-        };
-
-        var campaignStatusArchived = new CampaignStatus
-        {
-            Id = Guid.Parse("e6ff932f-c72e-50ab-9c52-4afa4f51786a"),
-            Code = "archived",
-            Name = "Archived",
-            SortOrder = 30,
-        };
-
         var roleAdmin = new Role
         {
             Id = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
@@ -98,183 +18,182 @@ internal static class PreviewSeedData
             Name = "Admin",
         };
 
-        var permissionSubscriberRead = new Permission
+        var permissionCustomerRead = new Permission
         {
-            Id = Guid.Parse("07efdae8-4fdb-53b0-bd2b-c866f77725ab"),
-            Code = "Subscriber.Read",
-            Name = "Subscriber Read",
+            Id = Guid.Parse("046ba712-f87c-584d-97bf-86858eb58ab1"),
+            Code = "Customer.Read",
+            Name = "Customer Read",
         };
 
-        var permissionSubscriberCreate = new Permission
+        var permissionCustomerCreate = new Permission
         {
-            Id = Guid.Parse("55932e6f-378a-5328-88b7-52fe7a41d8cb"),
-            Code = "Subscriber.Create",
-            Name = "Subscriber Create",
+            Id = Guid.Parse("fad2610a-2caa-5c76-90b0-72e4adbc954d"),
+            Code = "Customer.Create",
+            Name = "Customer Create",
         };
 
-        var permissionSubscriberUpdate = new Permission
+        var permissionCustomerUpdate = new Permission
         {
-            Id = Guid.Parse("6f793167-1008-572d-80f7-b0471f9abb26"),
-            Code = "Subscriber.Update",
-            Name = "Subscriber Update",
+            Id = Guid.Parse("a93f528b-5486-5787-9ec2-4bdb28d91597"),
+            Code = "Customer.Update",
+            Name = "Customer Update",
         };
 
-        var permissionSubscriberDelete = new Permission
+        var permissionCustomerDelete = new Permission
         {
-            Id = Guid.Parse("37c97ab9-6be5-5aaa-8fa3-137e9689950d"),
-            Code = "Subscriber.Delete",
-            Name = "Subscriber Delete",
+            Id = Guid.Parse("7ea09e08-71d2-5c28-8528-08b598a3b7e8"),
+            Code = "Customer.Delete",
+            Name = "Customer Delete",
         };
 
-        var permissionLeadRead = new Permission
+        var permissionServiceRequestRead = new Permission
         {
-            Id = Guid.Parse("f2a1220a-4561-5f98-a230-c2abe06c92d6"),
-            Code = "Lead.Read",
-            Name = "Lead Read",
+            Id = Guid.Parse("ac7c6d72-9f5a-522c-aa3b-e445362fe2b5"),
+            Code = "ServiceRequest.Read",
+            Name = "ServiceRequest Read",
         };
 
-        var permissionLeadCreate = new Permission
+        var permissionServiceRequestCreate = new Permission
         {
-            Id = Guid.Parse("8309e259-5c2d-5428-ade5-a30d7935427f"),
-            Code = "Lead.Create",
-            Name = "Lead Create",
+            Id = Guid.Parse("4f525663-4e61-5d82-9e41-63fe04089a8a"),
+            Code = "ServiceRequest.Create",
+            Name = "ServiceRequest Create",
         };
 
-        var permissionLeadUpdate = new Permission
+        var permissionServiceRequestUpdate = new Permission
         {
-            Id = Guid.Parse("29515eff-b007-5d25-911b-79756edf0edc"),
-            Code = "Lead.Update",
-            Name = "Lead Update",
+            Id = Guid.Parse("4a39e60b-2eb2-51c2-9d99-481aedebfd9b"),
+            Code = "ServiceRequest.Update",
+            Name = "ServiceRequest Update",
         };
 
-        var permissionLeadDelete = new Permission
+        var permissionServiceRequestDelete = new Permission
         {
-            Id = Guid.Parse("ec43e959-c532-597b-9c1a-07b964406431"),
-            Code = "Lead.Delete",
-            Name = "Lead Delete",
+            Id = Guid.Parse("62aaa43b-fa2d-5b6e-ad79-3f3bb1005e2a"),
+            Code = "ServiceRequest.Delete",
+            Name = "ServiceRequest Delete",
         };
 
-        var permissionCampaignRead = new Permission
+        var permissionWorkItemRead = new Permission
         {
-            Id = Guid.Parse("4f0984ae-3994-5823-a156-bf759d867472"),
-            Code = "Campaign.Read",
-            Name = "Campaign Read",
+            Id = Guid.Parse("6d367c55-bb70-513e-a33f-96f323af234c"),
+            Code = "WorkItem.Read",
+            Name = "WorkItem Read",
         };
 
-        var permissionCampaignCreate = new Permission
+        var permissionWorkItemCreate = new Permission
         {
-            Id = Guid.Parse("872962dd-6992-51fe-8595-957090faa0f1"),
-            Code = "Campaign.Create",
-            Name = "Campaign Create",
+            Id = Guid.Parse("dbaf8889-0c32-5a63-98b5-927be679036a"),
+            Code = "WorkItem.Create",
+            Name = "WorkItem Create",
         };
 
-        var permissionCampaignUpdate = new Permission
+        var permissionWorkItemUpdate = new Permission
         {
-            Id = Guid.Parse("a3b1c4e6-eac6-5c09-bcb5-a9e34ee386b5"),
-            Code = "Campaign.Update",
-            Name = "Campaign Update",
+            Id = Guid.Parse("7057329f-760d-598b-9933-6765a2f5e5dc"),
+            Code = "WorkItem.Update",
+            Name = "WorkItem Update",
         };
 
-        var permissionCampaignDelete = new Permission
+        var permissionWorkItemDelete = new Permission
         {
-            Id = Guid.Parse("170f8ccd-768e-59b7-bd73-55b0a4f509cc"),
-            Code = "Campaign.Delete",
-            Name = "Campaign Delete",
+            Id = Guid.Parse("329efd44-a577-5737-9a79-00ef4bd663b4"),
+            Code = "WorkItem.Delete",
+            Name = "WorkItem Delete",
         };
 
-        var rolePermissionAdminSubscriberRead = new RolePermission
+        var rolePermissionAdminCustomerRead = new RolePermission
         {
-            Id = Guid.Parse("565709c0-5b06-5434-a649-288ab35f91e7"),
+            Id = Guid.Parse("db919734-9549-5c4e-a769-929b4b5c8b6f"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("07efdae8-4fdb-53b0-bd2b-c866f77725ab"),
+            PermissionId = Guid.Parse("046ba712-f87c-584d-97bf-86858eb58ab1"),
         };
 
-        var rolePermissionAdminSubscriberCreate = new RolePermission
+        var rolePermissionAdminCustomerCreate = new RolePermission
         {
-            Id = Guid.Parse("a9501924-00f5-5cdc-bd90-a38b5867b40b"),
+            Id = Guid.Parse("b5bc6681-ae1c-5af8-844a-7561fcfc3d58"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("55932e6f-378a-5328-88b7-52fe7a41d8cb"),
+            PermissionId = Guid.Parse("fad2610a-2caa-5c76-90b0-72e4adbc954d"),
         };
 
-        var rolePermissionAdminSubscriberUpdate = new RolePermission
+        var rolePermissionAdminCustomerUpdate = new RolePermission
         {
-            Id = Guid.Parse("36533449-fbed-5485-a11b-2a38381fe796"),
+            Id = Guid.Parse("066af72c-c33c-5dd1-bf3d-17fccd793726"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("6f793167-1008-572d-80f7-b0471f9abb26"),
+            PermissionId = Guid.Parse("a93f528b-5486-5787-9ec2-4bdb28d91597"),
         };
 
-        var rolePermissionAdminSubscriberDelete = new RolePermission
+        var rolePermissionAdminCustomerDelete = new RolePermission
         {
-            Id = Guid.Parse("d891dd86-aea7-57c9-84c2-c780dc0fb195"),
+            Id = Guid.Parse("6cfc2548-8f0d-5787-a4e7-eabcda9cc90e"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("37c97ab9-6be5-5aaa-8fa3-137e9689950d"),
+            PermissionId = Guid.Parse("7ea09e08-71d2-5c28-8528-08b598a3b7e8"),
         };
 
-        var rolePermissionAdminLeadRead = new RolePermission
+        var rolePermissionAdminServiceRequestRead = new RolePermission
         {
-            Id = Guid.Parse("ad6d02f5-9740-5907-b771-a49f4a74dc14"),
+            Id = Guid.Parse("0d93f19c-c220-5faf-9a0c-83187fd92739"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("f2a1220a-4561-5f98-a230-c2abe06c92d6"),
+            PermissionId = Guid.Parse("ac7c6d72-9f5a-522c-aa3b-e445362fe2b5"),
         };
 
-        var rolePermissionAdminLeadCreate = new RolePermission
+        var rolePermissionAdminServiceRequestCreate = new RolePermission
         {
-            Id = Guid.Parse("6fa5b090-7de9-5f37-896f-ec18145a1aea"),
+            Id = Guid.Parse("1fbf627f-c74e-5609-8a93-6aa403dc3333"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("8309e259-5c2d-5428-ade5-a30d7935427f"),
+            PermissionId = Guid.Parse("4f525663-4e61-5d82-9e41-63fe04089a8a"),
         };
 
-        var rolePermissionAdminLeadUpdate = new RolePermission
+        var rolePermissionAdminServiceRequestUpdate = new RolePermission
         {
-            Id = Guid.Parse("2024f63c-e770-5ed5-9dd5-5346983ca558"),
+            Id = Guid.Parse("055f91f7-7123-535c-9207-6d970bd4a2f1"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("29515eff-b007-5d25-911b-79756edf0edc"),
+            PermissionId = Guid.Parse("4a39e60b-2eb2-51c2-9d99-481aedebfd9b"),
         };
 
-        var rolePermissionAdminLeadDelete = new RolePermission
+        var rolePermissionAdminServiceRequestDelete = new RolePermission
         {
-            Id = Guid.Parse("50419364-db6f-5d8d-aa3f-6490aefca6dc"),
+            Id = Guid.Parse("43502b35-1fce-5806-a1e1-39cf9040bece"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("ec43e959-c532-597b-9c1a-07b964406431"),
+            PermissionId = Guid.Parse("62aaa43b-fa2d-5b6e-ad79-3f3bb1005e2a"),
         };
 
-        var rolePermissionAdminCampaignRead = new RolePermission
+        var rolePermissionAdminWorkItemRead = new RolePermission
         {
-            Id = Guid.Parse("9bfd90cc-9729-56bd-853e-c3a6d2bff9ce"),
+            Id = Guid.Parse("769fc9f4-2173-5e32-bed2-1c3bdbff6753"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("4f0984ae-3994-5823-a156-bf759d867472"),
+            PermissionId = Guid.Parse("6d367c55-bb70-513e-a33f-96f323af234c"),
         };
 
-        var rolePermissionAdminCampaignCreate = new RolePermission
+        var rolePermissionAdminWorkItemCreate = new RolePermission
         {
-            Id = Guid.Parse("84866cf2-7a03-5bd0-8b81-b5df358e6b26"),
+            Id = Guid.Parse("11afcaa2-19ab-5d5d-bc38-1504a5b08d4b"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("872962dd-6992-51fe-8595-957090faa0f1"),
+            PermissionId = Guid.Parse("dbaf8889-0c32-5a63-98b5-927be679036a"),
         };
 
-        var rolePermissionAdminCampaignUpdate = new RolePermission
+        var rolePermissionAdminWorkItemUpdate = new RolePermission
         {
-            Id = Guid.Parse("a985c03b-ff47-59be-ba72-ef1b6721f487"),
+            Id = Guid.Parse("e5140db7-d73e-5787-9119-2d60ea8e0b9a"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("a3b1c4e6-eac6-5c09-bcb5-a9e34ee386b5"),
+            PermissionId = Guid.Parse("7057329f-760d-598b-9933-6765a2f5e5dc"),
         };
 
-        var rolePermissionAdminCampaignDelete = new RolePermission
+        var rolePermissionAdminWorkItemDelete = new RolePermission
         {
-            Id = Guid.Parse("0e112d43-4067-5942-a8d1-202661ef7690"),
+            Id = Guid.Parse("3ec57fc4-a61c-5c86-aa51-ec6e4ba5e1cd"),
             RoleId = Guid.Parse("51d1a9a0-0203-5c3e-83ed-0aae24a61d6d"),
-            PermissionId = Guid.Parse("170f8ccd-768e-59b7-bd73-55b0a4f509cc"),
+            PermissionId = Guid.Parse("329efd44-a577-5737-9a79-00ef4bd663b4"),
         };
 
 
-        var subscriber = new Subscriber
+        var customer = new Customer
         {
-            Id = Guid.Parse("93a301e2-3f8e-564f-bd23-ebeabafcaa51"),
-            Handle = "Subscriber Handle",
-            DisplayName = "Subscriber DisplayName",
-            StatusId = Guid.Parse("2cfaef9b-bad3-5ecd-a968-43b76a923278"),
-            JoinedAt = default,
-            Note = "Subscriber Note",
+            Id = Guid.Parse("b6687ca6-640d-5c8b-96b6-7430b90a1727"),
+            Name = "Customer Name",
+            Email = "Customer Email",
+            Segment = "Customer Segment",
+            Note = "Customer Note",
             CreationTime = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             CreatorId = null,
             LastModificationTime = null,
@@ -282,20 +201,19 @@ internal static class PreviewSeedData
             IsDeleted = false,
             DeletionTime = null,
             DeleterId = null,
-            HandleSearch = NormalizeSearchValue("Subscriber Handle"),
-            DisplayNameSearch = NormalizeSearchValue("Subscriber DisplayName"),
-            NoteSearch = NormalizeSearchValue("Subscriber Note"),
+            NameSearch = NormalizeSearchValue("Customer Name"),
+            EmailSearch = NormalizeSearchValue("Customer Email"),
+            SegmentSearch = NormalizeSearchValue("Customer Segment"),
+            NoteSearch = NormalizeSearchValue("Customer Note"),
         };
 
-        var lead = new Lead
+        var serviceRequest = new ServiceRequest
         {
-            Id = Guid.Parse("e2c322c9-38ff-56c1-9ab6-16fee575d8bd"),
-            SubscriberId = Guid.Parse("93a301e2-3f8e-564f-bd23-ebeabafcaa51"),
-            Subject = "Lead Subject",
-            StatusId = Guid.Parse("f38ab1fd-b399-53cc-9938-533db8d572d6"),
-            Owner = "Lead Owner",
-            CreatedAt = default,
-            Note = "Lead Note",
+            Id = Guid.Parse("19f53c76-34e7-5c06-a8c6-bdca74dbc3ed"),
+            CustomerId = Guid.Parse("b6687ca6-640d-5c8b-96b6-7430b90a1727"),
+            Title = "ServiceRequest Title",
+            Priority = "ServiceRequest Priority",
+            Description = "ServiceRequest Description",
             CreationTime = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc),
             CreatorId = null,
             LastModificationTime = null,
@@ -303,20 +221,19 @@ internal static class PreviewSeedData
             IsDeleted = false,
             DeletionTime = null,
             DeleterId = null,
-            SubjectSearch = NormalizeSearchValue("Lead Subject"),
-            OwnerSearch = NormalizeSearchValue("Lead Owner"),
-            NoteSearch = NormalizeSearchValue("Lead Note"),
+            TitleSearch = NormalizeSearchValue("ServiceRequest Title"),
+            PrioritySearch = NormalizeSearchValue("ServiceRequest Priority"),
+            DescriptionSearch = NormalizeSearchValue("ServiceRequest Description"),
         };
 
-        var campaign = new Campaign
+        var workItem = new WorkItem
         {
-            Id = Guid.Parse("a3996b47-18df-5919-96b0-b842193d8499"),
-            Name = "Campaign Name",
-            AudienceDescription = "Campaign AudienceDescription",
-            MessageTemplate = "Campaign MessageTemplate",
-            StatusId = Guid.Parse("35938e2b-2eb3-5f35-937f-0d19787545f7"),
-            CreatedAt = default,
-            Note = "Campaign Note",
+            Id = Guid.Parse("87e35e4e-c51d-5d4f-b472-ee70babec02f"),
+            ServiceRequestId = Guid.Parse("19f53c76-34e7-5c06-a8c6-bdca74dbc3ed"),
+            Title = "WorkItem Title",
+            Assignee = "WorkItem Assignee",
+            Status = "WorkItem Status",
+            Note = "WorkItem Note",
             CreationTime = new DateTime(2026, 1, 3, 0, 0, 0, DateTimeKind.Utc),
             CreatorId = null,
             LastModificationTime = null,
@@ -324,198 +241,148 @@ internal static class PreviewSeedData
             IsDeleted = false,
             DeletionTime = null,
             DeleterId = null,
-            NameSearch = NormalizeSearchValue("Campaign Name"),
-            AudienceDescriptionSearch = NormalizeSearchValue("Campaign AudienceDescription"),
-            MessageTemplateSearch = NormalizeSearchValue("Campaign MessageTemplate"),
-            NoteSearch = NormalizeSearchValue("Campaign Note"),
+            TitleSearch = NormalizeSearchValue("WorkItem Title"),
+            AssigneeSearch = NormalizeSearchValue("WorkItem Assignee"),
+            StatusSearch = NormalizeSearchValue("WorkItem Status"),
+            NoteSearch = NormalizeSearchValue("WorkItem Note"),
         };
-
-        if (!await db.SubscriberStatuses.AnyAsync(x => x.Code == "active", cancellationToken))
-        {
-            db.SubscriberStatuses.Add(subscriberStatusActive);
-        }
-
-        if (!await db.SubscriberStatuses.AnyAsync(x => x.Code == "paused", cancellationToken))
-        {
-            db.SubscriberStatuses.Add(subscriberStatusPaused);
-        }
-
-        if (!await db.SubscriberStatuses.AnyAsync(x => x.Code == "blocked", cancellationToken))
-        {
-            db.SubscriberStatuses.Add(subscriberStatusBlocked);
-        }
-
-        if (!await db.LeadStatuses.AnyAsync(x => x.Code == "new", cancellationToken))
-        {
-            db.LeadStatuses.Add(leadStatusNew);
-        }
-
-        if (!await db.LeadStatuses.AnyAsync(x => x.Code == "contacted", cancellationToken))
-        {
-            db.LeadStatuses.Add(leadStatusContacted);
-        }
-
-        if (!await db.LeadStatuses.AnyAsync(x => x.Code == "qualified", cancellationToken))
-        {
-            db.LeadStatuses.Add(leadStatusQualified);
-        }
-
-        if (!await db.LeadStatuses.AnyAsync(x => x.Code == "closed", cancellationToken))
-        {
-            db.LeadStatuses.Add(leadStatusClosed);
-        }
-
-        if (!await db.CampaignStatuses.AnyAsync(x => x.Code == "draft", cancellationToken))
-        {
-            db.CampaignStatuses.Add(campaignStatusDraft);
-        }
-
-        if (!await db.CampaignStatuses.AnyAsync(x => x.Code == "approved", cancellationToken))
-        {
-            db.CampaignStatuses.Add(campaignStatusApproved);
-        }
-
-        if (!await db.CampaignStatuses.AnyAsync(x => x.Code == "archived", cancellationToken))
-        {
-            db.CampaignStatuses.Add(campaignStatusArchived);
-        }
 
         if (!await db.Roles.AnyAsync(x => x.Code == "Admin", cancellationToken))
         {
             db.Roles.Add(roleAdmin);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Subscriber.Read", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "Customer.Read", cancellationToken))
         {
-            db.Permissions.Add(permissionSubscriberRead);
+            db.Permissions.Add(permissionCustomerRead);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Subscriber.Create", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "Customer.Create", cancellationToken))
         {
-            db.Permissions.Add(permissionSubscriberCreate);
+            db.Permissions.Add(permissionCustomerCreate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Subscriber.Update", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "Customer.Update", cancellationToken))
         {
-            db.Permissions.Add(permissionSubscriberUpdate);
+            db.Permissions.Add(permissionCustomerUpdate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Subscriber.Delete", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "Customer.Delete", cancellationToken))
         {
-            db.Permissions.Add(permissionSubscriberDelete);
+            db.Permissions.Add(permissionCustomerDelete);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Lead.Read", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "ServiceRequest.Read", cancellationToken))
         {
-            db.Permissions.Add(permissionLeadRead);
+            db.Permissions.Add(permissionServiceRequestRead);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Lead.Create", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "ServiceRequest.Create", cancellationToken))
         {
-            db.Permissions.Add(permissionLeadCreate);
+            db.Permissions.Add(permissionServiceRequestCreate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Lead.Update", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "ServiceRequest.Update", cancellationToken))
         {
-            db.Permissions.Add(permissionLeadUpdate);
+            db.Permissions.Add(permissionServiceRequestUpdate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Lead.Delete", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "ServiceRequest.Delete", cancellationToken))
         {
-            db.Permissions.Add(permissionLeadDelete);
+            db.Permissions.Add(permissionServiceRequestDelete);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Campaign.Read", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "WorkItem.Read", cancellationToken))
         {
-            db.Permissions.Add(permissionCampaignRead);
+            db.Permissions.Add(permissionWorkItemRead);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Campaign.Create", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "WorkItem.Create", cancellationToken))
         {
-            db.Permissions.Add(permissionCampaignCreate);
+            db.Permissions.Add(permissionWorkItemCreate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Campaign.Update", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "WorkItem.Update", cancellationToken))
         {
-            db.Permissions.Add(permissionCampaignUpdate);
+            db.Permissions.Add(permissionWorkItemUpdate);
         }
 
-        if (!await db.Permissions.AnyAsync(x => x.Code == "Campaign.Delete", cancellationToken))
+        if (!await db.Permissions.AnyAsync(x => x.Code == "WorkItem.Delete", cancellationToken))
         {
-            db.Permissions.Add(permissionCampaignDelete);
+            db.Permissions.Add(permissionWorkItemDelete);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminSubscriberRead.RoleId && x.PermissionId == rolePermissionAdminSubscriberRead.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCustomerRead.RoleId && x.PermissionId == rolePermissionAdminCustomerRead.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminSubscriberRead);
+            db.RolePermissions.Add(rolePermissionAdminCustomerRead);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminSubscriberCreate.RoleId && x.PermissionId == rolePermissionAdminSubscriberCreate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCustomerCreate.RoleId && x.PermissionId == rolePermissionAdminCustomerCreate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminSubscriberCreate);
+            db.RolePermissions.Add(rolePermissionAdminCustomerCreate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminSubscriberUpdate.RoleId && x.PermissionId == rolePermissionAdminSubscriberUpdate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCustomerUpdate.RoleId && x.PermissionId == rolePermissionAdminCustomerUpdate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminSubscriberUpdate);
+            db.RolePermissions.Add(rolePermissionAdminCustomerUpdate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminSubscriberDelete.RoleId && x.PermissionId == rolePermissionAdminSubscriberDelete.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCustomerDelete.RoleId && x.PermissionId == rolePermissionAdminCustomerDelete.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminSubscriberDelete);
+            db.RolePermissions.Add(rolePermissionAdminCustomerDelete);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminLeadRead.RoleId && x.PermissionId == rolePermissionAdminLeadRead.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminServiceRequestRead.RoleId && x.PermissionId == rolePermissionAdminServiceRequestRead.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminLeadRead);
+            db.RolePermissions.Add(rolePermissionAdminServiceRequestRead);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminLeadCreate.RoleId && x.PermissionId == rolePermissionAdminLeadCreate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminServiceRequestCreate.RoleId && x.PermissionId == rolePermissionAdminServiceRequestCreate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminLeadCreate);
+            db.RolePermissions.Add(rolePermissionAdminServiceRequestCreate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminLeadUpdate.RoleId && x.PermissionId == rolePermissionAdminLeadUpdate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminServiceRequestUpdate.RoleId && x.PermissionId == rolePermissionAdminServiceRequestUpdate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminLeadUpdate);
+            db.RolePermissions.Add(rolePermissionAdminServiceRequestUpdate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminLeadDelete.RoleId && x.PermissionId == rolePermissionAdminLeadDelete.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminServiceRequestDelete.RoleId && x.PermissionId == rolePermissionAdminServiceRequestDelete.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminLeadDelete);
+            db.RolePermissions.Add(rolePermissionAdminServiceRequestDelete);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCampaignRead.RoleId && x.PermissionId == rolePermissionAdminCampaignRead.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminWorkItemRead.RoleId && x.PermissionId == rolePermissionAdminWorkItemRead.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminCampaignRead);
+            db.RolePermissions.Add(rolePermissionAdminWorkItemRead);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCampaignCreate.RoleId && x.PermissionId == rolePermissionAdminCampaignCreate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminWorkItemCreate.RoleId && x.PermissionId == rolePermissionAdminWorkItemCreate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminCampaignCreate);
+            db.RolePermissions.Add(rolePermissionAdminWorkItemCreate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCampaignUpdate.RoleId && x.PermissionId == rolePermissionAdminCampaignUpdate.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminWorkItemUpdate.RoleId && x.PermissionId == rolePermissionAdminWorkItemUpdate.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminCampaignUpdate);
+            db.RolePermissions.Add(rolePermissionAdminWorkItemUpdate);
         }
 
-        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminCampaignDelete.RoleId && x.PermissionId == rolePermissionAdminCampaignDelete.PermissionId, cancellationToken))
+        if (!await db.RolePermissions.AnyAsync(x => x.RoleId == rolePermissionAdminWorkItemDelete.RoleId && x.PermissionId == rolePermissionAdminWorkItemDelete.PermissionId, cancellationToken))
         {
-            db.RolePermissions.Add(rolePermissionAdminCampaignDelete);
+            db.RolePermissions.Add(rolePermissionAdminWorkItemDelete);
         }
 
-        if (!await db.Subscribers.AnyAsync(cancellationToken))
+        if (!await db.Customers.AnyAsync(cancellationToken))
         {
-            db.Subscribers.Add(subscriber);
-            db.Leads.Add(lead);
-            db.Campaigns.Add(campaign);
+            db.Customers.Add(customer);
+            db.ServiceRequests.Add(serviceRequest);
+            db.WorkItems.Add(workItem);
         }
         await db.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task UpsertSeedHistoryAsync(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         AppForgeSeedHistory entry,
         CancellationToken cancellationToken)
     {

@@ -1,0 +1,98 @@
+{
+  "Customer.Create": {
+    "policyKey": "Customer.Create",
+    "policyKind": "availability"
+  },
+  "Customer.Delete": {
+    "policyKey": "Customer.Delete",
+    "policyKind": "availability"
+  },
+  "Customer.Read": {
+    "policyKey": "Customer.Read",
+    "policyKind": "availability"
+  },
+  "Customer.Update": {
+    "policyKey": "Customer.Update",
+    "policyKind": "availability"
+  },
+  "Permission.Create": {
+    "policyKey": "Permission.Create",
+    "policyKind": "availability"
+  },
+  "Permission.Delete": {
+    "policyKey": "Permission.Delete",
+    "policyKind": "availability"
+  },
+  "Permission.Read": {
+    "policyKey": "Permission.Read",
+    "policyKind": "availability"
+  },
+  "Permission.Update": {
+    "policyKey": "Permission.Update",
+    "policyKind": "availability"
+  },
+  "Role.Create": {
+    "policyKey": "Role.Create",
+    "policyKind": "availability"
+  },
+  "Role.Delete": {
+    "policyKey": "Role.Delete",
+    "policyKind": "availability"
+  },
+  "Role.Read": {
+    "policyKey": "Role.Read",
+    "policyKind": "availability"
+  },
+  "Role.Update": {
+    "policyKey": "Role.Update",
+    "policyKind": "availability"
+  },
+  "RolePermission.Create": {
+    "policyKey": "RolePermission.Create",
+    "policyKind": "availability"
+  },
+  "RolePermission.Delete": {
+    "policyKey": "RolePermission.Delete",
+    "policyKind": "availability"
+  },
+  "RolePermission.Read": {
+    "policyKey": "RolePermission.Read",
+    "policyKind": "availability"
+  },
+  "RolePermission.Update": {
+    "policyKey": "RolePermission.Update",
+    "policyKind": "availability"
+  },
+  "ServiceRequest.Create": {
+    "policyKey": "ServiceRequest.Create",
+    "policyKind": "availability"
+  },
+  "ServiceRequest.Delete": {
+    "policyKey": "ServiceRequest.Delete",
+    "policyKind": "availability"
+  },
+  "ServiceRequest.Read": {
+    "policyKey": "ServiceRequest.Read",
+    "policyKind": "availability"
+  },
+  "ServiceRequest.Update": {
+    "policyKey": "ServiceRequest.Update",
+    "policyKind": "availability"
+  },
+  "WorkItem.Create": {
+    "policyKey": "WorkItem.Create",
+    "policyKind": "availability"
+  },
+  "WorkItem.Delete": {
+    "policyKey": "WorkItem.Delete",
+    "policyKind": "availability"
+  },
+  "WorkItem.Read": {
+    "policyKey": "WorkItem.Read",
+    "policyKind": "availability"
+  },
+  "WorkItem.Update": {
+    "policyKey": "WorkItem.Update",
+    "policyKind": "availability"
+  }
+}

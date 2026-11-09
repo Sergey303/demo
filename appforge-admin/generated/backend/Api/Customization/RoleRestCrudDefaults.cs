@@ -1,10 +1,10 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 
-namespace Demo.TelegramOperations.Api.Customization;
+namespace Demo.BusinessOperations.Api.Customization;
 
 public sealed class RoleStandardCreateValidator
     : IRestCreateValidator<Role, CreateRoleRequest>
@@ -73,9 +73,9 @@ public sealed class RoleStandardUpdateValidator
 public sealed class RoleDefaultCreateMutator
     : IRestCreateMutator<Role, CreateRoleRequest>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public RoleDefaultCreateMutator(TelegramOperationsAdminDbContext db)
+    public RoleDefaultCreateMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
@@ -107,7 +107,7 @@ public sealed class RoleDefaultCreateMutator
 public sealed class RoleDefaultUpdateMutator
     : IRestUpdateMutator<Role, UpdateRoleRequest>
 {
-    public RoleDefaultUpdateMutator(TelegramOperationsAdminDbContext db)
+    public RoleDefaultUpdateMutator(BusinessOperationsAdminDbContext db)
     {
         ArgumentNullException.ThrowIfNull(db);
     }
@@ -136,9 +136,9 @@ public sealed class RoleDefaultUpdateMutator
 public sealed class RoleDefaultDeleteMutator
     : IRestDeleteMutator<Role>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public RoleDefaultDeleteMutator(TelegramOperationsAdminDbContext db)
+    public RoleDefaultDeleteMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }

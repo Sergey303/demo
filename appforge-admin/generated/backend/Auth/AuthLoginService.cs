@@ -3,16 +3,16 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public sealed class AuthLoginService
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly AuthTokenService _tokens;
     private readonly IAppEmailSender _email;
     private readonly IConfiguration _configuration;
@@ -21,7 +21,7 @@ public sealed class AuthLoginService
     private readonly PasswordHasher<AppUser> _hasher = new();
 
     public AuthLoginService(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         AuthTokenService tokens,
         IAppEmailSender email,
         IConfiguration configuration,

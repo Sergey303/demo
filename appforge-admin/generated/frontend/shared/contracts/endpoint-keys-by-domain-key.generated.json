@@ -1,43 +1,13 @@
 {
-  "campaigns": [
-    "get:/api/campaigns",
-    "post:/api/campaigns",
-    "get:/api/campaigns/lookup",
-    "get:/api/campaigns/options/{field}",
-    "get:/api/campaigns/suggest/{field}",
-    "delete:/api/campaigns/{id}",
-    "get:/api/campaigns/{id}",
-    "put:/api/campaigns/{id}"
-  ],
-  "campaignstatuses": [
-    "get:/api/campaignstatuses",
-    "post:/api/campaignstatuses",
-    "get:/api/campaignstatuses/lookup",
-    "get:/api/campaignstatuses/options/{field}",
-    "get:/api/campaignstatuses/suggest/{field}",
-    "delete:/api/campaignstatuses/{id}",
-    "get:/api/campaignstatuses/{id}",
-    "put:/api/campaignstatuses/{id}"
-  ],
-  "leads": [
-    "get:/api/leads",
-    "post:/api/leads",
-    "get:/api/leads/lookup",
-    "get:/api/leads/options/{field}",
-    "get:/api/leads/suggest/{field}",
-    "delete:/api/leads/{id}",
-    "get:/api/leads/{id}",
-    "put:/api/leads/{id}"
-  ],
-  "leadstatuses": [
-    "get:/api/leadstatuses",
-    "post:/api/leadstatuses",
-    "get:/api/leadstatuses/lookup",
-    "get:/api/leadstatuses/options/{field}",
-    "get:/api/leadstatuses/suggest/{field}",
-    "delete:/api/leadstatuses/{id}",
-    "get:/api/leadstatuses/{id}",
-    "put:/api/leadstatuses/{id}"
+  "customers": [
+    "get:/api/customers",
+    "post:/api/customers",
+    "get:/api/customers/lookup",
+    "get:/api/customers/options/{field}",
+    "get:/api/customers/suggest/{field}",
+    "delete:/api/customers/{id}",
+    "get:/api/customers/{id}",
+    "put:/api/customers/{id}"
   ],
   "permissions": [
     "get:/api/permissions",
@@ -69,24 +39,24 @@
     "get:/api/roles/{id}",
     "put:/api/roles/{id}"
   ],
-  "subscribers": [
-    "get:/api/subscribers",
-    "post:/api/subscribers",
-    "get:/api/subscribers/lookup",
-    "get:/api/subscribers/options/{field}",
-    "get:/api/subscribers/suggest/{field}",
-    "delete:/api/subscribers/{id}",
-    "get:/api/subscribers/{id}",
-    "put:/api/subscribers/{id}"
+  "servicerequests": [
+    "get:/api/servicerequests",
+    "post:/api/servicerequests",
+    "get:/api/servicerequests/lookup",
+    "get:/api/servicerequests/options/{field}",
+    "get:/api/servicerequests/suggest/{field}",
+    "delete:/api/servicerequests/{id}",
+    "get:/api/servicerequests/{id}",
+    "put:/api/servicerequests/{id}"
   ],
-  "subscriberstatuses": [
-    "get:/api/subscriberstatuses",
-    "post:/api/subscriberstatuses",
-    "get:/api/subscriberstatuses/lookup",
-    "get:/api/subscriberstatuses/options/{field}",
-    "get:/api/subscriberstatuses/suggest/{field}",
-    "delete:/api/subscriberstatuses/{id}",
-    "get:/api/subscriberstatuses/{id}",
-    "put:/api/subscriberstatuses/{id}"
+  "workitems": [
+    "get:/api/workitems",
+    "post:/api/workitems",
+    "get:/api/workitems/lookup",
+    "get:/api/workitems/options/{field}",
+    "get:/api/workitems/suggest/{field}",
+    "delete:/api/workitems/{id}",
+    "get:/api/workitems/{id}",
+    "put:/api/workitems/{id}"
   ]
 }

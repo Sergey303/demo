@@ -1,17 +1,17 @@
 {
   "kind": "appforge-md-ef-core-generation",
   "version": 4,
-  "modelId": "Telegram Operations Admin",
+  "modelId": "Business Operations Admin",
   "identity": {
-    "solutionName": "TelegramOperationsAdmin",
-    "solutionFileName": "TelegramOperationsAdmin.slnx",
-    "projectName": "TelegramOperationsAdmin.Persistence",
-    "projectFileName": "TelegramOperationsAdmin.Persistence.csproj",
-    "assemblyName": "TelegramOperationsAdmin.Persistence",
-    "assemblyFileName": "TelegramOperationsAdmin.Persistence.dll",
-    "rootNamespace": "TelegramOperationsAdmin",
-    "dbContextName": "TelegramOperationsAdminDbContext",
-    "databaseName": "telegram_operations_admin"
+    "solutionName": "BusinessOperationsAdmin",
+    "solutionFileName": "BusinessOperationsAdmin.slnx",
+    "projectName": "BusinessOperationsAdmin.Persistence",
+    "projectFileName": "BusinessOperationsAdmin.Persistence.csproj",
+    "assemblyName": "BusinessOperationsAdmin.Persistence",
+    "assemblyFileName": "BusinessOperationsAdmin.Persistence.dll",
+    "rootNamespace": "BusinessOperationsAdmin",
+    "dbContextName": "BusinessOperationsAdminDbContext",
+    "databaseName": "business_operations_admin"
   },
   "runtimeProfile": "production",
   "databaseProvider": "PostgreSQL",
@@ -19,16 +19,16 @@
   "databaseMigration": {
     "adapterKind": "dotnet-ef",
     "relativeRoot": "DatabaseMigrator",
-    "projectFileName": "TelegramOperationsAdmin.Persistence.Migrator.csproj",
-    "assemblyFileName": "TelegramOperationsAdmin.Persistence.Migrator.dll",
+    "projectFileName": "BusinessOperationsAdmin.Persistence.Migrator.csproj",
+    "assemblyFileName": "BusinessOperationsAdmin.Persistence.Migrator.dll",
     "startupMigrationsForbidden": true,
     "exclusiveMigrationOwner": true
   },
   "generationCapabilities": {},
   "generationInputs": [
     {
-      "path": "/workspace/demo/appforge-admin/telegram-operations.md",
-      "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+      "path": "/workspace/demo/appforge-admin/business-operations.md",
+      "sha256": "e5c91382352be3aeaa38bebd5a1334f6168bb783b7e94e122bd50eebe75d2877"
     }
   ],
   "features": {
@@ -36,8 +36,8 @@
   },
   "entities": [
     {
-      "name": "Subscriber",
-      "table": "Subscribers",
+      "name": "Customer",
+      "table": "Customers",
       "generationMode": "Crud",
       "apiSurface": "Crud",
       "metadata": {},
@@ -46,8 +46,8 @@
       "mutationLock": null
     },
     {
-      "name": "SubscriberStatus",
-      "table": "SubscriberStatuses",
+      "name": "ServiceRequest",
+      "table": "ServiceRequests",
       "generationMode": "Crud",
       "apiSurface": "Crud",
       "metadata": {},
@@ -56,38 +56,8 @@
       "mutationLock": null
     },
     {
-      "name": "Lead",
-      "table": "Leads",
-      "generationMode": "Crud",
-      "apiSurface": "Crud",
-      "metadata": {},
-      "mutationOwner": null,
-      "concurrencyToken": null,
-      "mutationLock": null
-    },
-    {
-      "name": "LeadStatus",
-      "table": "LeadStatuses",
-      "generationMode": "Crud",
-      "apiSurface": "Crud",
-      "metadata": {},
-      "mutationOwner": null,
-      "concurrencyToken": null,
-      "mutationLock": null
-    },
-    {
-      "name": "Campaign",
-      "table": "Campaigns",
-      "generationMode": "Crud",
-      "apiSurface": "Crud",
-      "metadata": {},
-      "mutationOwner": null,
-      "concurrencyToken": null,
-      "mutationLock": null
-    },
-    {
-      "name": "CampaignStatus",
-      "table": "CampaignStatuses",
+      "name": "WorkItem",
+      "table": "WorkItems",
       "generationMode": "Crud",
       "apiSurface": "Crud",
       "metadata": {},

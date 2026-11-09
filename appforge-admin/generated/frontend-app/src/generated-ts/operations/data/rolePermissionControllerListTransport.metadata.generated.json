@@ -32,7 +32,7 @@
         "bindingSource": "query",
         "name": "request",
         "wireName": "request",
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionRequest",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionRequest",
         "nullable": false,
         "required": true,
         "valueSource": null
@@ -43,7 +43,7 @@
     "response": {
       "responseKind": "json",
       "responseContentType": "application/json",
-      "typeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionResult",
+      "typeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionResult",
       "contentDisposition": null,
       "fileNameSource": null
     }
@@ -61,6 +61,6 @@
   "realtimeLinks": [],
   "frontendAction": null,
   "requestTypeRef": null,
-  "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionResult",
+  "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionResult",
   "invalidatedByRealtimeEventKeys": []
 }

@@ -4,13 +4,10 @@
 // ------------------------------------------------------------------------------
 
 export const generatedDomains = [
-  "campaigns",
-  "campaignstatuses",
-  "leads",
-  "leadstatuses",
+  "customers",
   "permissions",
   "rolepermissions",
   "roles",
-  "subscribers",
-  "subscriberstatuses"
+  "servicerequests",
+  "workitems"
 ] as const;

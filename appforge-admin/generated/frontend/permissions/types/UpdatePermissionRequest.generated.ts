@@ -7,4 +7,4 @@ export interface UpdatePermissionRequest {
   "code": string;
   "name": string;
 }
-export const UpdatePermissionRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest" as const;
+export const UpdatePermissionRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.UpdatePermissionRequest" as const;

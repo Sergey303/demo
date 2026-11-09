@@ -1,97 +1,97 @@
 {
   "Errors": [
     {
-      "ErrorFamilyKey": "CampaignApi",
+      "ErrorFamilyKey": "CustomerApi",
       "Codes": [
-        "campaign.idempotency_conflict",
-        "campaign.idempotency_key_invalid",
-        "campaign.idempotency_key_required",
-        "campaign.not_found",
-        "campaign.validation_failed"
+        "customer.idempotency_conflict",
+        "customer.idempotency_key_invalid",
+        "customer.idempotency_key_required",
+        "customer.not_found",
+        "customer.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "campaign.idempotency_conflict",
+          "Code": "customer.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.idempotency_key_invalid",
+          "Code": "customer.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.idempotency_key_required",
+          "Code": "customer.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.not_found",
+          "Code": "customer.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.validation_failed",
+          "Code": "customer.validation_failed",
           "Domain": "shared"
         }
       ]
     },
     {
-      "ErrorFamilyKey": "CampaignStatusApi",
+      "ErrorFamilyKey": "PermissionApi",
       "Codes": [
-        "campaign.status.idempotency_conflict",
-        "campaign.status.idempotency_key_invalid",
-        "campaign.status.idempotency_key_required",
-        "campaign.status.not_found",
-        "campaign.status.validation_failed"
+        "permission.idempotency_conflict",
+        "permission.idempotency_key_invalid",
+        "permission.idempotency_key_required",
+        "permission.not_found",
+        "permission.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "campaign.status.idempotency_conflict",
+          "Code": "permission.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.status.idempotency_key_invalid",
+          "Code": "permission.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.status.idempotency_key_required",
+          "Code": "permission.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.status.not_found",
+          "Code": "permission.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.status.validation_failed",
+          "Code": "permission.validation_failed",
           "Domain": "shared"
         }
       ]
     },
     {
-      "ErrorFamilyKey": "LeadApi",
+      "ErrorFamilyKey": "RoleApi",
       "Codes": [
-        "lead.idempotency_conflict",
-        "lead.idempotency_key_invalid",
-        "lead.idempotency_key_required",
-        "lead.not_found",
-        "lead.validation_failed"
+        "role.idempotency_conflict",
+        "role.idempotency_key_invalid",
+        "role.idempotency_key_required",
+        "role.not_found",
+        "role.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "lead.idempotency_conflict",
+          "Code": "role.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "lead.idempotency_key_invalid",
+          "Code": "role.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "lead.idempotency_key_required",
+          "Code": "role.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "lead.not_found",
+          "Code": "role.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "lead.validation_failed",
+          "Code": "role.validation_failed",
           "Domain": "shared"
         }
       ]

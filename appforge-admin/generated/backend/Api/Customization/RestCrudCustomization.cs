@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace Demo.TelegramOperations.Api.Customization;
+namespace Demo.BusinessOperations.Api.Customization;
 
 public sealed record RestCrudMutationContext(
     Guid? CurrentUserId,

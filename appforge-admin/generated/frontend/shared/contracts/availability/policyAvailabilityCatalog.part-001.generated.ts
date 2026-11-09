@@ -3,10 +3,8 @@
 // DO NOT EDIT MANUALLY.
 // ------------------------------------------------------------------------------
 
-import policyAvailabilityCatalogByKeyJson0 from "../policy-availability-catalog-by-key.generated_0.json";
-import policyAvailabilityCatalogByKeyJson1 from "../policy-availability-catalog-by-key.generated_1.json";
+import policyAvailabilityCatalogByKeyJson from "../policy-availability-catalog-by-key.generated.json";
 
 export const policyAvailabilityCatalogByKeyPart000 = {
-  ...policyAvailabilityCatalogByKeyJson0,
-  ...policyAvailabilityCatalogByKeyJson1,
+  ...policyAvailabilityCatalogByKeyJson,
 } as Record<string, unknown>;

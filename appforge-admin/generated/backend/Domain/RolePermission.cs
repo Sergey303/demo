@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace Demo.TelegramOperations;
+namespace Demo.BusinessOperations;
 
 public sealed class RolePermission
 {

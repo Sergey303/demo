@@ -1,0 +1,528 @@
+{
+  "DomainKey": "workitems",
+  "Endpoints": [
+    {
+      "EndpointKey": "get:/api/workitems",
+      "Kind": "query",
+      "ControllerName": "WorkItemController",
+      "MethodName": "List",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/workitems",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListWorkItemRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListWorkItemResult"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListWorkItemResult",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "List(ListWorkItemRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "post:/api/workitems",
+      "Kind": "mutation",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Create",
+      "HttpMethod": "POST",
+      "RouteTemplate": "/api/workitems",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreateWorkItemRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateWorkItemRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Create"
+      ],
+      "ErrorRefs": [
+        "work.item.idempotency_conflict",
+        "work.item.idempotency_key_invalid",
+        "work.item.idempotency_key_required",
+        "work.item.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/workitems",
+        "get:/api/workitems/lookup",
+        "get:/api/workitems/options/{field}",
+        "get:/api/workitems/suggest/{field}",
+        "get:/api/workitems/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Create(CreateWorkItemRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-workitem-create",
+        "PayloadSchemaVersion": 8119741058548340,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/workitems/lookup",
+      "Kind": "query",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Lookup",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/workitems/lookup",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupWorkItemRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemLookupDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemLookupDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Lookup(LookupWorkItemRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/workitems/options/{field}",
+      "Kind": "query",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Options",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/workitems/options/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemOptionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemOptionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/workitems/suggest/{field}",
+      "Kind": "query",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Suggest",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/workitems/suggest/{field}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "field",
+            "BindingSource": "route",
+            "Name": "field",
+            "WireName": "field",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true
+          },
+          {
+            "InputKey": "request",
+            "BindingSource": "query",
+            "Name": "request",
+            "WireName": "request",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestWorkItemRequest",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemSuggestionDto>"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.WorkItemSuggestionDto>",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Read"
+      ],
+      "ErrorRefs": [],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Suggest(String field, SuggestWorkItemRequest request, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "delete:/api/workitems/{id}",
+      "Kind": "mutation",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Delete",
+      "HttpMethod": "DELETE",
+      "RouteTemplate": "/api/workitems/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "none",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Cancellable": true
+      },
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Delete"
+      ],
+      "ErrorRefs": [
+        "work.item.idempotency_conflict",
+        "work.item.idempotency_key_invalid",
+        "work.item.idempotency_key_required",
+        "work.item.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/workitems",
+        "get:/api/workitems/lookup",
+        "get:/api/workitems/options/{field}",
+        "get:/api/workitems/suggest/{field}",
+        "get:/api/workitems/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-workitem-delete",
+        "PayloadSchemaVersion": 5821870639768304,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "get:/api/workitems/{id}",
+      "Kind": "query",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Get",
+      "HttpMethod": "GET",
+      "RouteTemplate": "/api/workitems/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "none",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto"
+        },
+        "Cancellable": true
+      },
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Read"
+      ],
+      "ErrorRefs": [
+        "work.item.not_found"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    },
+    {
+      "EndpointKey": "put:/api/workitems/{id}",
+      "Kind": "mutation",
+      "ControllerName": "WorkItemController",
+      "MethodName": "Update",
+      "HttpMethod": "PUT",
+      "RouteTemplate": "/api/workitems/{id}",
+      "RouteAliases": [],
+      "Transport": {
+        "BodyKind": "json",
+        "RequestContentType": "application/json",
+        "ResponseKind": "json",
+        "ResponseContentType": "application/json",
+        "Inputs": [
+          {
+            "InputKey": "idempotencyKey",
+            "BindingSource": "header",
+            "Name": "idempotencyKey",
+            "WireName": "Idempotency-Key",
+            "TypeRef": "shared:string",
+            "Nullable": false,
+            "Required": true,
+            "ValueSource": "runtime-operation-id"
+          },
+          {
+            "InputKey": "id",
+            "BindingSource": "route",
+            "Name": "id",
+            "WireName": "id",
+            "TypeRef": "shared:guid",
+            "Nullable": false,
+            "Required": true
+          }
+        ],
+        "RequestBody": {
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateWorkItemRequest",
+          "Required": true
+        },
+        "MultipartParts": [],
+        "Response": {
+          "ResponseKind": "json",
+          "ResponseContentType": "application/json",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto"
+        },
+        "Cancellable": true
+      },
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateWorkItemRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.WorkItemDto",
+      "FeatureKeys": [],
+      "PolicyKeys": [
+        "WorkItem.Update"
+      ],
+      "ErrorRefs": [
+        "work.item.idempotency_conflict",
+        "work.item.idempotency_key_invalid",
+        "work.item.idempotency_key_required",
+        "work.item.not_found",
+        "work.item.validation_failed"
+      ],
+      "Authorization": {
+        "AnonymousAllowed": false,
+        "PolicyNames": []
+      },
+      "InvalidatesEndpointKeys": [
+        "get:/api/workitems",
+        "get:/api/workitems/lookup",
+        "get:/api/workitems/options/{field}",
+        "get:/api/workitems/suggest/{field}",
+        "get:/api/workitems/{id}"
+      ],
+      "InvalidatedByRealtimeEventKeys": [],
+      "Tags": [
+        "workitems"
+      ],
+      "Source": {
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.WorkItemController",
+        "MethodClrSignature": "Update(Guid id, UpdateWorkItemRequest request, CancellationToken cancellationToken)"
+      },
+      "BrowserDurableOutbox": {
+        "IdempotencyHeaderName": "Idempotency-Key",
+        "ScopeMode": "endpoint",
+        "DatabaseName": "appforge-restcrud-workitem-update",
+        "PayloadSchemaVersion": 995073513483649,
+        "RetryInitialDelayMs": 1500,
+        "RetryMaxDelayMs": 30000,
+        "RetryMultiplier": 2,
+        "RetryMaxAttempts": 5,
+        "StaleSendingAfterMs": 30000,
+        "MaxDeliveryAgeMs": 2419200000
+      },
+      "ExternalInvalidatesEndpointKeys": []
+    }
+  ]
+}

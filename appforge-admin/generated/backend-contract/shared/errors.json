@@ -1,129 +1,33 @@
 {
   "Errors": [
     {
-      "ErrorFamilyKey": "CampaignApi",
+      "ErrorFamilyKey": "CustomerApi",
       "Codes": [
-        "campaign.idempotency_conflict",
-        "campaign.idempotency_key_invalid",
-        "campaign.idempotency_key_required",
-        "campaign.not_found",
-        "campaign.validation_failed"
+        "customer.idempotency_conflict",
+        "customer.idempotency_key_invalid",
+        "customer.idempotency_key_required",
+        "customer.not_found",
+        "customer.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "campaign.idempotency_conflict",
+          "Code": "customer.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.idempotency_key_invalid",
+          "Code": "customer.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.idempotency_key_required",
+          "Code": "customer.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.not_found",
+          "Code": "customer.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "campaign.validation_failed",
-          "Domain": "shared"
-        }
-      ]
-    },
-    {
-      "ErrorFamilyKey": "CampaignStatusApi",
-      "Codes": [
-        "campaign.status.idempotency_conflict",
-        "campaign.status.idempotency_key_invalid",
-        "campaign.status.idempotency_key_required",
-        "campaign.status.not_found",
-        "campaign.status.validation_failed"
-      ],
-      "Entries": [
-        {
-          "Code": "campaign.status.idempotency_conflict",
-          "Domain": "shared"
-        },
-        {
-          "Code": "campaign.status.idempotency_key_invalid",
-          "Domain": "shared"
-        },
-        {
-          "Code": "campaign.status.idempotency_key_required",
-          "Domain": "shared"
-        },
-        {
-          "Code": "campaign.status.not_found",
-          "Domain": "shared"
-        },
-        {
-          "Code": "campaign.status.validation_failed",
-          "Domain": "shared"
-        }
-      ]
-    },
-    {
-      "ErrorFamilyKey": "LeadApi",
-      "Codes": [
-        "lead.idempotency_conflict",
-        "lead.idempotency_key_invalid",
-        "lead.idempotency_key_required",
-        "lead.not_found",
-        "lead.validation_failed"
-      ],
-      "Entries": [
-        {
-          "Code": "lead.idempotency_conflict",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.idempotency_key_invalid",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.idempotency_key_required",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.not_found",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.validation_failed",
-          "Domain": "shared"
-        }
-      ]
-    },
-    {
-      "ErrorFamilyKey": "LeadStatusApi",
-      "Codes": [
-        "lead.status.idempotency_conflict",
-        "lead.status.idempotency_key_invalid",
-        "lead.status.idempotency_key_required",
-        "lead.status.not_found",
-        "lead.status.validation_failed"
-      ],
-      "Entries": [
-        {
-          "Code": "lead.status.idempotency_conflict",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.status.idempotency_key_invalid",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.status.idempotency_key_required",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.status.not_found",
-          "Domain": "shared"
-        },
-        {
-          "Code": "lead.status.validation_failed",
+          "Code": "customer.validation_failed",
           "Domain": "shared"
         }
       ]
@@ -225,91 +129,76 @@
       ]
     },
     {
-      "ErrorFamilyKey": "SubscriberApi",
+      "ErrorFamilyKey": "ServiceRequestApi",
       "Codes": [
-        "subscriber.idempotency_conflict",
-        "subscriber.idempotency_key_invalid",
-        "subscriber.idempotency_key_required",
-        "subscriber.not_found",
-        "subscriber.validation_failed"
+        "service.request.idempotency_conflict",
+        "service.request.idempotency_key_invalid",
+        "service.request.idempotency_key_required",
+        "service.request.not_found",
+        "service.request.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "subscriber.idempotency_conflict",
+          "Code": "service.request.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.idempotency_key_invalid",
+          "Code": "service.request.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.idempotency_key_required",
+          "Code": "service.request.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.not_found",
+          "Code": "service.request.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.validation_failed",
+          "Code": "service.request.validation_failed",
           "Domain": "shared"
         }
       ]
     },
     {
-      "ErrorFamilyKey": "SubscriberStatusApi",
+      "ErrorFamilyKey": "WorkItemApi",
       "Codes": [
-        "subscriber.status.idempotency_conflict",
-        "subscriber.status.idempotency_key_invalid",
-        "subscriber.status.idempotency_key_required",
-        "subscriber.status.not_found",
-        "subscriber.status.validation_failed"
+        "work.item.idempotency_conflict",
+        "work.item.idempotency_key_invalid",
+        "work.item.idempotency_key_required",
+        "work.item.not_found",
+        "work.item.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "subscriber.status.idempotency_conflict",
+          "Code": "work.item.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.status.idempotency_key_invalid",
+          "Code": "work.item.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.status.idempotency_key_required",
+          "Code": "work.item.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.status.not_found",
+          "Code": "work.item.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "subscriber.status.validation_failed",
+          "Code": "work.item.validation_failed",
           "Domain": "shared"
         }
       ]
     }
   ],
   "Codes": [
-    "campaign.idempotency_conflict",
-    "campaign.idempotency_key_invalid",
-    "campaign.idempotency_key_required",
-    "campaign.not_found",
-    "campaign.status.idempotency_conflict",
-    "campaign.status.idempotency_key_invalid",
-    "campaign.status.idempotency_key_required",
-    "campaign.status.not_found",
-    "campaign.status.validation_failed",
-    "campaign.validation_failed",
-    "lead.idempotency_conflict",
-    "lead.idempotency_key_invalid",
-    "lead.idempotency_key_required",
-    "lead.not_found",
-    "lead.status.idempotency_conflict",
-    "lead.status.idempotency_key_invalid",
-    "lead.status.idempotency_key_required",
-    "lead.status.not_found",
-    "lead.status.validation_failed",
-    "lead.validation_failed",
+    "customer.idempotency_conflict",
+    "customer.idempotency_key_invalid",
+    "customer.idempotency_key_required",
+    "customer.not_found",
+    "customer.validation_failed",
     "permission.idempotency_conflict",
     "permission.idempotency_key_invalid",
     "permission.idempotency_key_required",
@@ -325,15 +214,15 @@
     "role.permission.not_found",
     "role.permission.validation_failed",
     "role.validation_failed",
-    "subscriber.idempotency_conflict",
-    "subscriber.idempotency_key_invalid",
-    "subscriber.idempotency_key_required",
-    "subscriber.not_found",
-    "subscriber.status.idempotency_conflict",
-    "subscriber.status.idempotency_key_invalid",
-    "subscriber.status.idempotency_key_required",
-    "subscriber.status.not_found",
-    "subscriber.status.validation_failed",
-    "subscriber.validation_failed"
+    "service.request.idempotency_conflict",
+    "service.request.idempotency_key_invalid",
+    "service.request.idempotency_key_required",
+    "service.request.not_found",
+    "service.request.validation_failed",
+    "work.item.idempotency_conflict",
+    "work.item.idempotency_key_invalid",
+    "work.item.idempotency_key_required",
+    "work.item.not_found",
+    "work.item.validation_failed"
   ]
 }

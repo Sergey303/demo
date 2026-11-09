@@ -1,38 +1,38 @@
 #nullable enable
 
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public sealed class AdminUserService
 {
     private const bool StaffPositionsEnabled = false;
     private static readonly IReadOnlyList<EffectiveAccessRule> EffectiveAccessRules = new[]
     {
-        new EffectiveAccessRule("Campaign", "Create", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Campaign", "Delete", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Campaign", "Read", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Campaign", "Update", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Lead", "Create", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Lead", "Delete", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Lead", "Read", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Lead", "Update", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Subscriber", "Create", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Subscriber", "Delete", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Subscriber", "Read", "Role", "Admin", "All", ""),
-        new EffectiveAccessRule("Subscriber", "Update", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("Customer", "Create", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("Customer", "Delete", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("Customer", "Read", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("Customer", "Update", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("ServiceRequest", "Create", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("ServiceRequest", "Delete", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("ServiceRequest", "Read", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("ServiceRequest", "Update", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("WorkItem", "Create", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("WorkItem", "Delete", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("WorkItem", "Read", "Role", "Admin", "All", ""),
+        new EffectiveAccessRule("WorkItem", "Update", "Role", "Admin", "All", ""),
     };
 
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IAppEmailSender _email;
     private readonly IConfiguration _configuration;
     private readonly IdentityAuditService _audit;
 
     public AdminUserService(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         IAppEmailSender email,
         IConfiguration configuration,
         IdentityAuditService audit)

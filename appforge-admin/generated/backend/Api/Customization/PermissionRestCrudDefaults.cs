@@ -1,10 +1,10 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 
-namespace Demo.TelegramOperations.Api.Customization;
+namespace Demo.BusinessOperations.Api.Customization;
 
 public sealed class PermissionStandardCreateValidator
     : IRestCreateValidator<Permission, CreatePermissionRequest>
@@ -73,9 +73,9 @@ public sealed class PermissionStandardUpdateValidator
 public sealed class PermissionDefaultCreateMutator
     : IRestCreateMutator<Permission, CreatePermissionRequest>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public PermissionDefaultCreateMutator(TelegramOperationsAdminDbContext db)
+    public PermissionDefaultCreateMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
@@ -107,7 +107,7 @@ public sealed class PermissionDefaultCreateMutator
 public sealed class PermissionDefaultUpdateMutator
     : IRestUpdateMutator<Permission, UpdatePermissionRequest>
 {
-    public PermissionDefaultUpdateMutator(TelegramOperationsAdminDbContext db)
+    public PermissionDefaultUpdateMutator(BusinessOperationsAdminDbContext db)
     {
         ArgumentNullException.ThrowIfNull(db);
     }
@@ -136,9 +136,9 @@ public sealed class PermissionDefaultUpdateMutator
 public sealed class PermissionDefaultDeleteMutator
     : IRestDeleteMutator<Permission>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public PermissionDefaultDeleteMutator(TelegramOperationsAdminDbContext db)
+    public PermissionDefaultDeleteMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }

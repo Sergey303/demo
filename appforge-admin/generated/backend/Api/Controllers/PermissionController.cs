@@ -2,15 +2,15 @@
 
 using System.Security.Claims;
 using ChatPilot.Api.FrontendActions;
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Api.Customization;
-using Demo.TelegramOperations.Api.Services;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Api.Customization;
+using Demo.BusinessOperations.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Api.Controllers;
+namespace Demo.BusinessOperations.Api.Controllers;
 
 [ApiController]
 [RestCrudController("permission", BrowserDurableMutations = true)]

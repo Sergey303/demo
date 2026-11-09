@@ -11,4 +11,4 @@ export interface ListPermissionResult {
   "pageSize": number;
   "totalCount": number;
 }
-export const ListPermissionResultTypeKey = "Demo.TelegramOperations.Api.Contracts.ListPermissionResult" as const;
+export const ListPermissionResultTypeKey = "Demo.BusinessOperations.Api.Contracts.ListPermissionResult" as const;

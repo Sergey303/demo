@@ -7,4 +7,4 @@ export interface RolePermissionLookupDto {
   "label": string;
   "value": string;
 }
-export const RolePermissionLookupDtoTypeKey = "Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto" as const;
+export const RolePermissionLookupDtoTypeKey = "Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto" as const;

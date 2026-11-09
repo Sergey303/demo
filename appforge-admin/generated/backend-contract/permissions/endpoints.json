@@ -19,7 +19,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListPermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -28,11 +28,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionResult"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListPermissionResult"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListPermissionResult",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListPermissionResult",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Read"
@@ -48,7 +48,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "List(ListPermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -79,19 +79,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreatePermissionRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreatePermissionRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreatePermissionRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Create"
@@ -118,14 +118,14 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Create(CreatePermissionRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-permission-create",
-        "PayloadSchemaVersion": 6561342889967763,
+        "PayloadSchemaVersion": 6770042610246961,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,
@@ -153,7 +153,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupPermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupPermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -162,11 +162,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionLookupDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionLookupDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionLookupDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Read"
@@ -182,7 +182,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Lookup(LookupPermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -214,11 +214,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionOptionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionOptionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionOptionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Read"
@@ -234,7 +234,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -266,7 +266,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestPermissionRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestPermissionRequest",
             "Nullable": false,
             "Required": true
           }
@@ -275,11 +275,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionSuggestionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionSuggestionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Read"
@@ -295,7 +295,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Suggest(String field, SuggestPermissionRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -361,7 +361,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
@@ -405,11 +405,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Read"
@@ -427,7 +427,7 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -467,19 +467,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdatePermissionRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdatePermissionRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.PermissionDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdatePermissionRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.PermissionDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Permission.Update"
@@ -507,14 +507,14 @@
         "permissions"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
         "MethodClrSignature": "Update(Guid id, UpdatePermissionRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-permission-update",
-        "PayloadSchemaVersion": 8288396880467264,
+        "PayloadSchemaVersion": 1540647298125420,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,

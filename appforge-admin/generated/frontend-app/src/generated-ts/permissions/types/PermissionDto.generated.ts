@@ -8,4 +8,4 @@ export interface PermissionDto {
   "id": string;
   "name": string;
 }
-export const PermissionDtoTypeKey = "Demo.TelegramOperations.Api.Contracts.PermissionDto" as const;
+export const PermissionDtoTypeKey = "Demo.BusinessOperations.Api.Contracts.PermissionDto" as const;

@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
       "MethodClrSignature": "Create(CreateRoleRequest request, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -48,14 +48,14 @@
         }
       ],
       "requestBody": {
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.CreateRoleRequest",
         "required": true
       },
       "multipartParts": [],
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+        "typeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -79,8 +79,8 @@
     ],
     "realtimeLinks": [],
     "frontendAction": null,
-    "requestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
-    "responseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+    "requestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateRoleRequest",
+    "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto",
     "invalidatedByRealtimeEventKeys": []
   }
 }

@@ -12,4 +12,4 @@ export interface ListPermissionRequest {
   "pageSize": number;
   "sort": ListPermissionSort[];
 }
-export const ListPermissionRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.ListPermissionRequest" as const;
+export const ListPermissionRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.ListPermissionRequest" as const;

@@ -1,26 +1,8 @@
 {
-  "delete:/api/campaigns/{id}": {
+  "delete:/api/customers/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Delete"
-    ]
-  },
-  "delete:/api/campaignstatuses/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "CampaignStatus.Delete"
-    ]
-  },
-  "delete:/api/leads/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "Lead.Delete"
-    ]
-  },
-  "delete:/api/leadstatuses/{id}": {
-    "featureKeys": [],
-    "policyKeys": [
-      "LeadStatus.Delete"
+      "Customer.Delete"
     ]
   },
   "delete:/api/permissions/{id}": {
@@ -41,70 +23,88 @@
       "Role.Delete"
     ]
   },
-  "delete:/api/subscribers/{id}": {
+  "delete:/api/servicerequests/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Subscriber.Delete"
+      "ServiceRequest.Delete"
     ]
   },
-  "delete:/api/subscriberstatuses/{id}": {
+  "delete:/api/workitems/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "SubscriberStatus.Delete"
+      "WorkItem.Delete"
     ]
   },
-  "get:/api/campaigns": {
+  "get:/api/customers": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Read"
+      "Customer.Read"
     ]
   },
-  "get:/api/campaigns/lookup": {
+  "get:/api/customers/lookup": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Read"
+      "Customer.Read"
     ]
   },
-  "get:/api/campaigns/options/{field}": {
+  "get:/api/customers/options/{field}": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Read"
+      "Customer.Read"
     ]
   },
-  "get:/api/campaigns/suggest/{field}": {
+  "get:/api/customers/suggest/{field}": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Read"
+      "Customer.Read"
     ]
   },
-  "get:/api/campaigns/{id}": {
+  "get:/api/customers/{id}": {
     "featureKeys": [],
     "policyKeys": [
-      "Campaign.Read"
+      "Customer.Read"
     ]
   },
-  "get:/api/campaignstatuses": {
+  "get:/api/permissions": {
     "featureKeys": [],
     "policyKeys": [
-      "CampaignStatus.Read"
+      "Permission.Read"
     ]
   },
-  "get:/api/campaignstatuses/lookup": {
+  "get:/api/permissions/lookup": {
     "featureKeys": [],
     "policyKeys": [
-      "CampaignStatus.Read"
+      "Permission.Read"
     ]
   },
-  "get:/api/campaignstatuses/options/{field}": {
+  "get:/api/permissions/options/{field}": {
     "featureKeys": [],
     "policyKeys": [
-      "CampaignStatus.Read"
+      "Permission.Read"
     ]
   },
-  "get:/api/campaignstatuses/suggest/{field}": {
+  "get:/api/permissions/suggest/{field}": {
     "featureKeys": [],
     "policyKeys": [
-      "CampaignStatus.Read"
+      "Permission.Read"
+    ]
+  },
+  "get:/api/permissions/{id}": {
+    "featureKeys": [],
+    "policyKeys": [
+      "Permission.Read"
+    ]
+  },
+  "get:/api/rolepermissions": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Read"
+    ]
+  },
+  "get:/api/rolepermissions/lookup": {
+    "featureKeys": [],
+    "policyKeys": [
+      "RolePermission.Read"
     ]
   }
 }

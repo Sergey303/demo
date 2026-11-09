@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BusinessOperationsAdmin.Persistence.csproj" />
+  <Project Path="DatabaseMigrator/BusinessOperationsAdmin.Persistence.Migrator.csproj" />
+</Solution>

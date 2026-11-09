@@ -1,19 +1,19 @@
 #nullable enable
 
 using System.Security.Claims;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public sealed class AuthTokenService
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IdentityAuditService _audit;
     private readonly IConfiguration _configuration;
 
-    public AuthTokenService(TelegramOperationsAdminDbContext db, IdentityAuditService audit, IConfiguration configuration)
+    public AuthTokenService(BusinessOperationsAdminDbContext db, IdentityAuditService audit, IConfiguration configuration)
     {
         _db = db;
         _audit = audit;

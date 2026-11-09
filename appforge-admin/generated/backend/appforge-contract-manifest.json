@@ -5,15 +5,15 @@
     "schemaVersion": 1,
     "generator": "AppForge",
     "contractManifestVersion": 8,
-    "generationInputSha256": "117126859653ae267c52b1d74260bbaff8f5e170e6ff195fd8e54ca2001d888f",
+    "generationInputSha256": "a4de6236b3ec8743d993c2badd27ed57bfa678315f9737bd522040d95ab0c934",
     "inputs": [
       {
-        "path": "/workspace/demo/appforge-admin/telegram-operations.md",
-        "sha256": "e3681af7d49d731a1c9feb410fa1cdc36c4bf922953162e2a30eed8a28f63789"
+        "path": "/workspace/demo/appforge-admin/business-operations.md",
+        "sha256": "e5c91382352be3aeaa38bebd5a1334f6168bb783b7e94e122bd50eebe75d2877"
       }
     ]
   },
-  "modelId": "Telegram Operations Admin",
+  "modelId": "Business Operations Admin",
   "defaultMutationLock": null,
   "webOutputLayout": null,
   "repositoryOwnership": null,

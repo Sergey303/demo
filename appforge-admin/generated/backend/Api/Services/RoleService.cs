@@ -1,18 +1,18 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Api.Customization;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Api.Customization;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Api.Services;
+namespace Demo.BusinessOperations.Api.Services;
 
 public sealed class RoleService
 {
     private const int MaxPageSize = 100;
     private const int MaxSuggestionCount = 20;
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IReadOnlyList<IRestCreateValidator<Role, CreateRoleRequest>> _createValidators;
     private readonly IReadOnlyList<IRestUpdateValidator<Role, UpdateRoleRequest>> _updateValidators;
     private readonly IReadOnlyList<IRestDeleteValidator<Role>> _deleteValidators;
@@ -20,7 +20,7 @@ public sealed class RoleService
     private readonly IRestUpdateMutator<Role, UpdateRoleRequest> _updateMutator;
     private readonly IRestDeleteMutator<Role> _deleteMutator;
 
-    public RoleService(TelegramOperationsAdminDbContext db)
+    public RoleService(BusinessOperationsAdminDbContext db)
         : this(
             db,
             new IRestCreateValidator<Role, CreateRoleRequest>[]
@@ -39,7 +39,7 @@ public sealed class RoleService
     }
 
     public RoleService(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         IEnumerable<IRestCreateValidator<Role, CreateRoleRequest>> createValidators,
         IEnumerable<IRestUpdateValidator<Role, UpdateRoleRequest>> updateValidators,
         IEnumerable<IRestDeleteValidator<Role>> deleteValidators,

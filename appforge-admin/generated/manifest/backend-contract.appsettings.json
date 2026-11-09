@@ -1,6 +1,6 @@
 {
   "Assemblies": {
-    "Api": "/workspace/demo/appforge-admin/generated/backend/bin/Debug/net10.0/TelegramOperationsAdmin.Persistence.dll",
+    "Api": "/workspace/demo/appforge-admin/generated/backend/bin/Debug/net10.0/BusinessOperationsAdmin.Persistence.dll",
     "Realtime": null,
     "Contracts": []
   },

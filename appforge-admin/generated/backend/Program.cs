@@ -1,15 +1,15 @@
 #nullable enable
 
-using Demo.TelegramOperations;
+using Demo.BusinessOperations;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Api.Customization;
-using Demo.TelegramOperations.Api.Services;
-using Demo.TelegramOperations.Auth;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Api.Customization;
+using Demo.BusinessOperations.Api.Services;
+using Demo.BusinessOperations.Auth;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -98,7 +98,7 @@ builder.Services
         AppForgeAuthenticationScheme,
         _ => { });
 builder.Services.AddAuthorization();
-builder.Services.AddDbContext<TelegramOperationsAdminDbContext>(options =>
+builder.Services.AddDbContext<BusinessOperationsAdminDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Default");
     if (string.IsNullOrWhiteSpace(connectionString))
@@ -115,7 +115,7 @@ var appForgeMetrics = new AppForgeRuntimeMetrics();
 if (appForgeSeedOnly)
 {
     using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<TelegramOperationsAdminDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<BusinessOperationsAdminDbContext>();
     await AuthSeedService.SeedAsync(db, builder.Configuration, CancellationToken.None);
     return;
 }
@@ -173,7 +173,7 @@ app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers().RequireRateLimiting(AppForgeApiRateLimitPolicy);
 app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
-app.MapGet("/health/ready", async (TelegramOperationsAdminDbContext db, CancellationToken ct) =>
+app.MapGet("/health/ready", async (BusinessOperationsAdminDbContext db, CancellationToken ct) =>
 {
     try
     {

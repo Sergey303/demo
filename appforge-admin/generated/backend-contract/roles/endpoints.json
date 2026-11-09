@@ -19,7 +19,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListRoleRequest",
             "Nullable": false,
             "Required": true
           }
@@ -28,11 +28,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleResult"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.ListRoleResult"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRoleResult",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRoleResult",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Read"
@@ -48,7 +48,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "List(ListRoleRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -79,19 +79,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.CreateRoleRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.CreateRoleRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateRoleRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Create"
@@ -118,14 +118,14 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Create(CreateRoleRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-role-create",
-        "PayloadSchemaVersion": 2595037546549002,
+        "PayloadSchemaVersion": 8385420294852266,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,
@@ -153,7 +153,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.LookupRoleRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.LookupRoleRequest",
             "Nullable": false,
             "Required": true
           }
@@ -162,11 +162,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleLookupDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleLookupDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleLookupDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleLookupDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Read"
@@ -182,7 +182,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Lookup(LookupRoleRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -214,11 +214,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleOptionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleOptionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleOptionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleOptionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Read"
@@ -234,7 +234,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -266,7 +266,7 @@
             "BindingSource": "query",
             "Name": "request",
             "WireName": "request",
-            "TypeRef": "Demo.TelegramOperations.Api.Contracts.SuggestRoleRequest",
+            "TypeRef": "Demo.BusinessOperations.Api.Contracts.SuggestRoleRequest",
             "Nullable": false,
             "Required": true
           }
@@ -275,11 +275,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto>"
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleSuggestionDto>"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.RoleSuggestionDto>",
+      "ResponseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.RoleSuggestionDto>",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Read"
@@ -295,7 +295,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Suggest(String field, SuggestRoleRequest request, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -361,7 +361,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Delete(Guid id, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
@@ -405,11 +405,11 @@
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto"
         },
         "Cancellable": true
       },
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Read"
@@ -427,7 +427,7 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Get(Guid id, CancellationToken cancellationToken)"
       },
       "ExternalInvalidatesEndpointKeys": []
@@ -467,19 +467,19 @@
           }
         ],
         "RequestBody": {
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest",
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRoleRequest",
           "Required": true
         },
         "MultipartParts": [],
         "Response": {
           "ResponseKind": "json",
           "ResponseContentType": "application/json",
-          "TypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto"
+          "TypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto"
         },
         "Cancellable": true
       },
-      "RequestTypeRef": "Demo.TelegramOperations.Api.Contracts.UpdateRoleRequest",
-      "ResponseTypeRef": "Demo.TelegramOperations.Api.Contracts.RoleDto",
+      "RequestTypeRef": "Demo.BusinessOperations.Api.Contracts.UpdateRoleRequest",
+      "ResponseTypeRef": "Demo.BusinessOperations.Api.Contracts.RoleDto",
       "FeatureKeys": [],
       "PolicyKeys": [
         "Role.Update"
@@ -507,14 +507,14 @@
         "roles"
       ],
       "Source": {
-        "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.RoleController",
+        "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.RoleController",
         "MethodClrSignature": "Update(Guid id, UpdateRoleRequest request, CancellationToken cancellationToken)"
       },
       "BrowserDurableOutbox": {
         "IdempotencyHeaderName": "Idempotency-Key",
         "ScopeMode": "endpoint",
         "DatabaseName": "appforge-restcrud-role-update",
-        "PayloadSchemaVersion": 1271262929869256,
+        "PayloadSchemaVersion": 5957501478786991,
         "RetryInitialDelayMs": 1500,
         "RetryMaxDelayMs": 30000,
         "RetryMultiplier": 2,

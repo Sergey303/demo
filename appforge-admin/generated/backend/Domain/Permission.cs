@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Demo.TelegramOperations;
+namespace Demo.BusinessOperations;
 
 public sealed class Permission
 {

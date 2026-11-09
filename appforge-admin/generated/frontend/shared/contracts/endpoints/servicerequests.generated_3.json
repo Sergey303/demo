@@ -1,0 +1,72 @@
+{
+  "get:/api/servicerequests/options/{field}": {
+    "endpointKey": "get:/api/servicerequests/options/{field}",
+    "domainKey": "servicerequests",
+    "kind": "query",
+    "controllerName": "ServiceRequestController",
+    "methodName": "Options",
+    "httpMethod": "GET",
+    "routeTemplate": "/api/servicerequests/options/{field}",
+    "routeAliases": [],
+    "tags": [
+      "servicerequests"
+    ],
+    "authorization": {
+      "anonymousAllowed": false,
+      "requiresAuthentication": true,
+      "policyNames": []
+    },
+    "source": {
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.ServiceRequestController",
+      "MethodClrSignature": "Options(String field, CancellationToken cancellationToken)"
+    },
+    "transport": {
+      "bodyKind": "none",
+      "requestContentType": null,
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "transportKind": null,
+      "operationMode": null,
+      "cancellable": true,
+      "supportsProgress": null,
+      "progressEventKeys": [],
+      "completionEventKeys": [],
+      "resultDelivery": null,
+      "acceptedMimeTypes": [],
+      "maxFileSizeBytes": null,
+      "fileNameSource": null,
+      "inputs": [
+        {
+          "inputKey": "field",
+          "bindingSource": "route",
+          "name": "field",
+          "wireName": "field",
+          "typeRef": "shared:string",
+          "nullable": false,
+          "required": true,
+          "valueSource": null
+        }
+      ],
+      "requestBody": null,
+      "multipartParts": [],
+      "response": {
+        "responseKind": "json",
+        "responseContentType": "application/json",
+        "typeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto>",
+        "contentDisposition": null,
+        "fileNameSource": null
+      }
+    },
+    "featureKeys": [],
+    "policyKeys": [
+      "ServiceRequest.Read"
+    ],
+    "errorRefs": [],
+    "invalidatesEndpointKeys": [],
+    "realtimeLinks": [],
+    "frontendAction": null,
+    "requestTypeRef": null,
+    "responseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.ServiceRequestOptionDto>",
+    "invalidatedByRealtimeEventKeys": []
+  }
+}

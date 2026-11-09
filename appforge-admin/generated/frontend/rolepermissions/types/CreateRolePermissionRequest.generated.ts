@@ -7,4 +7,4 @@ export interface CreateRolePermissionRequest {
   "permissionId": string;
   "roleId": string;
 }
-export const CreateRolePermissionRequestTypeKey = "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest" as const;
+export const CreateRolePermissionRequestTypeKey = "Demo.BusinessOperations.Api.Contracts.CreateRolePermissionRequest" as const;

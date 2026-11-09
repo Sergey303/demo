@@ -1,99 +1,99 @@
 {
   "Policies": [
     {
-      "PolicyKey": "Permission.Read",
-      "DomainKey": "permissions",
+      "PolicyKey": "ServiceRequest.Read",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/permissions"
+          "SourceKey": "get:/api/servicerequests"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/permissions/lookup"
+          "SourceKey": "get:/api/servicerequests/lookup"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/permissions/options/{field}"
+          "SourceKey": "get:/api/servicerequests/options/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/permissions/suggest/{field}"
+          "SourceKey": "get:/api/servicerequests/suggest/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/permissions/{id}"
+          "SourceKey": "get:/api/servicerequests/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Permission.Update",
-      "DomainKey": "permissions",
+      "PolicyKey": "ServiceRequest.Update",
+      "DomainKey": "servicerequests",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "put:/api/permissions/{id}"
+          "SourceKey": "put:/api/servicerequests/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Role.Create",
-      "DomainKey": "roles",
+      "PolicyKey": "WorkItem.Create",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "post:/api/roles"
+          "SourceKey": "post:/api/workitems"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Role.Delete",
-      "DomainKey": "roles",
+      "PolicyKey": "WorkItem.Delete",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "delete:/api/roles/{id}"
+          "SourceKey": "delete:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Role.Read",
-      "DomainKey": "roles",
+      "PolicyKey": "WorkItem.Read",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/roles"
+          "SourceKey": "get:/api/workitems"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/roles/lookup"
+          "SourceKey": "get:/api/workitems/lookup"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/roles/options/{field}"
+          "SourceKey": "get:/api/workitems/options/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/roles/suggest/{field}"
+          "SourceKey": "get:/api/workitems/suggest/{field}"
         },
         {
           "SourceKind": "endpoint",
-          "SourceKey": "get:/api/roles/{id}"
+          "SourceKey": "get:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"
     },
     {
-      "PolicyKey": "Role.Update",
-      "DomainKey": "roles",
+      "PolicyKey": "WorkItem.Update",
+      "DomainKey": "workitems",
       "DeclaredBy": [
         {
           "SourceKind": "endpoint",
-          "SourceKey": "put:/api/roles/{id}"
+          "SourceKey": "put:/api/workitems/{id}"
         }
       ],
       "PolicyKind": "availability"

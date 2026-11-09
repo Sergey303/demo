@@ -6,7 +6,6 @@
 import errorCatalogJson0 from "./error-catalog.generated_0.json";
 import errorCatalogJson1 from "./error-catalog.generated_1.json";
 import errorCatalogJson2 from "./error-catalog.generated_2.json";
-import errorCatalogJson3 from "./error-catalog.generated_3.json";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -31,5 +30,5 @@ function mergeCatalogFragments(...fragments: readonly Record<string, unknown>[])
   return merged;
 }
 
-const errorCatalogMergedJson = mergeCatalogFragments(errorCatalogJson0, errorCatalogJson1, errorCatalogJson2, errorCatalogJson3);
+const errorCatalogMergedJson = mergeCatalogFragments(errorCatalogJson0, errorCatalogJson1, errorCatalogJson2);
 export const errorCatalog: Readonly<typeof errorCatalogMergedJson> = errorCatalogMergedJson;

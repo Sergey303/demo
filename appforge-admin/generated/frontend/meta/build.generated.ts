@@ -4,10 +4,10 @@
 // ------------------------------------------------------------------------------
 
 export const backendContractBuild = {
-  "PassAContractHash": "sha256-993c9792601ec1e651c2d3be71520c377374795a26362e95e82e41e64b6ceef9",
+  "PassAContractHash": "sha256-ff569bdf019c4feb4d8d51b23119fe884b51cb08ed83ddd4d63d80f2083ee7a0",
   "SchemaHash": "sha256-schema-canonical-backend-contract",
   "InputAssemblyHashes": {
-    "api": "sha256-63229b20e053546266b3c86b0424c6a29d0a1f62effb0e6c8aa199d7b1e36e2e"
+    "api": "sha256-506723e79b6af4ef21704e490fae055c6f5a7ce16870b4fc404dc3204658128a"
   },
   "EnvironmentKey": "generated-admin-production-package"
 } as const;

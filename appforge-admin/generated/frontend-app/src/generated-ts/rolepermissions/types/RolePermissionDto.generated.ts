@@ -8,4 +8,4 @@ export interface RolePermissionDto {
   "permissionId": string;
   "roleId": string;
 }
-export const RolePermissionDtoTypeKey = "Demo.TelegramOperations.Api.Contracts.RolePermissionDto" as const;
+export const RolePermissionDtoTypeKey = "Demo.BusinessOperations.Api.Contracts.RolePermissionDto" as const;

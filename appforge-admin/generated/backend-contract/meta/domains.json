@@ -1,28 +1,7 @@
 {
   "Domains": [
     {
-      "DomainKey": "campaigns",
-      "Files": [
-        "endpoints.json",
-        "types.json"
-      ]
-    },
-    {
-      "DomainKey": "campaignstatuses",
-      "Files": [
-        "endpoints.json",
-        "types.json"
-      ]
-    },
-    {
-      "DomainKey": "leads",
-      "Files": [
-        "endpoints.json",
-        "types.json"
-      ]
-    },
-    {
-      "DomainKey": "leadstatuses",
+      "DomainKey": "customers",
       "Files": [
         "endpoints.json",
         "types.json"
@@ -50,14 +29,14 @@
       ]
     },
     {
-      "DomainKey": "subscribers",
+      "DomainKey": "servicerequests",
       "Files": [
         "endpoints.json",
         "types.json"
       ]
     },
     {
-      "DomainKey": "subscriberstatuses",
+      "DomainKey": "workitems",
       "Files": [
         "endpoints.json",
         "types.json"

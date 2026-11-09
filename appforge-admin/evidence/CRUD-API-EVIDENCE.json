@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "kind": "live-http-postgres",
+  "model": "Business Operations Admin",
+  "steps": [
+    {
+      "step": "auth.login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "step": "auth.reject_anonymous_forbidden",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "step": "customer.create",
+      "expected": 201,
+      "actual": 201,
+      "pass": true
+    },
+    {
+      "step": "customer.idempotent_create_replay",
+      "expected": 201,
+      "actual": 201,
+      "pass": true
+    },
+    {
+      "step": "customer.read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "step": "customer.list",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "step": "customer.update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "step": "customer.read_after_update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "step": "customer.delete",
+      "expected": 204,
+      "actual": 204,
+      "pass": true
+    },
+    {
+      "step": "customer.read_after_delete",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    }
+  ],
+  "database_direct_check": "created row was active; after delete its IsDeleted marker is true",
+  "auth": "temporary bootstrap password rotated via generated API",
+  "restrictions": "disposable database; no browser E2E implied",
+  "time_utc": "2026-11-09T11:09:35Z"
+}

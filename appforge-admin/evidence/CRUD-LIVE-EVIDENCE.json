@@ -1,0 +1,84 @@
+{
+  "verdict": "PASS",
+  "kind": "generated-react-api-postgresql-browser",
+  "model": "Business Operations Admin",
+  "dateUtc": "2026-11-09T11:10:03.541Z",
+  "scenarios": [
+    "login",
+    "read real customer table",
+    "create from React form",
+    "verify created row directly in PostgreSQL",
+    "edit from React form",
+    "delete from React table",
+    "verify soft-delete in PostgreSQL",
+    "GET deleted = 404"
+  ],
+  "apiResponses": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers/suggest/__none",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/customers",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers/suggest/__none",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/customers/48c388b1-6dfe-44dc-8586-d7a331b46bb5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers/suggest/__none",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/customers/48c388b1-6dfe-44dc-8586-d7a331b46bb5",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers/suggest/__none",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers",
+      "status": 200
+    }
+  ],
+  "screenshots": [
+    "business-admin-customers-live.png",
+    "business-admin-create-live.png",
+    "business-admin-edit-live.png"
+  ],
+  "limitations": "Disposable synthetic data, local Chromium, production infrastructure not evaluated"
+}

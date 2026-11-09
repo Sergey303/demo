@@ -17,7 +17,7 @@
       "policyNames": []
     },
     "source": {
-      "ControllerClrType": "Demo.TelegramOperations.Api.Controllers.PermissionController",
+      "ControllerClrType": "Demo.BusinessOperations.Api.Controllers.PermissionController",
       "MethodClrSignature": "Suggest(String field, SuggestPermissionRequest request, CancellationToken cancellationToken)"
     },
     "transport": {
@@ -51,7 +51,7 @@
           "bindingSource": "query",
           "name": "request",
           "wireName": "request",
-          "typeRef": "Demo.TelegramOperations.Api.Contracts.SuggestPermissionRequest",
+          "typeRef": "Demo.BusinessOperations.Api.Contracts.SuggestPermissionRequest",
           "nullable": false,
           "required": true,
           "valueSource": null
@@ -62,7 +62,7 @@
       "response": {
         "responseKind": "json",
         "responseContentType": "application/json",
-        "typeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>",
+        "typeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionSuggestionDto>",
         "contentDisposition": null,
         "fileNameSource": null
       }
@@ -76,7 +76,7 @@
     "realtimeLinks": [],
     "frontendAction": null,
     "requestTypeRef": null,
-    "responseTypeRef": "array<Demo.TelegramOperations.Api.Contracts.PermissionSuggestionDto>",
+    "responseTypeRef": "array<Demo.BusinessOperations.Api.Contracts.PermissionSuggestionDto>",
     "invalidatedByRealtimeEventKeys": []
   }
 }

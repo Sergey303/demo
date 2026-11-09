@@ -8,4 +8,4 @@ export interface RoleDto {
   "id": string;
   "name": string;
 }
-export const RoleDtoTypeKey = "Demo.TelegramOperations.Api.Contracts.RoleDto" as const;
+export const RoleDtoTypeKey = "Demo.BusinessOperations.Api.Contracts.RoleDto" as const;

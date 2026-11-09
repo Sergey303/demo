@@ -1,19 +1,19 @@
 #nullable enable
 
 using System.Security.Claims;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public sealed class IdentityAuditService
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
     private readonly IHttpContextAccessor _httpContext;
 
-    public IdentityAuditService(TelegramOperationsAdminDbContext db, IHttpContextAccessor httpContext)
+    public IdentityAuditService(BusinessOperationsAdminDbContext db, IHttpContextAccessor httpContext)
     {
         _db = db;
         _httpContext = httpContext;

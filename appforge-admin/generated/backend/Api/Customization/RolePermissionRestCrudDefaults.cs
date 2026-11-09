@@ -1,10 +1,10 @@
 #nullable enable
 
-using Demo.TelegramOperations;
-using Demo.TelegramOperations.Api.Contracts;
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations;
+using Demo.BusinessOperations.Api.Contracts;
+using Demo.BusinessOperations.Persistence;
 
-namespace Demo.TelegramOperations.Api.Customization;
+namespace Demo.BusinessOperations.Api.Customization;
 
 public sealed class RolePermissionStandardCreateValidator
     : IRestCreateValidator<RolePermission, CreateRolePermissionRequest>
@@ -57,9 +57,9 @@ public sealed class RolePermissionStandardUpdateValidator
 public sealed class RolePermissionDefaultCreateMutator
     : IRestCreateMutator<RolePermission, CreateRolePermissionRequest>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public RolePermissionDefaultCreateMutator(TelegramOperationsAdminDbContext db)
+    public RolePermissionDefaultCreateMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
@@ -91,7 +91,7 @@ public sealed class RolePermissionDefaultCreateMutator
 public sealed class RolePermissionDefaultUpdateMutator
     : IRestUpdateMutator<RolePermission, UpdateRolePermissionRequest>
 {
-    public RolePermissionDefaultUpdateMutator(TelegramOperationsAdminDbContext db)
+    public RolePermissionDefaultUpdateMutator(BusinessOperationsAdminDbContext db)
     {
         ArgumentNullException.ThrowIfNull(db);
     }
@@ -120,9 +120,9 @@ public sealed class RolePermissionDefaultUpdateMutator
 public sealed class RolePermissionDefaultDeleteMutator
     : IRestDeleteMutator<RolePermission>
 {
-    private readonly TelegramOperationsAdminDbContext _db;
+    private readonly BusinessOperationsAdminDbContext _db;
 
-    public RolePermissionDefaultDeleteMutator(TelegramOperationsAdminDbContext db)
+    public RolePermissionDefaultDeleteMutator(BusinessOperationsAdminDbContext db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }

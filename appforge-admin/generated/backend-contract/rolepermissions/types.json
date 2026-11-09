@@ -2,7 +2,7 @@
   "DomainKey": "rolepermissions",
   "Types": [
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.CreateRolePermissionRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.CreateRolePermissionRequest",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -26,7 +26,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionFilter",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionFilter",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -64,7 +64,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionRequest",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -73,7 +73,7 @@
         {
           "Name": "Filters",
           "WireName": "filters",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListRolePermissionFilter>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListRolePermissionFilter>",
           "Nullable": false,
           "Required": true
         },
@@ -94,7 +94,7 @@
         {
           "Name": "Sort",
           "WireName": "sort",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.ListRolePermissionSort>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.ListRolePermissionSort>",
           "Nullable": false,
           "Required": true
         }
@@ -102,7 +102,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionResult",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionResult",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -111,7 +111,7 @@
         {
           "Name": "Items",
           "WireName": "items",
-          "TypeRef": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionDto>",
+          "TypeRef": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionDto>",
           "Nullable": false,
           "Required": true
         },
@@ -140,7 +140,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionSort",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionSort",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -164,7 +164,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.LookupRolePermissionRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.LookupRolePermissionRequest",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -188,7 +188,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -219,7 +219,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -243,7 +243,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RolePermissionOptionDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RolePermissionOptionDto",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -267,7 +267,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.RolePermissionSuggestionDto",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.RolePermissionSuggestionDto",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -291,7 +291,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.SuggestRolePermissionRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.SuggestRolePermissionRequest",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -315,7 +315,7 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "Demo.TelegramOperations.Api.Contracts.UpdateRolePermissionRequest",
+      "TypeKey": "Demo.BusinessOperations.Api.Contracts.UpdateRolePermissionRequest",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "object",
@@ -339,64 +339,64 @@
       "TypeArguments": []
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListRolePermissionFilter>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListRolePermissionFilter>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionFilter"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionFilter"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.ListRolePermissionSort>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.ListRolePermissionSort>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.ListRolePermissionSort"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.ListRolePermissionSort"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionDto>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionLookupDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionLookupDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionOptionDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionOptionDto>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionOptionDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionOptionDto"
     },
     {
-      "TypeKey": "array<Demo.TelegramOperations.Api.Contracts.RolePermissionSuggestionDto>",
+      "TypeKey": "array<Demo.BusinessOperations.Api.Contracts.RolePermissionSuggestionDto>",
       "OwningDomainKey": "rolepermissions",
       "IsShared": false,
       "Kind": "array",
       "Nullable": false,
       "Properties": [],
       "TypeArguments": [],
-      "ElementTypeRef": "Demo.TelegramOperations.Api.Contracts.RolePermissionSuggestionDto"
+      "ElementTypeRef": "Demo.BusinessOperations.Api.Contracts.RolePermissionSuggestionDto"
     }
   ]
 }

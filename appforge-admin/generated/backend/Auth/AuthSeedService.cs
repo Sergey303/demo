@@ -1,17 +1,17 @@
 #nullable enable
 
-using Demo.TelegramOperations.Persistence;
+using Demo.BusinessOperations.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public static class AuthSeedService
 {
     private const string AdminRoleCode = "Admin";
     private const string ProductionSentinelPrefix = "__APPFORGE_SET_";
 
-    public static async Task SeedAsync(TelegramOperationsAdminDbContext db, IConfiguration configuration, CancellationToken ct)
+    public static async Task SeedAsync(BusinessOperationsAdminDbContext db, IConfiguration configuration, CancellationToken ct)
     {
         var adminEmail = configuration["APPFORGE_ADMIN_EMAIL"]
             ?? Environment.GetEnvironmentVariable("APPFORGE_ADMIN_EMAIL");
@@ -38,25 +38,25 @@ public static class AuthSeedService
     }
 
     private static async Task SeedCoreAsync(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         string adminEmail,
         string adminPassword,
         bool mustChangePassword,
         CancellationToken ct)
     {
         var adminRole = await EnsureRoleAsync(db, AdminRoleCode, "Administrator", ct);
-        await EnsurePermissionAsync(db, "Campaign.Create", "Campaign.Create", ct);
-        await EnsurePermissionAsync(db, "Campaign.Delete", "Campaign.Delete", ct);
-        await EnsurePermissionAsync(db, "Campaign.Read", "Campaign.Read", ct);
-        await EnsurePermissionAsync(db, "Campaign.Update", "Campaign.Update", ct);
-        await EnsurePermissionAsync(db, "Lead.Create", "Lead.Create", ct);
-        await EnsurePermissionAsync(db, "Lead.Delete", "Lead.Delete", ct);
-        await EnsurePermissionAsync(db, "Lead.Read", "Lead.Read", ct);
-        await EnsurePermissionAsync(db, "Lead.Update", "Lead.Update", ct);
-        await EnsurePermissionAsync(db, "Subscriber.Create", "Subscriber.Create", ct);
-        await EnsurePermissionAsync(db, "Subscriber.Delete", "Subscriber.Delete", ct);
-        await EnsurePermissionAsync(db, "Subscriber.Read", "Subscriber.Read", ct);
-        await EnsurePermissionAsync(db, "Subscriber.Update", "Subscriber.Update", ct);
+        await EnsurePermissionAsync(db, "Customer.Create", "Customer.Create", ct);
+        await EnsurePermissionAsync(db, "Customer.Delete", "Customer.Delete", ct);
+        await EnsurePermissionAsync(db, "Customer.Read", "Customer.Read", ct);
+        await EnsurePermissionAsync(db, "Customer.Update", "Customer.Update", ct);
+        await EnsurePermissionAsync(db, "ServiceRequest.Create", "ServiceRequest.Create", ct);
+        await EnsurePermissionAsync(db, "ServiceRequest.Delete", "ServiceRequest.Delete", ct);
+        await EnsurePermissionAsync(db, "ServiceRequest.Read", "ServiceRequest.Read", ct);
+        await EnsurePermissionAsync(db, "ServiceRequest.Update", "ServiceRequest.Update", ct);
+        await EnsurePermissionAsync(db, "WorkItem.Create", "WorkItem.Create", ct);
+        await EnsurePermissionAsync(db, "WorkItem.Delete", "WorkItem.Delete", ct);
+        await EnsurePermissionAsync(db, "WorkItem.Read", "WorkItem.Read", ct);
+        await EnsurePermissionAsync(db, "WorkItem.Update", "WorkItem.Update", ct);
         var permissions = await db.Permissions.ToListAsync(ct);
         foreach (var permission in permissions)
         {
@@ -67,7 +67,7 @@ public static class AuthSeedService
     }
 
 
-    private static async Task<Role> EnsureRoleAsync(TelegramOperationsAdminDbContext db, string code, string name, CancellationToken ct)
+    private static async Task<Role> EnsureRoleAsync(BusinessOperationsAdminDbContext db, string code, string name, CancellationToken ct)
     {
         var role = await db.Roles.SingleOrDefaultAsync(x => x.Code == code, ct);
         if (role is not null) return role;
@@ -76,7 +76,7 @@ public static class AuthSeedService
         return role;
     }
 
-    private static async Task<Permission> EnsurePermissionAsync(TelegramOperationsAdminDbContext db, string code, string name, CancellationToken ct)
+    private static async Task<Permission> EnsurePermissionAsync(BusinessOperationsAdminDbContext db, string code, string name, CancellationToken ct)
     {
         var permission = await db.Permissions.SingleOrDefaultAsync(x => x.Code == code, ct);
         if (permission is not null) return permission;
@@ -86,7 +86,7 @@ public static class AuthSeedService
     }
 
     private static async Task EnsureRolePermissionAsync(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         Role role,
         Permission permission,
         CancellationToken ct)
@@ -99,7 +99,7 @@ public static class AuthSeedService
     }
 
     private static async Task EnsureAdminAsync(
-        TelegramOperationsAdminDbContext db,
+        BusinessOperationsAdminDbContext db,
         Role adminRole,
         string email,
         string password,

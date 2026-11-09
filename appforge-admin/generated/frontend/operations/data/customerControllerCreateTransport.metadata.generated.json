@@ -1,0 +1,80 @@
+{
+  "endpointKey": "post:/api/customers",
+  "domainKey": "customers",
+  "kind": "mutation",
+  "controllerName": "CustomerController",
+  "methodName": "Create",
+  "httpMethod": "POST",
+  "routeTemplate": "/api/customers",
+  "authorization": {
+    "anonymousAllowed": false,
+    "requiresAuthentication": true,
+    "policyNames": []
+  },
+  "transport": {
+    "bodyKind": "json",
+    "requestContentType": "application/json",
+    "responseKind": "json",
+    "responseContentType": "application/json",
+    "transportKind": null,
+    "operationMode": null,
+    "cancellable": true,
+    "supportsProgress": null,
+    "progressEventKeys": [],
+    "completionEventKeys": [],
+    "resultDelivery": null,
+    "acceptedMimeTypes": [],
+    "maxFileSizeBytes": null,
+    "fileNameSource": null,
+    "inputs": [
+      {
+        "inputKey": "idempotencyKey",
+        "bindingSource": "header",
+        "name": "idempotencyKey",
+        "wireName": "Idempotency-Key",
+        "typeRef": "shared:string",
+        "nullable": false,
+        "required": true,
+        "valueSource": "runtime-operation-id"
+      }
+    ],
+    "requestBody": {
+      "typeRef": "Demo.BusinessOperations.Api.Contracts.CreateCustomerRequest",
+      "required": true
+    },
+    "multipartParts": [],
+    "response": {
+      "responseKind": "json",
+      "responseContentType": "application/json",
+      "typeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto",
+      "contentDisposition": null,
+      "fileNameSource": null
+    }
+  },
+  "featureKeys": [],
+  "policyKeys": [
+    "Customer.Create"
+  ],
+  "capabilityKeys": [],
+  "providerKeys": [],
+  "environmentScopes": [],
+  "disabledReasonKey": null,
+  "errorRefs": [
+    "customer.idempotency_conflict",
+    "customer.idempotency_key_invalid",
+    "customer.idempotency_key_required",
+    "customer.validation_failed"
+  ],
+  "invalidatesEndpointKeys": [
+    "get:/api/customers",
+    "get:/api/customers/lookup",
+    "get:/api/customers/options/{field}",
+    "get:/api/customers/suggest/{field}",
+    "get:/api/customers/{id}"
+  ],
+  "realtimeLinks": [],
+  "frontendAction": null,
+  "requestTypeRef": "Demo.BusinessOperations.Api.Contracts.CreateCustomerRequest",
+  "responseTypeRef": "Demo.BusinessOperations.Api.Contracts.CustomerDto",
+  "invalidatedByRealtimeEventKeys": []
+}

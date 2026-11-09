@@ -1,4 +1,4 @@
-namespace Demo.TelegramOperations.Api.Contracts;
+namespace Demo.BusinessOperations.Api.Contracts;
 
 public static class RoleApiErrorCodes
 {

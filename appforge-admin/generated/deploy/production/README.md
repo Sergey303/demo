@@ -1,7 +1,7 @@
 # AppForge packaged production deploy preset
 
-Model: Telegram Operations Admin
-Backend project: TelegramOperationsAdmin.Persistence
+Model: Business Operations Admin
+Backend project: BusinessOperationsAdmin.Persistence
 
 This directory is a self-contained P0 single-VPS Docker Compose preset for this generated package.
 Run all commands from the generated package root.

@@ -7,4 +7,4 @@ export interface ListPermissionSort {
   "direction": string;
   "field": string;
 }
-export const ListPermissionSortTypeKey = "Demo.TelegramOperations.Api.Contracts.ListPermissionSort" as const;
+export const ListPermissionSortTypeKey = "Demo.BusinessOperations.Api.Contracts.ListPermissionSort" as const;

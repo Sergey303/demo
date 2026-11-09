@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
-namespace Demo.TelegramOperations.Auth;
+namespace Demo.BusinessOperations.Auth;
 
 public sealed class AppForgeBearerAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {

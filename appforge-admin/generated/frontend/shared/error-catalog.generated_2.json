@@ -1,97 +1,97 @@
 {
   "Errors": [
     {
-      "ErrorFamilyKey": "LeadStatusApi",
+      "ErrorFamilyKey": "RolePermissionApi",
       "Codes": [
-        "lead.status.idempotency_conflict",
-        "lead.status.idempotency_key_invalid",
-        "lead.status.idempotency_key_required",
-        "lead.status.not_found",
-        "lead.status.validation_failed"
+        "role.permission.idempotency_conflict",
+        "role.permission.idempotency_key_invalid",
+        "role.permission.idempotency_key_required",
+        "role.permission.not_found",
+        "role.permission.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "lead.status.idempotency_conflict",
+          "Code": "role.permission.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "lead.status.idempotency_key_invalid",
+          "Code": "role.permission.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "lead.status.idempotency_key_required",
+          "Code": "role.permission.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "lead.status.not_found",
+          "Code": "role.permission.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "lead.status.validation_failed",
+          "Code": "role.permission.validation_failed",
           "Domain": "shared"
         }
       ]
     },
     {
-      "ErrorFamilyKey": "PermissionApi",
+      "ErrorFamilyKey": "ServiceRequestApi",
       "Codes": [
-        "permission.idempotency_conflict",
-        "permission.idempotency_key_invalid",
-        "permission.idempotency_key_required",
-        "permission.not_found",
-        "permission.validation_failed"
+        "service.request.idempotency_conflict",
+        "service.request.idempotency_key_invalid",
+        "service.request.idempotency_key_required",
+        "service.request.not_found",
+        "service.request.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "permission.idempotency_conflict",
+          "Code": "service.request.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "permission.idempotency_key_invalid",
+          "Code": "service.request.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "permission.idempotency_key_required",
+          "Code": "service.request.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "permission.not_found",
+          "Code": "service.request.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "permission.validation_failed",
+          "Code": "service.request.validation_failed",
           "Domain": "shared"
         }
       ]
     },
     {
-      "ErrorFamilyKey": "RoleApi",
+      "ErrorFamilyKey": "WorkItemApi",
       "Codes": [
-        "role.idempotency_conflict",
-        "role.idempotency_key_invalid",
-        "role.idempotency_key_required",
-        "role.not_found",
-        "role.validation_failed"
+        "work.item.idempotency_conflict",
+        "work.item.idempotency_key_invalid",
+        "work.item.idempotency_key_required",
+        "work.item.not_found",
+        "work.item.validation_failed"
       ],
       "Entries": [
         {
-          "Code": "role.idempotency_conflict",
+          "Code": "work.item.idempotency_conflict",
           "Domain": "shared"
         },
         {
-          "Code": "role.idempotency_key_invalid",
+          "Code": "work.item.idempotency_key_invalid",
           "Domain": "shared"
         },
         {
-          "Code": "role.idempotency_key_required",
+          "Code": "work.item.idempotency_key_required",
           "Domain": "shared"
         },
         {
-          "Code": "role.not_found",
+          "Code": "work.item.not_found",
           "Domain": "shared"
         },
         {
-          "Code": "role.validation_failed",
+          "Code": "work.item.validation_failed",
           "Domain": "shared"
         }
       ]
