@@ -6,7 +6,6 @@ untrusted approval flag, or model-controlled principal. Writes are separate.
 """
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
@@ -17,7 +16,7 @@ from uuid import UUID
 import httpx
 from mcp import Client, StdioServerParameters
 
-from audio_access import AccessDenied, verify_token
+from audio_access import verify_token
 from guarded_generation import (
     MODEL, URL, MAX_ENVELOPE_BYTES, SCHEMA,
     ModelUnavailable, _slots, _decode_envelope, _validate_claims, authorized_now,
@@ -28,9 +27,7 @@ SERVER = Path(__file__).with_name("mcp_evidence_server.py")
 TOOL_NAMES = {"search_evidence", "propose_review_note"}
 MAX_TOOL_RESULT_BYTES = 6_000
 MAX_TOOL_ARGS_BYTES = 1_000
-MAX_AGENT_OUTPUT = 1_000
 MAX_REQUEST_BYTES = 14_000
-MAX_TURNS = 2
 
 
 def _abstain(reason: str, trace: list[dict]) -> dict:
@@ -147,6 +144,11 @@ def _tools(catalog: list, name: str) -> list[dict]:
         parameters["properties"]["top_k"].update({"minimum":1,"maximum":3})
         parameters["properties"]["question"].update({"minLength":1,"maxLength":500})
     elif name=="propose_review_note":
+        # The MCP server also requires source_job_ids, but those are TRUSTED
+        # host-derived context, not model arguments. Remove from model schema.
+        parameters["properties"].pop("source_job_ids", None)
+        parameters["required"] = [x for x in parameters.get("required", [])
+                                  if x != "source_job_ids"]
         parameters["properties"]["note"].update({"minLength":1,"maxLength":500})
         parameters["properties"]["job_id"].update({"format":"uuid"})
     parameters["additionalProperties"] = False
@@ -246,7 +248,12 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
                 arguments=_tool_call(proposal,"propose_review_note")
                 if arguments["job_id"] not in {c["job_id"] for c in refs}:
                     raise ValueError("Model proposed note for an unsearched job")
-                pending=_structured(await client.call_tool("propose_review_note",arguments))
+                # Supply ALL original prompt job IDs from server-validated
+                # search results, never from Qwen-selected arguments.
+                trusted_sources=list(dict.fromkeys(c["job_id"] for c in refs))
+                pending=_structured(await client.call_tool(
+                    "propose_review_note",
+                    {**arguments,"source_job_ids":trusted_sources}))
                 token_value=pending.get("approval_token")
                 if not isinstance(token_value,str) or not pending.get("approval_id"):
                     raise ValueError("MCP proposal missing trusted capability")

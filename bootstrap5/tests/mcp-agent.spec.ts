@@ -84,5 +84,6 @@ test("reject consumes proposal; revoked grant does not show false success",async
   await card.getByRole("button",{name:"Подтвердить запись"}).click();
   await expect(card.getByRole("alert")).toContainText("доступ отозван");
   await expect(card.getByTestId("mcp-approval")).toHaveCount(0);
+  await expect(card.getByTestId("mcp-result")).toHaveCount(0);
   await expect(card.getByRole("status")).toHaveCount(0);
 });

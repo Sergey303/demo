@@ -59,15 +59,16 @@ def search_evidence(question: str, top_k: int = 3) -> dict:
 
 
 @server.tool()
-def propose_review_note(job_id: str, note: str) -> dict:
-    """PROPOSE (never write) a short note for a currently authorized source job.
+def propose_review_note(job_id: str, note: str, source_job_ids: list[str]) -> dict:
+    """Create a pending note for EVERY source shown to the model.
 
-    The return contains a one-use approval capability for the trusted host ONLY;
-    hosts MUST strip approval_token before placing tool results in LLM context.
-    No write occurs unless a user later approves via a separate API.
+    source_job_ids are injected by the trusted host, not advertised as a
+    model-writable parameter. The actual note is not written until the user
+    approves and all source grants are rechecked under PostgreSQL row locks.
+    The one-use approval capability is NEVER returned to the model.
     """
     dsn,tenant,subject = _trusted()
-    return propose(dsn,tenant,subject,job_id,note)
+    return propose(dsn,tenant,subject,job_id,note,source_job_ids=source_job_ids)
 
 
 if __name__ == "__main__":

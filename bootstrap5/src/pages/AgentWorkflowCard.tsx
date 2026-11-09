@@ -125,9 +125,12 @@ export function AgentWorkflowCard() {
       setStatus(decision==="approve"?"Заметка сохранена в PostgreSQL.":"Действие отклонено без записи.");
     }catch(err){
       setError(err instanceof Error?err.message:"Подтверждение не удалось");
+      // Any confirmation failure can mean that source access has been
+      // revoked while the user was reading. Remove all stale excerpts.
+      setResult(null);
     }finally{
-      // The browser can never replay this approval capability after one click.
-      setResult(prev=>prev?{...prev,pending:undefined}:prev);
+      // Never replay this approval capability, even after a transient error.
+      setResult(prev=>prev?{...prev,pending:undefined}:null);
       setBusy(false);
     }
   }

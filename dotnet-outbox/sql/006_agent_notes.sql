@@ -5,13 +5,16 @@ CREATE TABLE agent_note_actions (
   tenant_id text NOT NULL CHECK (length(tenant_id) BETWEEN 1 AND 128),
   subject_id text NOT NULL CHECK (length(subject_id) BETWEEN 1 AND 128),
   job_id uuid NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  -- Exactly the distinct source jobs supplied by the trusted host, never LLM.
+  source_job_ids uuid[] NOT NULL,
   proposed_text text NOT NULL CHECK (length(proposed_text) BETWEEN 1 AND 500),
   nonce_sha256 char(64) NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   consumed_at timestamptz,
   decision text CHECK (decision IN ('approved','rejected')),
-  CHECK (consumed_at IS NULL OR decision IS NOT NULL)
+  CHECK (consumed_at IS NULL OR decision IS NOT NULL),
+  CHECK (cardinality(source_job_ids) BETWEEN 1 AND 2 AND job_id = ANY(source_job_ids))
 );
 CREATE INDEX agent_note_actions_owner_ix ON agent_note_actions (tenant_id,subject_id,created_at DESC);
 CREATE TABLE agent_review_notes (

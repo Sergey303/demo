@@ -340,3 +340,70 @@ def test_qwen_requested_five_results_is_safely_clamped_to_mcp_three():
         with pytest.raises(ValueError):
             host._tool_call({"tool_calls":[{"function":{
                 "name":"search_evidence","arguments":unexpected}}]},"search_evidence")
+
+
+def test_confirm_rechecks_all_original_prompt_sources_not_only_target(monkeypatch):
+    import psycopg
+    dsn,token=setup(monkeypatch)
+    a=insert(dsn,"document","mcp-team","policy-a.md",
+             "Customers may request a refund within 30 days.",[.6,.8],subject="alice")
+    b=insert(dsn,"document","mcp-team","policy-b.md",
+             "Customers must keep invoices for audit purposes.",[.6,.8],subject="alice")
+    try:
+        proposal=agent_actions.propose(
+            dsn,"mcp-team","alice",str(a),
+            "Review both documents for refund handling.",
+            source_job_ids=[str(a),str(b)])
+        with psycopg.connect(dsn) as db:
+            originals=db.execute("SELECT source_job_ids FROM agent_note_actions WHERE id=%s",
+                                 (proposal["approval_id"],)).fetchone()[0]
+        assert set(originals)=={a,b}
+        with psycopg.connect(dsn) as db:
+            db.execute("DELETE FROM audio_read_grants WHERE job_id=%s",(b,))
+            db.commit()
+        with pytest.raises(AccessDenied):
+            agent_actions.confirm(dsn,"mcp-team","alice",
+                                  proposal["approval_token"],"approve")
+        assert agent_actions.list_notes(dsn,"mcp-team","alice",str(a))==[]
+        with pytest.raises(AccessDenied):
+            agent_actions.propose(dsn,"mcp-team","alice",str(a),"Unsafe after revoke",
+                                  source_job_ids=[str(a),str(b)])
+    finally:
+        delete(dsn,[a,b])
+
+
+def test_host_injects_both_source_ids_and_model_cannot_choose_them(monkeypatch):
+    import psycopg
+    dsn,token=setup(monkeypatch)
+    a=insert(dsn,"document","mcp-team","policy-a.md",
+             "Customers may request a refund within 30 days.",[.6,.8],subject="alice")
+    b=insert(dsn,"document","mcp-team","policy-b.md",
+             "A refund request may be submitted within thirty days.",[.6,.8],subject="alice")
+    model=ScriptedQwen()
+    try:
+        async def scenario():
+            async with Client(svc.server) as client:
+                return await host.run_agent(
+                    "Find the refund policy and propose a short review note.",
+                    "note",token,dsn,model=model,mcp_client=client)
+        result=run(scenario())
+        assert result["status"]=="approval_required",result
+        params=model.calls[1]["tools"][0]["function"]["parameters"]
+        assert "source_job_ids" not in params["properties"]
+        assert "source_job_ids" not in params.get("required",[])
+        with psycopg.connect(dsn) as db:
+            sources=db.execute(
+                "SELECT source_job_ids FROM agent_note_actions WHERE id=%s",
+                (result["pending"]["approval_id"],)).fetchone()[0]
+        assert set(sources)=={a,b}
+        target=result["pending"]["job_id"]
+        other=b if str(a)==target else a
+        with psycopg.connect(dsn) as db:
+            db.execute("DELETE FROM audio_read_grants WHERE job_id=%s",(other,))
+            db.commit()
+        with pytest.raises(AccessDenied):
+            agent_actions.confirm(dsn,"mcp-team","alice",
+                                  result["pending"]["approval_token"],"approve")
+        assert agent_actions.list_notes(dsn,"mcp-team","alice",target)==[]
+    finally:
+        delete(dsn,[a,b])

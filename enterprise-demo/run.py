@@ -105,6 +105,9 @@ def check_schema() -> None:
                       to_regclass('public.agent_note_actions') IS NOT NULL,
                       to_regclass('public.agent_review_notes') IS NOT NULL,
                       EXISTS(SELECT 1 FROM information_schema.columns
+                        WHERE table_schema='public' AND table_name='agent_note_actions'
+                          AND column_name='source_job_ids'),
+                      EXISTS(SELECT 1 FROM information_schema.columns
                         WHERE table_schema='public' AND table_name='jobs' AND column_name='kind'),
                       EXISTS(SELECT 1 FROM information_schema.columns
                         WHERE table_schema='public' AND table_name='jobs' AND column_name='audio_payload'),
