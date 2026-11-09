@@ -1,10 +1,10 @@
 # Architecture case: Enterprise Knowledge & Meeting Evidence Platform
 
-**Problem:** A regulated organization needs searchable evidence from internal meetings and policy documents. Search results must retain source references, audio timestamps and clear limits on confidence. Processing should survive worker restarts without silently losing accepted work. The **bounded local WAV + Markdown → authorized evidence search → extractive exact-quote answer** has been built and demonstrated end-to-end, while production identity, operational scale and LLM-generated answers remain target-only. [Real EP-05 browser/video evidence](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
+**Problem:** A regulated organization needs searchable evidence from internal meetings and policy documents. Search results must retain source references, audio timestamps and clear limits on confidence. Processing should survive worker restarts without silently losing accepted work. The bounded **WAV + Markdown → SQL grant-first search → default extractive / optional local Qwen3 generated answer** is implemented with real Chromium, Whisper, ONNX, PostgreSQL and Ollama acceptance. [EP-05b generated answer/video](../enterprise-demo/EVIDENCE-2026-11-09-QWEN.md) · [EP-05 extractive](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). Production IAM, semantic entailment, operational scale and independent quality benchmarks remain unverified.
 
 **Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio now integrates the **bounded** WAV and text-document paths through one .NET/PostgreSQL jobs/outbox, shared Python worker, SQL tenant/subject grants, local ONNX search and exact-source answer UI. Production OIDC/RLS, complete document formats, agent authorizations, comprehensive quality evaluation, audit and operational hardening are not implemented. Do not advertise this as a production AI platform.
 
-**Implementation status (2026-11-09):** [Enterprise AI Platform plan](ENTERPRISE-AI-PLATFORM-PLAN.md) defines EP-00–EP-09; EP-02–EP-05 have real bounded browser/DB/model acceptance with source files, [20.2s actual Chromium video](../enterprise-demo/media/enterprise-answer-real.mp4), SQL negative tests and transparent limitations. The next gap is EP-06 operational/fault acceptance. **The C4 drawing below remains a target diagram**, not a depiction of the currently deployed localhost demo; see the as-built picture first.
+**Implementation status (2026-11-09):** [Enterprise AI Platform plan](ENTERPRISE-AI-PLATFORM-PLAN.md) defines EP-00–EP-09; EP-02–EP-05 plus optional EP-05b Qwen generation have real bounded browser/DB/model acceptance with source files, [20.2s actual Chromium video](../enterprise-demo/media/enterprise-answer-real.mp4), SQL negative tests and transparent limitations. The next gaps are independent LLM answer-quality evaluation, agent tool integration and EP-06 operational/fault acceptance. **The C4 drawing below remains a target diagram**, not a depiction of the currently deployed localhost demo; see the as-built picture first.
 
 ## As-built local demonstration (EP-02–EP-05)
 
@@ -20,6 +20,8 @@ flowchart LR
 ```
 
 This is **not** an IAM/multi-user deployment; any browser reaching the locally trusted proxy shares the same fixed demo identity. PostgreSQL authorizes before selecting source passages, and a new answer request repeats that query. An excerpt's provenance does not prove it answers the question. [Verified behavior and known limits](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
+
+**Optional as-built EP-05b:** the trusted Python Search API connects to **`127.0.0.1:11434` Ollama Qwen3:8b** only for explicit generated mode. It sends at most two SQL-authorized excerpts and requires validated JSON/citation IDs. It checks current PostgreSQL grants again after inference, while the default exact-quote path never depends on Ollama. [Code + tests](guarded_generation.py) · [real browser/Qwen evidence](../enterprise-demo/EVIDENCE-2026-11-09-QWEN.md). This optional link is not drawn in the historical target diagram below.
 
 ## C4 container view (target, with implementation status)
 

@@ -79,7 +79,7 @@ def check_environment() -> None:
     for cmd in ("dotnet", "node", "npm"):
         if not shutil.which(cmd):
             raise RuntimeError(f"Missing {cmd} executable.")
-    for module in ("psycopg", "faster_whisper", "fastembed", "fastapi", "uvicorn"):
+    for module in ("psycopg", "faster_whisper", "fastembed", "fastapi", "httpx", "uvicorn"):
         if importlib.util.find_spec(module) is None:
             raise RuntimeError(f"Missing Python dependency {module}; install architecture/audio-requirements.txt.")
     if not (FRONTEND / "node_modules").is_dir():
