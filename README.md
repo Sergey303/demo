@@ -66,7 +66,7 @@ Follow the implementation and repeatable checks rather than relying on claims.
 
 ### Bootstrap 5 Dashboard Shell
 
-React, TypeScript, Vite and Bootstrap 5. Responsive dashboard with six routes, workspace switching, editable profile and Playwright tests.
+React, TypeScript, Vite and Bootstrap 5. Responsive dashboard with centrally registered routes (including the two live demo paths), workspace switching, editable profile and Playwright tests.
 
 - [Source and detailed instructions](bootstrap5/README.md)
 - [Desktop preview](bootstrap5/docs/media/desktop-demo.gif)
