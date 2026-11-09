@@ -41,10 +41,57 @@ function validateSearch(value: unknown): { hits: Evidence[]; abstained: boolean 
   return { hits, abstained: payload.abstained };
 }
 
+type ExactCitation = Omit<Evidence, "text"> & { quote: string };
+type EvidenceAnswer = {
+  answer: string;
+  abstained: boolean;
+  reason: string;
+  citations: ExactCitation[];
+};
+
+function validateAnswer(value: unknown): EvidenceAnswer {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("Некорректный доказательный ответ");
+  const row = value as Record<string, unknown>;
+  if (row.mode !== "evidence" || row.semantic_verified !== false ||
+      typeof row.answer !== "string" || typeof row.abstained !== "boolean" ||
+      typeof row.reason !== "string" || !Array.isArray(row.citations) ||
+      row.citations.length > 2) throw new Error("Некорректный контракт ответа");
+  if (row.abstained) {
+    if (row.citations.length !== 0) throw new Error("Цитаты при отказе запрещены");
+    return { answer: row.answer, abstained: true, reason: row.reason, citations: [] };
+  }
+  if (row.citations.length === 0) throw new Error("Ответ без проверяемых цитат");
+  const citations = row.citations.map((raw: unknown): ExactCitation => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw))
+      throw new Error("Некорректная цитата");
+    const item = raw as Record<string, unknown>;
+    if (typeof item.job_id !== "string" || !/^[a-f\d-]{36}$/i.test(item.job_id) ||
+        typeof item.source !== "string" || !item.source ||
+        typeof item.quote !== "string" || !item.quote.trim() ||
+        typeof item.score !== "number" || !Number.isFinite(item.score) ||
+        (item.kind !== "audio" && item.kind !== "document")) throw new Error("Некорректный источник цитаты");
+    const base = { job_id: item.job_id, kind: item.kind, source: item.source,
+      score: item.score, quote: item.quote } as ExactCitation;
+    if (item.kind === "audio") {
+      if (typeof item.start !== "number" || typeof item.end !== "number" ||
+          item.start < 0 || item.end < item.start) throw new Error("Нет таймкода");
+      return { ...base, start: item.start, end: item.end };
+    }
+    if (typeof item.char_start !== "number" || typeof item.char_end !== "number" ||
+        item.char_start < 0 || item.char_end <= item.char_start) throw new Error("Нет диапазона символов");
+    return { ...base, char_start: item.char_start, char_end: item.char_end };
+  });
+  if (row.answer !== citations.map(c => c.quote).join("\n"))
+    throw new Error("Ответ не совпадает с цитатами");
+  return { answer: row.answer, abstained: false, reason: row.reason, citations };
+}
+
 export function UnifiedSearchCard() {
   const [question, setQuestion] = useState("");
   const [hits, setHits] = useState<Evidence[]>([]);
   const [abstained, setAbstained] = useState(false);
+  const [exactAnswer, setExactAnswer] = useState<EvidenceAnswer | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const active = useRef<AbortController | null>(null);
@@ -62,11 +109,12 @@ export function UnifiedSearchCard() {
     setQuestion(value);
     setHits([]);
     setAbstained(false);
+    setExactAnswer(null);
     setError(null);
     setLoading(false);
   }
 
-  async function search() {
+  async function search(mode: "search" | "answer" = "search") {
     const query = question.trim();
     if (!query || query.length > 500 || loading) return;
     generation.current++;
@@ -77,9 +125,10 @@ export function UnifiedSearchCard() {
     setLoading(true);
     setHits([]);
     setAbstained(false);
+    setExactAnswer(null);
     setError(null);
     try {
-      const response = await fetch("/enterprise-search/search", {
+      const response = await fetch("/enterprise-search/" + mode, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: query, top_k: 5 }),
@@ -92,14 +141,20 @@ export function UnifiedSearchCard() {
         if (response.status === 503) throw new Error("Сервис поиска временно недоступен (503).");
         throw new Error("Ошибка поиска: HTTP " + response.status);
       }
-      const result = validateSearch(await response.json() as unknown);
+      const payload = await response.json() as unknown;
       if (version !== generation.current) return;
-      setHits(result.hits);
-      setAbstained(result.abstained);
+      if (mode === "answer") {
+        setExactAnswer(validateAnswer(payload));
+      } else {
+        const result = validateSearch(payload);
+        setHits(result.hits);
+        setAbstained(result.abstained);
+      }
     } catch (caught) {
       if (version !== generation.current || controller.signal.aborted) return;
       setError(caught instanceof Error ? caught.message : "Ошибка соединения с поиском");
       setHits([]);
+      setExactAnswer(null);
     } finally {
       if (active.current === controller) active.current = null;
       if (version === generation.current) setLoading(false);
@@ -125,8 +180,38 @@ export function UnifiedSearchCard() {
         <button type="submit" className="btn btn-primary" disabled={loading || !question.trim()}>
           {loading ? "Ищем…" : "Найти доказательства"}
         </button>
+        <button type="button" className="btn btn-outline-primary"
+          disabled={loading || !question.trim()} onClick={() => void search("answer")}>
+          Ответить дословными цитатами
+        </button>
       </form>
       {error && <div role="alert" className="alert alert-danger mt-3 mb-0">{error}</div>}
+      {exactAnswer && <div className="mt-3" data-testid="enterprise-evidence-answer">
+        {exactAnswer.abstained
+          ? <div className="alert alert-secondary" data-testid="answer-abstained">
+              Недостаточно разрешённых доказательств для ответа.
+            </div>
+          : <div data-testid="answer-result">
+              <h3 className="h6">Дословный ответ из разрешённых источников</h3>
+              <p className="small text-secondary">
+                Только точные выдержки, без генерации LLM. Цитирование подтверждает
+                происхождение текста, но не гарантирует, что он логически отвечает на вопрос.
+              </p>
+              <blockquote className="border-start border-3 ps-3" style={{ whiteSpace: "pre-wrap" }}
+                data-testid="answer-text">{exactAnswer.answer}</blockquote>
+              <ol className="list-group list-group-numbered">
+                {exactAnswer.citations.map((item, index) =>
+                  <li className="list-group-item" key={item.job_id + ":" + index}>
+                    <strong>{item.source}</strong> ({item.kind === "audio" ? "аудио" : "документ"}){" "}
+                    {item.kind === "audio"
+                      ? item.start?.toFixed(2) + "–" + item.end?.toFixed(2) + " с"
+                      : "символы " + item.char_start + "–" + item.char_end}
+                    <div className="small text-secondary">Job ID: {item.job_id} · cosine {item.score.toFixed(3)}</div>
+                    <div className="small" style={{ whiteSpace: "pre-wrap" }}>{item.quote}</div>
+                  </li>)}
+              </ol>
+            </div>}
+      </div>}
       {abstained && <div className="alert alert-secondary mt-3 mb-0" data-testid="search-abstained">
         Нет доступных доказательств. Ответ не сформирован.
       </div>}

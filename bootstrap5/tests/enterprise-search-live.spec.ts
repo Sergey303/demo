@@ -60,7 +60,19 @@ test("real cross-modal search returns document and audio then enforces live revo
   await expect(evidence).toContainText("Customers");
   await expect(evidence).not.toContainText("embedding");
   await page.screenshot({path:info.outputPath("enterprise-search-real.png"),fullPage:true});
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1200);
+
+  // EP-05: real signed request, exact server-authored quote copies, no LLM.
+  await ui.getByRole("button",{name:"Ответить дословными цитатами"}).click();
+  const exact = ui.getByTestId("answer-result");
+  await expect(exact).toBeVisible({timeout:55_000});
+  await expect(exact).toContainText("refund-policy.md");
+  await expect(exact).toContainText("refund-audio.wav");
+  await expect(exact).toContainText(audioId);
+  await expect(exact).toContainText(docId);
+  await expect(ui.getByTestId("answer-text")).toContainText(/refund/i);
+  await page.screenshot({path:info.outputPath("enterprise-answer-real.png"),fullPage:true});
+  await page.waitForTimeout(1500);
 
   // The Python search API is not publicly authenticated: no-token access fails.
   const missingToken=await request.post("http://127.0.0.1:5088/search",{
@@ -88,9 +100,15 @@ test("real cross-modal search returns document and audio then enforces live revo
   await ui.getByRole("button",{name:"Найти доказательства"}).click();
   await expect(evidence).toContainText("refund-audio.wav");
   await expect(evidence).not.toContainText("refund-policy.md");
+  await ui.getByRole("button",{name:"Ответить дословными цитатами"}).click();
+  await expect(exact).toContainText("refund-audio.wav");
+  await expect(exact).not.toContainText("refund-policy.md");
   revoke(audioId);
   await ui.getByRole("button",{name:"Найти доказательства"}).click();
   await expect(ui.getByTestId("search-abstained")).toContainText("Нет доступных доказательств");
   await expect(evidence).toHaveCount(0);
+  await ui.getByRole("button",{name:"Ответить дословными цитатами"}).click();
+  await expect(ui.getByTestId("answer-abstained")).toContainText("Недостаточно разрешённых доказательств");
+  await expect(exact).toHaveCount(0);
   await page.waitForTimeout(1200);
 });

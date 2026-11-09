@@ -1,10 +1,25 @@
 # Architecture case: Enterprise Knowledge & Meeting Evidence Platform
 
-**Problem:** A regulated organization needs searchable evidence from internal meetings and policy documents. Search results must retain source references, audio timestamps and clear limits on confidence. Processing should survive worker restarts without silently losing accepted work. This is a **target architecture**, not an implemented end-to-end product.
+**Problem:** A regulated organization needs searchable evidence from internal meetings and policy documents. Search results must retain source references, audio timestamps and clear limits on confidence. Processing should survive worker restarts without silently losing accepted work. The **bounded local WAV + Markdown → authorized evidence search → extractive exact-quote answer** has been built and demonstrated end-to-end, while production identity, operational scale and LLM-generated answers remain target-only. [Real EP-05 browser/video evidence](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
 
-**Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio contains functioning implementations of its *parts*. The durable audio API, local AI worker and a signed-token audio retrieval boundary now exist as separate demos; production OIDC, unified document ingestion, audit, end-to-end authorization across all data types and operational hardening do not. Do not advertise this as a production AI platform.
+**Why this case:** It exercises RAG, local inference, async ingestion, identity boundaries, model evaluation and incident recovery. The portfolio now integrates the **bounded** WAV and text-document paths through one .NET/PostgreSQL jobs/outbox, shared Python worker, SQL tenant/subject grants, local ONNX search and exact-source answer UI. Production OIDC/RLS, complete document formats, agent authorizations, comprehensive quality evaluation, audit and operational hardening are not implemented. Do not advertise this as a production AI platform.
 
-**Implementation roadmap (2026-11-08):** [Enterprise AI Platform integration plan](ENTERPRISE-AI-PLATFORM-PLAN.md) defines EP-00–EP-09 with prioritized vertical slices, dependencies, concrete acceptance tests and code ownership. **This page remains the architecture/evidence inventory** until the integrated browser-to-AI path is built and proven.
+**Implementation status (2026-11-09):** [Enterprise AI Platform plan](ENTERPRISE-AI-PLATFORM-PLAN.md) defines EP-00–EP-09; EP-02–EP-05 have real bounded browser/DB/model acceptance with source files, [20.2s actual Chromium video](../enterprise-demo/media/enterprise-answer-real.mp4), SQL negative tests and transparent limitations. The next gap is EP-06 operational/fault acceptance. **The C4 drawing below remains a target diagram**, not a depiction of the currently deployed localhost demo; see the as-built picture first.
+
+## As-built local demonstration (EP-02–EP-05)
+
+```mermaid
+flowchart LR
+  B["React browser\nlocalhost:4173"] --> V["Vite trusted local proxy\nfixed signed demo principal"]
+  V --> API["ASP.NET Core Jobs API\nlocalhost:5077"]
+  V --> S["Python search/answer API\nlocalhost:5088"]
+  API --> PG[("PostgreSQL reliable_jobs\njobs/outbox/grants/results")]
+  W["Python worker\nWhisper + BGE-small ONNX"] <--> PG
+  S -->|"SQL grant before ranking"| PG
+  S --> Q["Exact cosine ranking\nextractive exact quotes"]
+```
+
+This is **not** an IAM/multi-user deployment; any browser reaching the locally trusted proxy shares the same fixed demo identity. PostgreSQL authorizes before selecting source passages, and a new answer request repeats that query. An excerpt's provenance does not prove it answers the question. [Verified behavior and known limits](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md).
 
 ## C4 container view (target, with implementation status)
 
@@ -37,7 +52,7 @@ flowchart TB
   Retrieval -.-> Obs
 ```
 
-**Actual code**: [Jobs API](../dotnet-outbox/src/Program.cs), [worker](../dotnet-outbox/src/OutboxWorker.cs), [schema](../dotnet-outbox/sql/001_init.sql), [Whisper pipeline](../python-ai/audio-search/pipeline.py), [retrieval](../python-ai/audio-search/search.py), [reranking](../python-ai/audio-search/rerank.py), [document RAG](../python-ai/rag-docs/app/core.py), [HTTP tool boundary](../python-ai/tool-agent/app/main.py). **The durable audio extension now connects Jobs API to Whisper**; use [runbook](DURABLE-AUDIO.md) to distinguish it from the older text-only orchestration.
+**Actual code**: [Jobs API](../dotnet-outbox/src/Program.cs), [worker](../dotnet-outbox/src/OutboxWorker.cs), [schema](../dotnet-outbox/sql/001_init.sql), [Whisper pipeline](../python-ai/audio-search/pipeline.py), [retrieval](../python-ai/audio-search/search.py), [reranking](../python-ai/audio-search/rerank.py), [document RAG](../python-ai/rag-docs/app/core.py), [HTTP tool boundary](../python-ai/tool-agent/app/main.py). **The EP-02–EP-05 path now connects Jobs API, Whisper/document ONNX, PostgreSQL grants and a local extractive answer API**: [runbook](../enterprise-demo/README.md), [search](unified_search.py), [answer](evidence_answer.py), [real screenshot/video](../enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md). Other repositories and the target C4 remain broader or standalone.
 
 ## Functional and quality contracts
 
@@ -45,7 +60,7 @@ flowchart TB
 | --- | --- | --- |
 | Accepted jobs are durable | POST returns accepted only after job + outbox are committed; duplicate keys do not create another job | [HTTP smoke + PostgreSQL tests](../dotnet-outbox/tests); [verified local run](../dotnet-outbox/README.md) |
 | Worker crash does not lose accepted work | Kill process after claim but before commit; restart and check same job eventually completes | Audio worker child-process termination, lease reclaim and fencing tested; text worker process crash remains untested |
-| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [audio ACL retrieval](audio_worker.py) and [signed identity](../dotnet-outbox/src/AudioIdentity.cs) verified on PostgreSQL and in the full HTTP + Whisper smoke (2026-11-07); standalone document RAG now has signed identity and manifest-based per-source access, separately tested |
+| Document/audio result has provenance | Every result carries source, audio start/end or document passage; permissions evaluated **before** ranking and returning evidence | [audio ACL retrieval](audio_worker.py) and [signed identity](../dotnet-outbox/src/AudioIdentity.cs) verified on PostgreSQL and in the full HTTP + Whisper smoke (2026-11-07); EP-03/04/05 use **one PostgreSQL grant table** for document and audio; the standalone document RAG has a different manifest ACL and is not the authorization source of this integrated path |
 | AI quality change is gated | Frozen labeled queries; compare paired errors and latency; reject tiny datasets | [Executable quality/latency gate](decision_gate.py) + [tests](tests/test_decision_gate.py); present datasets are tiny and synthetic |
 | No unauthorized writes through public agent API | HTTP clients cannot self-approve actions | [Tool API](../python-ai/tool-agent/app/main.py) and [tests](../python-ai/tool-agent/tests/test_agent.py); authenticated approval workflow **not implemented** |
 | Traceability and operational readiness | Job ID / trace ID links ingress, processing, indexing and search, with queue lag and inference latency | **Target only**; `/health` and `/ready` exist for Jobs API |
