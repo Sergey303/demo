@@ -17,7 +17,7 @@ if ($Destination.TrimEnd('\').Equals($Source.TrimEnd('\'), [StringComparison]::O
 }
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
 $files = @(
-    'AliceVoiceGpt.csproj', 'Program.cs', 'Dockerfile',
+    'AliceVoiceGpt.csproj', 'Program.cs', 'CodexAnswerer.cs', 'Dockerfile',
     'compose.yaml', '.dockerignore', '.env.example',
     'Caddyfile.alice.caddy', 'README.md'
 )
@@ -39,6 +39,6 @@ if (-not (Test-Path -LiteralPath $tokenPath)) {
     [IO.File]::WriteAllText($tokenPath, $token, [Text.UTF8Encoding]::new($false))
 }
 Write-Host "Installed files into: $Destination"
-Write-Host 'Existing .env, token and OpenAI key were preserved.'
-Write-Host "Next: save your OpenAI API key in $secretDir\openai_api_key (without quotes/newline)"
-Write-Host "Then: cd '$Destination'; docker compose config --quiet; docker compose up -d --build"
+Write-Host 'Existing .env and webhook token were preserved; the Codex Docker login volume is managed separately.'
+Write-Host "Next: docker compose build; docker compose run --rm --entrypoint codex app login --device-auth"
+Write-Host "Then: cd '$Destination'; docker compose config --quiet; docker compose up -d"

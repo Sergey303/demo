@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -25,24 +24,15 @@ if (token.Length < 32 || !token.All(c => char.IsAsciiLetterOrDigit(c) || c is '-
     throw new InvalidOperationException("Set ALICE_WEBHOOK_TOKEN (32+ ASCII letters/digits, '-' or '_').");
 
 bool demo = string.Equals(builder.Configuration["Alice:DemoMode"] ?? builder.Configuration["DEMO_MODE"], "true", StringComparison.OrdinalIgnoreCase);
-string apiKey = Secret("OPENAI_API_KEY");
-if (!demo && !apiKey.StartsWith("sk-", StringComparison.Ordinal))
-    throw new InvalidOperationException("OPENAI_API_KEY is required unless DEMO_MODE=true.");
-string model = builder.Configuration["OpenAI:Model"] ?? builder.Configuration["OPENAI_MODEL"] ?? "gpt-6-luna";
 string? expectedSkillId = builder.Configuration["Alice:SkillId"] ?? builder.Configuration["YANDEX_SKILL_ID"];
 int maxDailyRequests = int.TryParse(builder.Configuration["Alice:MaxDailyRequests"] ?? builder.Configuration["MAX_DAILY_REQUESTS"], out int configured)
     ? Math.Clamp(configured, 1, 500) : 30;
 
-builder.Services.AddHttpClient("openai", client => {
-    client.BaseAddress = new Uri("https://api.openai.com/");
-    client.Timeout = TimeSpan.FromSeconds(25);
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-});
 var app = builder.Build();
 var states = new ConcurrentDictionary<string, UserState>(StringComparer.Ordinal);
 app.MapGet("/health", () => Results.Ok(new { ok = true, demo }));
 
-app.MapPost("/alice/{webhookToken}", async (string webhookToken, HttpContext context, IHttpClientFactory factory) => {
+app.MapPost("/alice/{webhookToken}", async (string webhookToken, HttpContext context) => {
     // Public HTTPS endpoints have no Yandex-signed request token; the secret URL is the webhook guard.
     if (!FixedTimeMatch(webhookToken, token)) return Results.NotFound();
 
@@ -54,7 +44,7 @@ app.MapPost("/alice/{webhookToken}", async (string webhookToken, HttpContext con
         if (!Read(root, "request", out var utterance)) return Results.BadRequest();
         if (GetString(utterance, "original_utterance") == "ping") return Reply("pong", true);
         if (!Read(root, "session", out var session)) return Results.BadRequest();
-        if (expectedSkillId is not null && GetString(session, "skill_id") != expectedSkillId)
+        if (!string.IsNullOrWhiteSpace(expectedSkillId) && GetString(session, "skill_id") != expectedSkillId)
             return Results.NotFound();
         var userId = Read(session, "user", out var user) ? GetString(user, "user_id") : null;
         userId ??= GetString(session, "user_id");
@@ -93,7 +83,7 @@ app.MapPost("/alice/{webhookToken}", async (string webhookToken, HttpContext con
                     return Reply("Лимит вопросов на сегодня достигнут.", true);
                 state.CountToday++;
                 // Starting async work is intentional: the response may outlive Alice's 4.5s webhook limit.
-                state.Pending = GenerateAsync(command, demo, model, factory.CreateClient("openai"));
+                state.Pending = demo ? Task.FromResult("Демо-режим: вопрос получен. После входа Codex через ChatGPT будут реальные ответы.") : CodexAnswerer.AskAsync(command);
             }
             pending = state.Pending;
         }
@@ -141,35 +131,6 @@ static string Shorten(string answer) {
     if (answer.Length <= 850) return answer;
     int last = answer.LastIndexOfAny(['.', '!', '?'], 800);
     return answer[..(last > 400 ? last + 1 : 800)].Trim();
-}
-
-static async Task<string> GenerateAsync(string question, bool demo, string model, HttpClient client) {
-    if (demo) return "Демо-режим: вопрос получен. Подключи OPENAI_API_KEY, чтобы получать реальные ответы модели.";
-    var payload = new {
-        model,
-        instructions = "Ты отвечаешь на устные вопросы по-русски. Коротко, ясно, без markdown, " +
-                       "обычно в 2-4 предложениях, максимум 550 символов. " +
-                       "Не утверждай непроверенное как факт. Текст будет произнесён голосом.",
-        input = question,
-        max_output_tokens = 240,
-        reasoning = new { effort = "none" },
-        store = false
-    };
-    using var response = await client.PostAsync("v1/responses",
-        new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
-    if (!response.IsSuccessStatusCode) throw new HttpRequestException($"OpenAI HTTP {(int)response.StatusCode}");
-    using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-    if (!Read(doc.RootElement, "output", out var output) || output.ValueKind != JsonValueKind.Array)
-        throw new InvalidOperationException("OpenAI response missing output array.");
-    var parts = new List<string>();
-    foreach (var item in output.EnumerateArray()) {
-        if (!Read(item, "content", out var content) || content.ValueKind != JsonValueKind.Array) continue;
-        foreach (var part in content.EnumerateArray()) {
-            if (GetString(part, "type") == "output_text" && GetString(part, "text") is { } text)
-                parts.Add(text);
-        }
-    }
-    return parts.Count > 0 ? string.Join(" ", parts) : "Модель не вернула текстовый ответ.";
 }
 
 sealed class UserState {

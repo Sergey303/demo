@@ -9,21 +9,21 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ASPNETCORE_ENVIRONMENT: Production
-      OPENAI_MODEL: "${OPENAI_MODEL:-gpt-6-luna}"
       MAX_DAILY_REQUESTS: "${MAX_DAILY_REQUESTS:-30}"
-      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
       ALICE_WEBHOOK_TOKEN_FILE: /run/secrets/alice_webhook_token
-      # Optional: after registering the skill, set YANDEX_SKILL_ID in .env.
+      # Optional: set after registering the private Yandex skill.
       YANDEX_SKILL_ID: "${YANDEX_SKILL_ID:-}"
     secrets:
-      - openai_api_key
       - alice_webhook_token
+    volumes:
+      # Separate, private ChatGPT OAuth login. Never mount your host ~/.codex.
+      - codex_auth:/home/app/.codex
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
     read_only: true
     tmpfs:
-      - /tmp:rw,nosuid,size=16m
-    mem_limit: 256m
+      - /tmp:rw,nosuid,size=64m
+    mem_limit: 768m
     pids_limit: 128
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/health || exit 1"]
@@ -37,7 +37,7 @@ services:
         max-size: "5m"
         max-file: "3"
 secrets:
-  openai_api_key:
-    file: ./secrets/openai_api_key
   alice_webhook_token:
     file: ./secrets/alice_webhook_token
+volumes:
+  codex_auth:

@@ -1,5 +1,8 @@
-secrets/
+# Runtime secrets are local only.
+secrets/*
+!secrets/README.md
 .env
 .env.*
+!.env.example
 **/bin/
 **/obj/
