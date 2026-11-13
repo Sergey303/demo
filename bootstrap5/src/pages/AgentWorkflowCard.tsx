@@ -7,10 +7,16 @@ type Citation = {
 };
 type Trace = { tool: "search_evidence" | "propose_review_note"; status: string; citations?: number };
 type Pending = { approval_token: string; approval_id: string; job_id: string; note: string };
+type Gateway = {
+  version: "demo-gateway-v1";
+  identity: "server_bound";
+  tools: "allowlisted";
+  output: "validated";
+};
 type AgentResult = {
   status: "answered" | "abstained" | "approval_required";
   answer: string; citations: Citation[];
-  tool_trace: Trace[]; pending?: Pending; reason?: string;
+  tool_trace: Trace[]; pending?: Pending; reason?: string; gateway?: Gateway;
 };
 
 function validUuid(text: unknown): text is string {
@@ -65,8 +71,14 @@ function project(value: unknown): AgentResult {
   if (v.status === "answered" && (!v.answer.trim() || citations.length===0))
     throw new Error("Ответ агента без цитаты");
   if (v.status === "abstained" && citations.length) throw new Error("Цитаты при отказе");
+  const g = v.gateway as Record<string, unknown> | undefined;
+  const gateway: Gateway | undefined = g?.version === "demo-gateway-v1" &&
+    g.identity === "server_bound" && g.tools === "allowlisted" &&
+    g.output === "validated"
+    ? {version:"demo-gateway-v1",identity:"server_bound",
+       tools:"allowlisted",output:"validated"} : undefined;
   return {status:v.status as AgentResult["status"],answer:v.answer,
-          citations,tool_trace,pending,
+          citations,tool_trace,pending,gateway,
           reason:typeof v.reason === "string" ? v.reason : undefined};
 }
 
@@ -97,7 +109,10 @@ export function AgentWorkflowCard() {
         signal:ctrl.signal,cache:"no-store",
       });
       if (!response.ok) throw new Error(response.status===503
-        ? "MCP/Ollama недоступны или заняты (503)." : "Ошибка агента HTTP "+response.status);
+        ? "MCP/Ollama недоступны или заняты (503)."
+        : response.status===422 ? "AI Gateway отклонил входной запрос до обращения к модели."
+        : response.status===401 ? "Демо-идентичность не подтверждена (401)."
+        : "Ошибка агента HTTP "+response.status);
       const value=project(await response.json());
       if (current.current===ctrl)setResult(value);
     } catch(err) {
@@ -161,6 +176,16 @@ export function AgentWorkflowCard() {
       {status && <div role="status" className="alert alert-success mt-3">{status}</div>}
       {result && <div className="mt-3" data-testid="mcp-result">
         <h3 className="h6">Результат MCP-инструментов</h3>
+        {result.gateway && <div className="small border rounded p-2 mb-2" data-testid="mcp-gateway">
+          <strong>AI Gateway · {result.gateway.version}</strong>
+          <div>Identity: server-bound · Tools: allowlist · Output: validated</div>
+          <div className="text-secondary">Авторизация выполняется в PostgreSQL;
+            это правила фильтрации, а не гарантия отсутствия prompt injection.</div>
+        </div>}
+        {result.reason?.startsWith("gateway_") &&
+          <p className="small text-warning-emphasis" data-testid="gateway-rejection">
+            AI Gateway остановил небезопасный этап. Исходные данные не раскрыты.
+          </p>}
         <div className="small text-secondary" data-testid="mcp-trace">
           {result.tool_trace.map((t,i)=>
             <div key={i}>{t.tool}: {t.status}{t.citations!==undefined?" · "+t.citations+" цитат":""}</div>)}

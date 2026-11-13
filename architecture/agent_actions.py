@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 import psycopg
 
 from audio_access import AccessDenied
+from ai_gateway import note as gate_note
 
 MAX_NOTE = 500
 APPROVAL_TTL_SECONDS = 300
@@ -38,6 +39,7 @@ def propose(dsn: str, tenant: str, subject: str, job_id: str, note: str,
     """
     if not isinstance(note, str) or not 1 <= len(note.strip()) <= MAX_NOTE or len(note) > MAX_NOTE:
         raise ValueError("Invalid note length")
+    gate_note(note)
     note.encode("utf-8", "strict")
     job = _uuid(job_id)
     raw_ids = [job_id] if source_job_ids is None else source_job_ids

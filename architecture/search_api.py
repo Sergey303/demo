@@ -19,6 +19,8 @@ from evidence_answer import evidence_answer
 from guarded_generation import generated_answer, ModelUnavailable
 from agent_actions import confirm, list_notes
 from mcp_agent_host import run_agent
+from ai_gateway import (POLICY_VERSION, GateBlocked, request as gate_request,
+                        citation_egress, note as gate_note)
 
 app = FastAPI(
     title="Portfolio authorized evidence search",
@@ -53,6 +55,7 @@ async def never_cache_evidence(request, call_next):
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-AI-Gateway-Policy"] = POLICY_VERSION
     return response
 
 
@@ -92,7 +95,16 @@ def _authorized_retrieval(body: SearchRequest, authorization: str | None):
     if not dsn:
         raise HTTPException(status_code=503, detail="Search unavailable")
     try:
-        return retrieve_authorized(dsn, tenant, subject, body.question, body.top_k)
+        gate_request(body.question)
+    except GateBlocked:
+        raise HTTPException(status_code=422, detail="AI Gateway rejected request") from None
+    try:
+        result = retrieve_authorized(dsn, tenant, subject, body.question, body.top_k)
+        try:
+            citation_egress(result["hits"])
+        except GateBlocked:
+            return {"hits": [], "abstained": True, "reason": "gateway_output_blocked"}
+        return result
     except Exception as exc:
         # Never log user question, source text, DB credentials or model vectors.
         logging.warning("Authorized retrieval failed: %s", type(exc).__name__)
@@ -164,6 +176,8 @@ async def agent_run(body: AgentRunRequest,
         raise HTTPException(status_code=401, detail="Unauthorized") from None
     except ModelUnavailable:
         raise HTTPException(status_code=503, detail="Local model unavailable") from None
+    except GateBlocked:
+        raise HTTPException(status_code=422, detail="AI Gateway rejected request") from None
     except Exception as exc:
         logging.warning("MCP agent unavailable: %s", type(exc).__name__)
         raise HTTPException(status_code=503, detail="Agent unavailable") from None
@@ -195,7 +209,15 @@ def agent_notes(job_id: str,
     if not dsn:
         raise HTTPException(status_code=503, detail="Agent unavailable")
     try:
-        return {"notes":list_notes(dsn, tenant, subject, job_id)}
+        notes = list_notes(dsn, tenant, subject, job_id)
+        # Existing saved notes must pass current response DLP, not only the
+        # policy that happened to run when the record was originally written.
+        try:
+            for item in notes:
+                gate_note(item["note"])
+        except GateBlocked:
+            return {"notes": []}
+        return {"notes": notes}
     except ValueError:
         raise HTTPException(status_code=404, detail="Notes unavailable") from None
     except Exception as exc:

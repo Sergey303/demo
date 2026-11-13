@@ -15,6 +15,8 @@ import httpx
 import psycopg
 
 from evidence_answer import evidence_answer, REFUSAL
+from ai_gateway import (GateBlocked, source as gate_source,
+                        outgoing as gate_output, citation_egress)
 
 MODEL = "qwen3:8b"
 URL = "http://127.0.0.1:11434/api/chat"  # Fixed loopback; never from an HTTP body.
@@ -177,6 +179,13 @@ def generated_answer(retrieval: dict, question: str, dsn: str,
     if quoted["abstained"]:
         return refuse(quoted["reason"])  # No Ollama call without authorized evidence.
     citations = quoted["citations"]
+    try:
+        citation_egress(citations)
+        for citation in citations:
+            gate_source(citation["quote"])
+            gate_source(citation["source"])
+    except GateBlocked:
+        return refuse("gateway_source_blocked")
     model = call_model or _call_ollama
 
     if not _slots.acquire(blocking=False):
@@ -197,6 +206,11 @@ def generated_answer(retrieval: dict, question: str, dsn: str,
     if result is None:
         return refuse("invalid_model_output")
     answer, ids = result
+    if ids:
+        try:
+            gate_output(answer)
+        except GateBlocked:
+            return refuse("gateway_response_blocked")
     if not ids:
         return refuse("model_abstained")
     by_id = {f"E{i}": c for i, c in enumerate(citations, 1)}

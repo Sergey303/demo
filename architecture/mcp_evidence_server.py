@@ -14,6 +14,8 @@ from audio_access import verify_token
 from agent_actions import propose
 from evidence_answer import evidence_answer
 from unified_search import retrieve_authorized
+from ai_gateway import (GateBlocked, request as gate_request,
+                        citation_egress, source as gate_source)
 
 server = MCPServer(
     "Enterprise Evidence MCP",
@@ -42,8 +44,17 @@ def search_evidence(question: str, top_k: int = 3) -> dict:
     if type(top_k) is not int or not 1<=top_k<=3:
         raise ValueError("Invalid top_k")
     dsn,tenant,subject = _trusted()
+    gate_request(question)
     result = retrieve_authorized(dsn,tenant,subject,question,top_k)
     exact = evidence_answer(result,question=question)
+    try:
+        citation_egress(exact["citations"])
+        for citation in exact["citations"]:
+            gate_source(citation["quote"])
+            gate_source(citation["source"])
+    except GateBlocked:
+        return {"abstained": True, "reason": "gateway_source_blocked",
+                "citations": [], "semantic_verified": False}
     return {
         "abstained":exact["abstained"],
         "reason":exact["reason"],

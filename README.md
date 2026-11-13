@@ -6,6 +6,15 @@
 
 **As-built:** WAV + Markdown → durable PostgreSQL outbox → Whisper/ONNX → grant-first retrieval → **default exact-quote answer OR optional real local Qwen3:8b generated answer with validated citations and post-inference grant check**. [Real model-backed Chromium + Qwen evidence](enterprise-demo/EVIDENCE-2026-11-09-QWEN.md). **Not** production IAM or verified semantic faithfulness; standalone [RAG research](python-ai/rag-docs/README.md), [BM25+RRF](python-ai/audio-search/hybrid.py), [reranking](python-ai/audio-search/rerank.py) and [PyTorch](python-ai/ticket-classifier/README.md) are separate from the integrated default.
 
+**New security slice (EP-10, branch-scoped):** [AI Gateway + authorized MCP orchestrator](architecture/AI-GATEWAY.md)
+adds request, tool, untrusted-source and output gates around the existing signed
+user and PostgreSQL grant-first retrieval. The real orchestrator remains Qwen3
+tool-calling through the official MCP stdio client; the model never supplies a
+tenant, bearer, DSN or arbitrary SQL. [Gateway source](architecture/ai_gateway.py)
+and [23 deterministic tests](architecture/tests/test_ai_gateway.py) are runnable
+without a model. **This is defensive policy enforcement, not a production IAM,
+complete prompt-injection classifier, or proof of semantic truth.**
+
 **For .NET / Tech Lead hiring:** start with [Reliable Jobs](dotnet-outbox/README.md) — an ASP.NET Core and PostgreSQL example of transactional outbox, HTTP idempotency, concurrent worker claims, retries and recovery. [Inspect the API transaction](dotnet-outbox/src/Program.cs), [worker](dotnet-outbox/src/OutboxWorker.cs), and [tests](dotnet-outbox/tests).
 
 **For AI / RAG hiring:** start with [audio search + reranking](python-ai/audio-search/README.md) and [retrieval benchmarks](python-ai/rag-docs/README.md). Code and reproducible small-sample evaluations are linked below.
