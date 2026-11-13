@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.git/
+secrets/
+.env
+.env.*
+*.zip
+README.md
+Caddyfile.alice.caddy

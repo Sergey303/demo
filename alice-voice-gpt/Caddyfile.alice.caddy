@@ -1,0 +1,17 @@
+# Add as KnowledgePilot.Deploy/edge/caddy/sites-enabled/60-alice-voice-gpt.caddy
+# Host-wide KnowledgePilotCaddy is a Windows service. Never launch a second Caddy.
+alice.knowledge-pilot.duckdns.org {
+    # Deliberately DO NOT import kp_access_log: token is part of the webhook URL.
+    encode zstd gzip
+    handle /alice/* {
+        reverse_proxy 127.0.0.1:18765 {
+            transport http {
+                dial_timeout 2s
+                response_header_timeout 4s
+            }
+        }
+    }
+    handle {
+        respond "Not found" 404
+    }
+}
