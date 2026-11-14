@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import type { VerifyIdentity } from "./enterpriseIdentity";
 import { DocumentUploadCard } from "./DocumentUploadCard";
 import { UnifiedSearchCard } from "./UnifiedSearchCard";
 import { AgentWorkflowCard } from "./AgentWorkflowCard";
@@ -75,6 +77,88 @@ function isWave(bytes: Uint8Array): boolean {
 }
 
 export function EnterpriseAiPage() {
+  const [session, setSession] = useState<{ identity: string; epoch: number } | null>(null);
+  const [identityError, setIdentityError] = useState("Проверяем демо-идентичность…");
+  const principal = useRef<string | null>(null);
+  const epoch = useRef(0);
+  const pending = useRef<Promise<string> | null>(null);
+  const identityController = useRef<AbortController | null>(null);
+
+  const verifyIdentity: VerifyIdentity = useCallback(async (expected?: string) => {
+    if (!pending.current) {
+      const ctrl = new AbortController();
+      identityController.current = ctrl;
+      const timer = window.setTimeout(() => ctrl.abort(), 3500);
+      pending.current = (async () => {
+        try {
+          const response = await fetch("/enterprise-search/agent/identity", {
+            signal: ctrl.signal, cache: "no-store",
+          });
+          if (!response.ok) throw new Error("Демо-идентичность не подтверждена.");
+          const value = await response.json() as Record<string, unknown>;
+          if (value.identity_kind !== "local_demo" || ![value.tenant, value.subject].every(
+            x => typeof x === "string" && /^[A-Za-z0-9._-]{1,128}$/.test(x)))
+            throw new Error("Некорректная демо-идентичность.");
+          if (ctrl.signal.aborted) throw new Error("Проверка демо-идентичности прервана.");
+          const identity = value.tenant + " / " + value.subject;
+          if (principal.current !== identity) {
+            principal.current = identity;
+            epoch.current++;
+            // Commit the epoch before any old asynchronous operation can resume.
+            flushSync(() => setSession({ identity, epoch: epoch.current }));
+          }
+          setIdentityError("");
+          return identity;
+        } catch (err) {
+          if (identityController.current === ctrl) {
+            principal.current = null;
+            epoch.current++;
+            flushSync(() => {
+              setSession(null);
+              setIdentityError(err instanceof Error ? err.message : "Демо-идентичность не подтверждена.");
+            });
+          }
+          throw err;
+        } finally {
+          window.clearTimeout(timer);
+        }
+      })().finally(() => {
+        if (identityController.current === ctrl) {
+          pending.current = null;
+          identityController.current = null;
+        }
+      });
+    }
+    const identity = await pending.current;
+    if (expected !== undefined && expected !== identity)
+      throw new Error("Демо-идентичность изменилась. Повторите запрос.");
+    return identity;
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => { void verifyIdentity().catch(() => {}); };
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      identityController.current?.abort();
+      identityController.current = null;
+      pending.current = null;
+    };
+  }, [verifyIdentity]);
+
+  return <>
+    <p role="status" data-testid="enterprise-identity">
+      {session ? "Demo identity (не SSO): " + session.identity : identityError}
+    </p>
+    {session && <VerifiedEnterprisePage key={session.epoch}
+      identity={session.identity} verifyIdentity={verifyIdentity} />}
+  </>;
+}
+
+function VerifiedEnterprisePage({ identity, verifyIdentity }: {
+  identity: string; verifyIdentity: VerifyIdentity;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [key, setKey] = useState(newKey);
   const [job, setJob] = useState<AudioJob | null>(null);
@@ -98,22 +182,26 @@ export function EnterpriseAiPage() {
     controllers.current.clear();
   }, []);
 
-  useEffect(() => () => clearPending(), [clearPending]);
+  useLayoutEffect(() => () => clearPending(), [clearPending]);
 
   useEffect(() => {
     let mounted = true;
     const checkReady = async () => {
+      const controller = track();
       try {
-        const response = await fetch(API + "/ready", { cache: "no-store", signal: AbortSignal.timeout(3500) });
+        const response = await fetch(API + "/ready", { cache: "no-store",
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(3500)]) });
         if (mounted) setReady(response.ok ? "ready" : "down");
       } catch {
-        if (mounted) setReady("down");
+        if (mounted && !controller.signal.aborted) setReady("down");
+      } finally {
+        controllers.current.delete(controller);
       }
     };
     void checkReady();
     const timer = window.setInterval(() => void checkReady(), 3000);
     return () => { mounted = false; window.clearInterval(timer); };
-  }, []);
+  }, [track]);
 
   const refreshJob = useCallback(async (id: string) => {
     const version = generation.current;
@@ -191,6 +279,7 @@ export function EnterpriseAiPage() {
         throw new Error(errorForStatus(response.status));
       }
       const body: unknown = await response.json();
+      if (version !== generation.current) return;
       if (!isRecord(body) || typeof body.id !== "string" ||
         (response.status !== 200 && response.status !== 202)) {
         throw new Error("Неожиданный ответ на загрузку аудио.");
@@ -341,7 +430,7 @@ export function EnterpriseAiPage() {
       </div>
       <DocumentUploadCard />
       <UnifiedSearchCard />
-      <AgentWorkflowCard />
+      <AgentWorkflowCard identity={identity} verifyIdentity={verifyIdentity} />
     </section>
   );
 }

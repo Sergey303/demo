@@ -75,7 +75,7 @@ and **must not be implied by passing unit tests**.
 
 ## Explicit limits
 
-- The identity issuer is a **fixed local demo principal**, not production
+- The identity issuer is a **startup-configured local demo principal**, not production
   SSO/OIDC, OAuth scopes, an OPA/PDP service, or PostgreSQL RLS. Multi-user
   production IAM and tenant lifecycle are unimplemented.
 - Regex-based injection/credential indicators are **narrow defense in depth**,
@@ -96,3 +96,34 @@ References: [OWASP GenAI LLM Top 10 2025](https://genai.owasp.org/llm-top-10/),
 [OWASP API BOLA](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/),
 [OWASP Prompt Injection guidance](https://genai.owasp.org/llmrisk/llm01-prompt-injection/),
 [NIST AI RMF GenAI Profile](https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence).
+
+## EP-11 server profiles
+
+[EP-11 implementation and verification](../enterprise-demo/EP11-MULTIUSER.md)
+extends the EP-10 base without changing retrieval or approval authorization.
+`configuredPrincipal` / `demoAuthProfile` in `bootstrap5/enterpriseDemoAuth.mjs`
+capture one immutable server profile. Both enterprise proxies use it; only
+when both principal variables are absent is `demo-team/interviewer` used.
+Partial, empty, non-ASCII or >128-character identifiers fail closed, as does
+an absent/short signing secret. Restart Vite to change profiles.
+
+`GET /agent/identity` verifies the bearer through `_principal`, returns only
+`tenant`, `subject`, `identity_kind=local_demo`, and uses `Cache-Control: no-store`.
+It does not issue tokens. `EnterpriseAiPage` coordinates verified identity at
+mount/focus and shares verification before/after MCP operations. Until verified,
+the data/action subtree is absent. A changed principal or failed check commits a
+new identity epoch synchronously, unmounting audio, document, search/answer and
+agent state and aborting old work. Layout cleanup fences late responses. An
+unchanged focus check preserves operations, evidence and approvals. This remains
+local demo lifecycle handling, not production session control.
+
+Aborting a browser confirmation does not undo a server commit. If its response
+is lost (including during identity invalidation), the note may already have been
+written. The client discards the approval and never automatically replays it;
+it must not report that an interrupted confirmation was not committed.
+
+Two local ports demonstrate distinct authorization contexts, **not human
+login**: any local visitor can use either port. Browser profile display is
+informational; PostgreSQL grants and signed principals enforce access. A revoke
+committed after the final SQL check but before HTTP delivery remains a known
+concurrency limit. Citation validity still does not establish semantic truth.

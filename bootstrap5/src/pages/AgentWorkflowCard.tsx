@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import type { VerifyIdentity } from "./enterpriseIdentity";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type Citation = {
   job_id: string; source: string; quote: string;
@@ -82,7 +83,9 @@ function project(value: unknown): AgentResult {
           reason:typeof v.reason === "string" ? v.reason : undefined};
 }
 
-export function AgentWorkflowCard() {
+export function AgentWorkflowCard({ identity, verifyIdentity }: {
+  identity: string; verifyIdentity: VerifyIdentity;
+}) {
   const [question,setQuestion]=useState("");
   const [result,setResult]=useState<AgentResult|null>(null);
   const [status,setStatus]=useState("");
@@ -90,33 +93,54 @@ export function AgentWorkflowCard() {
   const [busy,setBusy]=useState(false);
   const current=useRef<AbortController|null>(null);
 
-  useEffect(()=>()=>{current.current?.abort();},[]);
+  const requestId = useRef(0);
+  useLayoutEffect(() => () => {
+    requestId.current++;
+    current.current?.abort();
+    current.current = null;
+  }, []);
+
+  async function checkIdentity(ctrl: AbortController, expected: string) {
+    const key = await verifyIdentity(expected);
+    if (ctrl.signal.aborted || current.current !== ctrl) throw new Error("Отменено");
+    return key;
+  }
 
   function change(text:string) {
+    requestId.current++;
     current.current?.abort();
+    current.current = null;
     setQuestion(text);setResult(null);setStatus("");setError("");setBusy(false);
   }
 
   async function run(task:"answer"|"note") {
-    if (!question.trim() || question.length>500 || busy)return;
+    if (!question.trim() || question.length>500 || busy || !identity)return;
+    const operation = ++requestId.current;
     const ctrl=new AbortController();
     current.current?.abort();current.current=ctrl;
     setBusy(true);setResult(null);setStatus("");setError("");
     try {
+      const key=await checkIdentity(ctrl,identity);
       const response=await fetch("/enterprise-search/agent/run",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({question:question.trim(),task}),
         signal:ctrl.signal,cache:"no-store",
       });
+      if(requestId.current!==operation || current.current!==ctrl || ctrl.signal.aborted)return;
+      if (response.status===401) {
+        await verifyIdentity();
+      }
       if (!response.ok) throw new Error(response.status===503
         ? "MCP/Ollama недоступны или заняты (503)."
         : response.status===422 ? "AI Gateway отклонил входной запрос до обращения к модели."
         : response.status===401 ? "Демо-идентичность не подтверждена (401)."
         : "Ошибка агента HTTP "+response.status);
       const value=project(await response.json());
-      if (current.current===ctrl)setResult(value);
+      await checkIdentity(ctrl,key);
+      if (current.current===ctrl && !ctrl.signal.aborted)setResult(value);
     } catch(err) {
-      if (!ctrl.signal.aborted)setError(err instanceof Error?err.message:"Ошибка агента");
+      if (current.current===ctrl && !ctrl.signal.aborted)
+        setError(err instanceof Error?err.message:"Ошибка агента");
     } finally {
       if(current.current===ctrl){current.current=null;setBusy(false);}
     }
@@ -124,29 +148,41 @@ export function AgentWorkflowCard() {
 
   async function decide(decision:"approve"|"reject") {
     const pending=result?.pending;
-    if(!pending||busy)return;
+    if(!pending||busy||!identity)return;
+    const operation = ++requestId.current;
+    const ctrl=new AbortController();
+    current.current?.abort();current.current=ctrl;
     setBusy(true);setError("");
     try {
+      const key=await checkIdentity(ctrl,identity);
       const response=await fetch("/enterprise-search/agent/confirm",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({approval_token:pending.approval_token,decision}),cache:"no-store",
+        body:JSON.stringify({approval_token:pending.approval_token,decision}),cache:"no-store",signal:ctrl.signal,
       });
+      if(requestId.current!==operation || current.current!==ctrl || ctrl.signal.aborted)return;
+      if(response.status===401) await verifyIdentity();
       if(!response.ok)throw new Error(response.status===404
         ? "Разрешение уже использовано, истекло или доступ отозван."
-        : "Запись не подтверждена: HTTP "+response.status);
+        : "Результат подтверждения неизвестен: HTTP "+response.status);
       const v=await response.json() as {status?:unknown;note_id?:unknown};
       if(v.status!==(decision==="approve"?"written":"rejected"))
         throw new Error("Некорректный результат подтверждения");
+      await checkIdentity(ctrl,key);
+      if(requestId.current!==operation || current.current!==ctrl || ctrl.signal.aborted)return;
       setStatus(decision==="approve"?"Заметка сохранена в PostgreSQL.":"Действие отклонено без записи.");
     }catch(err){
-      setError(err instanceof Error?err.message:"Подтверждение не удалось");
+      if(requestId.current!==operation || current.current!==ctrl || ctrl.signal.aborted)return;
+      setError((err instanceof Error?err.message:"Результат подтверждения неизвестен.") +
+        " Если подтверждение отправлено, запись могла сохраниться; запрос не повторяется.");
       // Any confirmation failure can mean that source access has been
       // revoked while the user was reading. Remove all stale excerpts.
       setResult(null);
     }finally{
       // Never replay this approval capability, even after a transient error.
-      setResult(prev=>prev?{...prev,pending:undefined}:null);
-      setBusy(false);
+      if(current.current===ctrl){
+        setResult(prev=>prev?{...prev,pending:undefined}:null);
+        current.current=null;setBusy(false);
+      }
     }
   }
 
@@ -158,17 +194,21 @@ export function AgentWorkflowCard() {
         обращается к серверу с текущими PostgreSQL-грантами. Записывающая операция
         создаёт только предложение, пока вы не подтвердите его.
       </p>
+      <p data-testid="mcp-identity" className="small">
+        Demo identity (не SSO): {identity ?? "не подтверждена"}
+        {!identity && " · Обновите страницу после восстановления сервиса."}
+      </p>
       <label htmlFor="mcp-task" className="form-label">Запрос агенту</label>
       <textarea id="mcp-task" className="form-control" rows={2} maxLength={500}
         disabled={busy} value={question} onChange={e=>change(e.target.value)}
         placeholder="Найди срок возврата и предложи заметку: обновить политику возвратов" />
       <div className="d-flex flex-wrap gap-2 mt-2">
         <button type="button" className="btn btn-outline-primary"
-          onClick={()=>void run("answer")} disabled={busy||!question.trim()}>
+          onClick={()=>void run("answer")} disabled={busy||!identity||!question.trim()}>
           {busy?"MCP/Ollama…":"Спросить через MCP"}
         </button>
         <button type="button" className="btn btn-outline-secondary"
-          onClick={()=>void run("note")} disabled={busy||!question.trim()}>
+          onClick={()=>void run("note")} disabled={busy||!identity||!question.trim()}>
           Подготовить заметку для подтверждения
         </button>
       </div>
@@ -192,7 +232,7 @@ export function AgentWorkflowCard() {
         </div>
         <p className="mt-2" style={{whiteSpace:"pre-wrap"}} data-testid="mcp-answer">{result.answer}</p>
         {result.pending&&<div className="border rounded p-3" data-testid="mcp-approval">
-          <strong>Только предложение — запись ещё не создана</strong>
+          <strong>{busy ? "Подтверждение отправлено; результат пока неизвестен." : "Только предложение — запись ещё не создана"}</strong>
           <p className="my-2">{result.pending.note}</p>
           <p className="small text-warning-emphasis">
             Это неподтверждённое предложение LLM. Сравните каждое утверждение

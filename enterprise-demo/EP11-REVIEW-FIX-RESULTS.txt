@@ -1,0 +1,55 @@
+EP-11 review fixes, 2026-11-13
+Base SHA e65af53ef19bcb7704eb69df85f082eb8e0ef168
+Branch feature/ep11-multiuser-auth; final commit identifies this record.
+
+PASS node --test bootstrap5/tests/enterprise-auth.test.mjs: 4/4
+PASS npm --prefix bootstrap5 run check
+PASS npm --prefix bootstrap5 run check:e2e
+PASS selected no-DB Python identity/gateway/generation: 54 passed, 4 DB skipped
+  JOBS_TEST_CONNECTION= PYTHONDONTWRITEBYTECODE=1
+  /workspace/.demo-bench-venv/bin/python -m pytest -q
+  architecture/tests/test_multiuser_postgres.py
+  architecture/tests/test_agent_identity.py architecture/tests/test_ai_gateway.py
+  architecture/tests/test_guarded_generation.py
+
+Native disposable initdb SKIP: this RDC cannot drop root privileges (runuser/
+chown rejected). Instead created a new container from already-present postgres:16,
+--pull=never, name demo-ep11-review-disposable-20261113, DB ep11_review.
+All 001-006 SQL migrations PASS. Published loopback unreachable; newly created
+container bridge IP reachable directly. No existing/shared DB used.
+
+An initial Python invocation selected nonexistent test_mcp_agent.py and collected
+nothing (exit 4); corrected selection above. Browser baseline reproduction of
+same-principal focus: FAIL as expected (successful held reply never rendered).
+An earlier baseline browser attempt hit a timeout locating audio status; it is
+not counted as regression proof.
+
+Independent read-only source review: no blockers. No bwrap, model downloads,
+push, merge, or new real-model acceptance. Original untracked brief and pycache
+are excluded from the commit.
+
+PASS real disposable PostgreSQL + official MCP stdio: 4 passed in 145.29s
+  PYTHONDONTWRITEBYTECODE=1 JOBS_TEST_CONNECTION=<new container DB only>
+  /workspace/.demo-bench-venv/bin/python -m pytest -q
+  architecture/tests/test_multiuser_postgres.py
+Encoder is deterministic, model scripted; no ONNX/Qwen inference claimed.
+Container stopped and automatically removed (--rm) after checks.
+PASS review-link validator; PASS git diff --check (before final staging).
+PASS npm --prefix bootstrap5 run build (TypeScript + Vite production build).
+Intermediate browser failures: 3 new seed-data cases omitted the required answer
+reason field; fixtures corrected. A later run passed 21 cases but 2 late-response
+assertions incorrectly counted request instances: normal 1600ms queued-job
+polling can create multiple requests. Assertions now require the four distinct
+private URLs to be aborted, rather than exactly four request instances.
+
+FINAL browser PASS: 36/36 in 1.8m, exit 0; new identity 14/14,
+existing MCP 9/9. Mock HTTP only (not live-model evidence).
+  cd bootstrap5
+  npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts
+  tests/enterprise-documents.spec.ts tests/enterprise-search.spec.ts
+  tests/enterprise-answer.spec.ts tests/enterprise-generated.spec.ts
+  tests/mcp-agent.spec.ts tests/enterprise-identity.spec.ts
+  --workers=1 --timeout=60000 --max-failures=3
+Final check:e2e and source TypeScript checks PASS after amendments.
+Independent final source review: no blocking findings; final link/diff checks PASS.
+SKIP new Qwen/ONNX live-model browser acceptance: not requested or claimed.
