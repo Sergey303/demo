@@ -205,3 +205,33 @@ checks can run from the published branch. EP-11-specific new browser and
 PostgreSQL test selection must be enabled through an authorized workflow
 change before claiming branch CI covers those tests. The original full local
 branch remains available for review on RDC.
+
+## Published branch acceptance (2026-11-14)
+
+- Published source SHA **`155fec44a85a1ff01826cb4c0a2bb6a585fff730`** on
+  `feature/ep11-multiuser-published`; this branch does not alter the Actions
+  workflow because the OAuth token lacks `workflow` scope.
+- GitHub [Hiring demo checks](https://github.com/Sergey303/demo/actions/runs/43560725613)
+  for that SHA: **launcher, frontend, live-screencast all successful (3/3)**.
+  The existing workflow's selected tests ran; it does **not** select the new
+  EP-11 multiuser PostgreSQL suite or `enterprise-identity.spec.ts`.
+- **Independent real HTTP + Chromium smoke PASS (exit 0)** on the exact
+  published source: one FastAPI instance on loopback, two separate Vite
+  instances on ports 4173 and 4174, respectively issuing the server-held
+  signed profiles `review-team/alice` and `review-team/bob` from the same
+  ephemeral HMAC secret. Both browser pages displayed their correct identity.
+  For each proxy, caller-forged Authorization, query and cookies did not alter
+  the verified subject. Direct unsigned `/agent/identity` returned 401.
+- The isolated smoke deliberately used **no PostgreSQL and no model**; it
+  verifies actual browser/proxy/HTTP identity binding only. Independently,
+  the local developer-branch synthetic DB + real MCP stdio 4/4 and browser
+  mock-HTTP 36/36 results remain documented above; they do not constitute
+  a two-user live Qwen3/ONNX trial.
+- At acceptance time Ollama was not serving and **`qwen3:8b` was not present
+  locally**; the previous `qwen3:1.7b` manifest symlink did not resolve to
+  installed weights. With only approximately 7.5 GB disk space available,
+  no automatic download or substitution of a different model was performed.
+  Thus real Qwen3:8b + ONNX two-user acceptance is **NOT RUN**.
+- The three ephemeral HTTP/Chromium processes were terminated and the
+  temporary dependency link removed. No production/shared database, server
+  secret, or user data was used. No merge to `main` is claimed.
