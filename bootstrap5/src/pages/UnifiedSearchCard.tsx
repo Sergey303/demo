@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type Evidence = {
   job_id: string;
@@ -104,7 +104,7 @@ export function UnifiedSearchCard() {
   const active = useRef<AbortController | null>(null);
   const generation = useRef(0);
 
-  useEffect(() => () => {
+  useLayoutEffect(() => () => {
     generation.current++;
     active.current?.abort();
   }, []);

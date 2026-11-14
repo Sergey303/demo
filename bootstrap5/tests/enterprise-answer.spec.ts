@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./enterprise-fixture";
 
 const audioId = "9d2e6a4d-d1b3-4c3c-927f-35e1abd42900";
 const documentId = "863f223e-bf4d-4a91-bdd3-00421f2529a1";

@@ -96,3 +96,16 @@ Before accepting claims about Qwen3 RAG quality, inspect `python-ai/rag-docs/SYN
 For guarded LLM responses review `python-ai/rag-docs/app/guarded.py` and `tests/test_guarded.py`. Never equate valid JSON/citation IDs with entailment. Keep HTTP envelope streaming byte limits, reject lone surrogates, and do not alter the original retrieval/evidence modes or the frozen 0.67 threshold without independent evidence.
 
 For `claim_checked` provenance, review `python-ai/rag-docs/app/claim_checked.py`, `tests/test_claim_checked.py`, and the RAG README. Every claim must be a complete simple sentence or full source passage, not a context-clipped substring, to avoid reversing negation. This proves provenance only and does not certify entailment or relevance; preserve the independent evidence gate.
+
+## EP-11 local multi-principal review
+
+Read [EP-11 evidence and opt-in demo](enterprise-demo/EP11-MULTIUSER.md).
+Inspect `configuredPrincipal` / `demoAuthProfile` in
+`bootstrap5/enterpriseDemoAuth.mjs`, both Vite proxies, `agent_identity` in
+`architecture/search_api.py`, and identity lifecycle in `AgentWorkflowCard.tsx`.
+Only trusted startup environment selects the profile; absence of BOTH variables
+keeps the historical default. Two localhost ports do not authenticate humans.
+Verify the real proxy tests, HTTP identity negatives, and
+`architecture/tests/test_multiuser_postgres.py` with its explicit deterministic
+encoder stdio fixture. Scripted models and synthetic vectors do not prove Qwen
+quality or new model-backed acceptance. Never run DB tests against shared data.

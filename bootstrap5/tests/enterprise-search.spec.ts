@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./enterprise-fixture";
 
 test("unified evidence-only search shows both modalities, abstains and hides stale data", async ({ page }) => {
   let calls = 0;

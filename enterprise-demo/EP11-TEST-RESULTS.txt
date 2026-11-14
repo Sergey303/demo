@@ -1,0 +1,33 @@
+EP-11 local verification, 2026-11-13
+Base: 5af1c4b3fbcf511766f2e4fae8c04665b07349c7
+Commands, isolated infrastructure, intermediate failures and limits:
+see EP11-MULTIUSER.md in this directory.
+
+Final node --test bootstrap5/tests/enterprise-auth.test.mjs stdout:
+✔ fixed server-side principal matches Python/C# signed-token contract (3.301022ms)
+✔ missing, too-short and malformed secrets fail closed (0.583507ms)
+✔ startup profiles are immutable, independent and validated (0.938194ms)
+✔ both real Vite proxies overwrite caller auth with startup identity (2336.828541ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3467.682823
+
+Final selected python -m pytest stdout:
+........................................................................ [ 69%]
+...............................                                          [100%]
+103 passed in 73.20s (0:01:13)
+
+Other completed checks:
+npm --prefix bootstrap5 run check: PASS
+npm --prefix bootstrap5 run check:e2e: PASS
+Playwright tests/mcp-agent.spec.ts --workers=1: 9 passed (26.8s)
+python3 scripts/check_hiring_review_links.py: PASS
+  OK: links and key statuses checked across 7 review documents.
+git diff --check: PASS
+
+No Qwen inference, model download, shared database, push, merge or CI run.
