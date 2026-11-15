@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./enterprise-fixture";
 
 const id = "a1abff85-c93a-4c30-820a-5ac6f19f4b0e";
 const wave = Buffer.alloc(48, 0);

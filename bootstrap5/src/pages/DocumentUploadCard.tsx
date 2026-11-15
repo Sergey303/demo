@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type DocSegment = { source: string; text: string; chunk_index: number; char_start: number; char_end: number };
 type DocJob = { id: string; status: "queued" | "done" | "failed"; source: string | null; segments: DocSegment[] };
@@ -50,7 +50,7 @@ export function DocumentUploadCard() {
     for (const controller of controllers.current) controller.abort();
     controllers.current.clear();
   };
-  useEffect(() => () => {
+  useLayoutEffect(() => () => {
     revision.current++;
     for (const controller of controllers.current) controller.abort();
     controllers.current.clear();

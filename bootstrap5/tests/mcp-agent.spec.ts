@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async({page})=>{
+  await page.route("**/enterprise-search/agent/identity",route=>route.fulfill({
+    json:{tenant:"demo-team",subject:"alice",identity_kind:"local_demo"},
+  }));
+});
+
 const job="57feacc4-0ddd-4e88-b719-1f9e35d4c190";
 const approval="4f3396bf-b174-4be9-985b-42881a755fe7."+"a".repeat(43);
 const source={job_id:job,source:"policy.md",quote:"Customers may request a refund within 30 days.",
@@ -120,4 +126,77 @@ test("AI Gateway blocks an unsafe input before source retrieval",async({page})=>
   await card.getByRole("button",{name:"Спросить через MCP"}).click();
   await expect(card.getByRole("alert")).toContainText("AI Gateway отклонил");
   await expect(card.getByTestId("mcp-result")).toHaveCount(0);
+});
+
+test('identity failure refuses requests and exposes no user switcher',async({page})=>{
+  let runs=0;
+  await page.route('**/enterprise-search/agent/identity',route=>route.fulfill({status:401,json:{detail:'Unauthorized'}}));
+  await page.route('**/enterprise-search/agent/run',()=>{runs++;});
+  await page.goto('/dashboard/enterprise-ai');
+  await expect(page.getByTestId('enterprise-identity')).toContainText('не подтверждена');
+  await expect(page.getByTestId('mcp-agent')).toHaveCount(0);
+  expect(runs).toBe(0);
+});
+
+test('identity change clears pending approval before confirmation',async({page})=>{
+  let subject='alice',writes=0;
+  await page.route('**/enterprise-search/agent/identity',route=>route.fulfill({json:{
+    tenant:'demo-team',subject,identity_kind:'local_demo'}}));
+  await page.route('**/enterprise-search/agent/run',route=>route.fulfill({json:{
+    mode:'mcp_agent',status:'approval_required',answer:'Pending',citations:[source],
+    tool_trace:[],semantic_verified:false,model:'qwen3:8b',
+    pending:{approval_id:approval.split('.')[0],approval_token:approval,job_id:job,note:'Review policy'},
+  }}));
+  await page.route('**/enterprise-search/agent/confirm',()=>{writes++;});
+  await page.goto('/dashboard/enterprise-ai');
+  const card=page.getByTestId('mcp-agent');
+  await expect(card.getByTestId('mcp-identity')).toContainText('alice');
+  await card.locator('#mcp-task').fill('When can customers request a refund?');
+  await card.getByRole('button',{name:'Подготовить заметку для подтверждения'}).click();
+  await expect(card.getByTestId('mcp-approval')).toBeVisible();
+  subject='bob';
+  await card.getByRole('button',{name:'Подтвердить запись'}).click();
+  await expect(card.getByTestId('mcp-result')).toHaveCount(0);
+  expect(writes).toBe(0);
+});
+
+test('late agent result is discarded after identity changes during inference',async({page})=>{
+  let subject='alice';
+  let release!:()=>void;
+  const waiting=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/enterprise-search/agent/identity',route=>route.fulfill({json:{
+    tenant:'demo-team',subject,identity_kind:'local_demo'}}));
+  await page.route('**/enterprise-search/agent/run',async route=>{
+    await waiting;
+    await route.fulfill({json:{mode:'mcp_agent',status:'answered',answer:'Old private answer',
+      citations:[source],tool_trace:[],semantic_verified:false,model:'qwen3:8b'}});
+  });
+  await page.goto('/dashboard/enterprise-ai');
+  const card=page.getByTestId('mcp-agent');
+  await expect(card.getByTestId('mcp-identity')).toContainText('alice');
+  await card.locator('#mcp-task').fill('When can customers request a refund?');
+  const sent=page.waitForRequest('**/enterprise-search/agent/run');
+  await card.getByRole('button',{name:'Спросить через MCP'}).click();await sent;
+  subject='bob';release();
+  await expect(page.getByTestId('enterprise-identity')).toContainText('bob');
+  await expect(card.getByTestId('mcp-result')).toHaveCount(0);
+});
+
+test('identity outage after inference discards citations and disables agent',async({page})=>{
+  let failed=false;
+  await page.route('**/enterprise-search/agent/identity',route=>route.fulfill(failed
+    ? {status:401,json:{detail:'Unauthorized'}}
+    : {json:{tenant:'demo-team',subject:'alice',identity_kind:'local_demo'}}));
+  await page.route('**/enterprise-search/agent/run',async route=>{
+    failed=true;
+    await route.fulfill({json:{mode:'mcp_agent',status:'answered',answer:'Old private answer',
+      citations:[source],tool_trace:[],semantic_verified:false,model:'qwen3:8b'}});
+  });
+  await page.goto('/dashboard/enterprise-ai');
+  const card=page.getByTestId('mcp-agent');
+  await expect(card.getByTestId('mcp-identity')).toContainText('alice');
+  await card.locator('#mcp-task').fill('When can customers request a refund?');
+  await card.getByRole('button',{name:'Спросить через MCP'}).click();
+  await expect(page.getByTestId('enterprise-identity')).toContainText('не подтверждена');
+  await expect(card).toHaveCount(0);
 });

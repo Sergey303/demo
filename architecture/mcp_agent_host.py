@@ -318,17 +318,24 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
                     "tool_trace":trace,"semantic_verified":False,"model":MODEL,
             "gateway":public_policy()}
 
+        async def bounded_execute(client):
+            # Handle expected policy/tool refusals INSIDE the stdio context.
+            # Otherwise AnyIO wraps them in ExceptionGroup during teardown,
+            # turning a safe abstention into a generic transport failure.
+            try:
+                return await execute(client)
+            except GateBlocked as exc:
+                logging.info("AI Gateway blocked stage=%s reason=%s",exc.stage,exc.reason)
+                return _abstain("gateway_"+exc.stage+"_blocked",trace)
+            except (ValueError,TypeError,UnicodeError,KeyError) as exc:
+                logging.warning("Rejected MCP agent run: %s",type(exc).__name__)
+                return _abstain("invalid_tool_or_model_output",trace)
+
         if mcp_client is not None:
-            return await execute(mcp_client)
+            return await bounded_execute(mcp_client)
         params=StdioServerParameters(command=sys.executable,args=[str(SERVER)],
                                      env=_env(token,dsn),cwd=str(SERVER.parent))
         async with Client(params,read_timeout_seconds=30) as client:
-            return await execute(client)
-    except GateBlocked as exc:
-        logging.info("AI Gateway blocked stage=%s reason=%s",exc.stage,exc.reason)
-        return _abstain("gateway_"+exc.stage+"_blocked",trace)
-    except (ValueError,TypeError,UnicodeError,KeyError) as exc:
-        logging.warning("Rejected MCP agent run: %s",type(exc).__name__)
-        return _abstain("invalid_tool_or_model_output",trace)
+            return await bounded_execute(client)
     finally:
         _slots.release()

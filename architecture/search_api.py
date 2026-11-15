@@ -159,6 +159,13 @@ def _principal(authorization: str | None):
         raise HTTPException(status_code=503, detail="Local auth unavailable") from None
 
 
+@app.get("/agent/identity")
+def agent_identity(authorization: str | None = Header(default=None)):
+    """Verified local profile only; never returns credentials or issues tokens."""
+    tenant, subject = _principal(authorization)
+    return {"tenant": tenant, "subject": subject, "identity_kind": "local_demo"}
+
+
 @app.post("/agent/run")
 async def agent_run(body: AgentRunRequest,
                     authorization: str | None = Header(default=None)):

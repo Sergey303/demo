@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./enterprise-fixture";
 
 const id = "611b9b25-2d91-4f6f-bbcb-b820c26da606";
 

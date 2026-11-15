@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./enterprise-fixture";
 
 const jobId = "57feacc4-0ddd-4e88-b719-1f9e35d4c190";
 const source = {
