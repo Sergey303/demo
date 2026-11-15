@@ -77,14 +77,18 @@ function isWave(bytes: Uint8Array): boolean {
 }
 
 export function EnterpriseAiPage() {
-  const [session, setSession] = useState<{ identity: string; epoch: number } | null>(null);
+  const [session, setSession] = useState<{ identity: string; epoch: number; oidc: boolean } | null>(null);
   const [identityError, setIdentityError] = useState("Проверяем демо-идентичность…");
+  const [signIn, setSignIn] = useState(false);
   const principal = useRef<string | null>(null);
+  const identityKind = useRef<string | null>(null);
+  const logoutStarted = useRef(false);
   const epoch = useRef(0);
   const pending = useRef<Promise<string> | null>(null);
   const identityController = useRef<AbortController | null>(null);
 
   const verifyIdentity: VerifyIdentity = useCallback(async (expected?: string) => {
+    if (logoutStarted.current) throw new Error("Session ended. Sign in again.");
     if (!pending.current) {
       const ctrl = new AbortController();
       identityController.current = ctrl;
@@ -94,18 +98,21 @@ export function EnterpriseAiPage() {
           const response = await fetch("/enterprise-search/agent/identity", {
             signal: ctrl.signal, cache: "no-store",
           });
+          if (ctrl.signal.aborted || identityController.current !== ctrl) throw new Error("Identity check cancelled.");
+          setSignIn(response.status === 401 && response.headers.get("X-EP12-BFF") === "1");
           if (!response.ok) throw new Error("Демо-идентичность не подтверждена.");
           const value = await response.json() as Record<string, unknown>;
-          if (value.identity_kind !== "local_demo" || ![value.tenant, value.subject].every(
+          if (!["local_demo", "oidc"].includes(String(value.identity_kind)) || ![value.tenant, value.subject].every(
             x => typeof x === "string" && /^[A-Za-z0-9._-]{1,128}$/.test(x)))
             throw new Error("Некорректная демо-идентичность.");
           if (ctrl.signal.aborted) throw new Error("Проверка демо-идентичности прервана.");
           const identity = value.tenant + " / " + value.subject;
-          if (principal.current !== identity) {
+          if (principal.current !== identity || identityKind.current !== value.identity_kind) {
+            identityKind.current = String(value.identity_kind);
             principal.current = identity;
             epoch.current++;
             // Commit the epoch before any old asynchronous operation can resume.
-            flushSync(() => setSession({ identity, epoch: epoch.current }));
+            flushSync(() => setSession({ identity, epoch: epoch.current, oidc: value.identity_kind === "oidc" }));
           }
           setIdentityError("");
           return identity;
@@ -147,17 +154,39 @@ export function EnterpriseAiPage() {
     };
   }, [verifyIdentity]);
 
+  async function signOut() {
+    logoutStarted.current = true;
+    identityController.current?.abort();
+    identityController.current = null;
+    pending.current = null;
+    principal.current = null;
+    epoch.current++;
+    setSession(null);
+    setIdentityError("Signing out…");
+    try {
+      const response = await fetch("/auth/logout", { method: "POST", cache: "no-store", signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error("Sign out failed. Close this page and retry.");
+      setSignIn(true);
+      setIdentityError("Signed out.");
+    } catch (err) {
+      setIdentityError(err instanceof Error ? err.message : "Sign out failed.");
+    }
+  }
+
   return <>
     <p role="status" data-testid="enterprise-identity">
-      {session ? "Demo identity (не SSO): " + session.identity : identityError}
+      {session ? (session.oidc ? "OIDC identity: " : "Demo identity (не SSO): ") + session.identity : identityError}
     </p>
+    {signIn && <a href="/auth/login">Sign in</a>}
+    {session?.oidc && <button type="button" className="btn btn-sm btn-outline-secondary mb-3"
+      onClick={() => void signOut()}>Sign out</button>}
     {session && <VerifiedEnterprisePage key={session.epoch}
-      identity={session.identity} verifyIdentity={verifyIdentity} />}
+      identity={session.identity} verifyIdentity={verifyIdentity} oidc={session.oidc} />}
   </>;
 }
 
-function VerifiedEnterprisePage({ identity, verifyIdentity }: {
-  identity: string; verifyIdentity: VerifyIdentity;
+function VerifiedEnterprisePage({ identity, verifyIdentity, oidc }: {
+  identity: string; verifyIdentity: VerifyIdentity; oidc: boolean;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [key, setKey] = useState(newKey);
@@ -322,7 +351,7 @@ function VerifiedEnterprisePage({ identity, verifyIdentity }: {
         <strong>Настоящая цепочка, без подставного результата.</strong> WAV принимается в транзакции до
         распознавания; Python worker обрабатывает его отдельно. Зелёный индикатор подтверждает
         только API + PostgreSQL, а не наличие модели или готовность worker.
-        Доступ ограничен фиксированным локальным демо-профилем.
+        {oidc ? "Доступ через OIDC BFF и серверное сопоставление пользователя." : "Доступ ограничен фиксированным локальным демо-профилем."}
       </div>
 
       <div className="row g-4">
@@ -417,9 +446,9 @@ function VerifiedEnterprisePage({ identity, verifyIdentity }: {
           <div className="card shadow-sm">
             <div className="card-body p-4">
               <h2 className="h5">Границы безопасности</h2>
-              <p className="small">Токен формируется только локальным Vite proxy из серверного секрета.
-                Браузер не выбирает tenant и не получает bearer. Это демонстрационный,
-                а не production-вход.</p>
+              <p className="small">{oidc ? "Вход через OIDC BFF; внутренний bearer формируется только сервером. Сессия использует защищённый cookie. Это ограниченный первый срез, не production IAM." :
+                "Токен формируется только локальным Vite proxy из серверного секрета. Это демонстрационный, а не production-вход."}
+                Браузер не выбирает tenant и не получает bearer.</p>
               <p className="small mb-0 text-secondary">
                 Источник отображается как обычный текст. Векторы embeddings не передаются из API в браузер.
                 Отзыв доступа проверяется на каждом серверном чтении.
