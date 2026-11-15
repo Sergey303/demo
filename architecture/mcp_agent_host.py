@@ -17,6 +17,9 @@ import httpx
 from mcp import Client, StdioServerParameters
 
 from audio_access import verify_token
+from ai_gateway import (GateBlocked, request as gate_request, tool_call as gate_tool,
+                        outgoing as gate_output,
+                        citation_egress, verified_tool_citation, public_policy)
 from guarded_generation import (
     MODEL, URL, MAX_ENVELOPE_BYTES, SCHEMA,
     ModelUnavailable, _slots, _decode_envelope, _validate_claims, authorized_now,
@@ -33,7 +36,8 @@ MAX_REQUEST_BYTES = 14_000
 def _abstain(reason: str, trace: list[dict]) -> dict:
     return {"mode":"mcp_agent","status":"abstained","abstained":True,
             "answer":REFUSAL,"reason":reason,"citations":[],
-            "tool_trace":trace,"semantic_verified":False,"model":MODEL}
+            "tool_trace":trace,"semantic_verified":False,"model":MODEL,
+            "gateway":public_policy()}
 
 
 def _env(token: str, dsn: str) -> dict[str,str]:
@@ -111,6 +115,7 @@ def _tool_call(message: dict, expected: str) -> dict:
     args=fn.get("arguments")
     if not isinstance(args,dict):
         raise ValueError("Invalid tool arguments")
+    gate_tool(fn["name"], args, expected)
     # Budget the actual UTF-8 wire representation. ASCII-escaped JSON turns
     # one Cyrillic character into six bytes and rejects legitimate requests.
     raw = json.dumps(args,ensure_ascii=False,separators=(",",":")).encode("utf-8","strict")
@@ -191,6 +196,7 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
     if not isinstance(question,str) or not 1<=len(question.strip())<=500 or task not in ("answer","note"):
         raise ValueError("Invalid agent request")
     tenant,subject=verify_token(token)
+    gate_request(question)
     if not dsn:
         raise RuntimeError("Missing demo DB")
     if not _slots.acquire(blocking=False):
@@ -224,14 +230,19 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
             trace.append({"tool":"search_evidence","status":"ok",
                           "citations":len(raw_citations)})
             if result.get("abstained") is True or not raw_citations:
-                return _abstain("no_authorized_evidence",trace)
-            refs=[]
-            for i, c in enumerate(raw_citations,1):
-                if (not isinstance(c,dict) or c.get("id")!=f"E{i}" or
-                    not isinstance(c.get("quote"),str) or
-                    not isinstance(c.get("job_id"),str)):
-                    raise ValueError("MCP citation malformed")
-                refs.append({k:v for k,v in c.items() if k!="id"})
+                return _abstain(
+                    "gateway_source_blocked" if result.get("reason")=="gateway_source_blocked"
+                    else "no_authorized_evidence",trace)
+            try:
+                raw_citations = [
+                    verified_tool_citation(c, expected_id=f"E{i}")
+                    for i, c in enumerate(raw_citations, 1)
+                ]
+                refs = [{k: v for k, v in c.items() if k != "id"}
+                        for c in raw_citations]
+                citation_egress(refs)
+            except GateBlocked:
+                return _abstain("gateway_source_blocked",trace)
             if not authorized_now(dsn,tenant,subject,refs):
                 return _abstain("authorization_changed",trace)
 
@@ -253,6 +264,7 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
                 arguments=_tool_call(proposal,"propose_review_note")
                 if arguments["job_id"] not in {c["job_id"] for c in refs}:
                     raise ValueError("Model proposed note for an unsearched job")
+                gate_output(arguments["note"])
                 # Supply ALL original prompt job IDs from server-validated
                 # search results, never from Qwen-selected arguments.
                 trusted_sources=list(dict.fromkeys(c["job_id"] for c in refs))
@@ -276,6 +288,7 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
                                "note":pending["proposed_text"]},
                     "citations":refs,"tool_trace":trace,
                     "semantic_verified":False,"model":MODEL,
+                    "gateway":public_policy(),
                 }
             messages[0]["content"] += (
                 " Now answer ONLY using the provided evidence and permitted E1/E2 "
@@ -291,13 +304,19 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
             if validated is None:
                 return _abstain("invalid_model_output",trace)
             answer,ids=validated
+            if ids:
+                try:
+                    gate_output(answer)
+                except GateBlocked:
+                    return _abstain("gateway_response_blocked",trace)
             if not ids:
                 return _abstain("model_abstained",trace)
             refs_by_id={c["id"]:ref for c,ref in zip(raw_citations,refs)}
             verify_token(token)
             return {"mode":"mcp_agent","status":"answered","abstained":False,
                     "answer":answer,"citations":[refs_by_id[i] for i in ids],
-                    "tool_trace":trace,"semantic_verified":False,"model":MODEL}
+                    "tool_trace":trace,"semantic_verified":False,"model":MODEL,
+            "gateway":public_policy()}
 
         if mcp_client is not None:
             return await execute(mcp_client)
@@ -305,6 +324,9 @@ async def run_agent(question: str, task: str, token: str, dsn: str,
                                      env=_env(token,dsn),cwd=str(SERVER.parent))
         async with Client(params,read_timeout_seconds=30) as client:
             return await execute(client)
+    except GateBlocked as exc:
+        logging.info("AI Gateway blocked stage=%s reason=%s",exc.stage,exc.reason)
+        return _abstain("gateway_"+exc.stage+"_blocked",trace)
     except (ValueError,TypeError,UnicodeError,KeyError) as exc:
         logging.warning("Rejected MCP agent run: %s",type(exc).__name__)
         return _abstain("invalid_tool_or_model_output",trace)

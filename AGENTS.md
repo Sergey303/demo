@@ -22,6 +22,20 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 
 **EP-05b Qwen generation review:** inspect [real Chromium/Qwen acceptance](enterprise-demo/EVIDENCE-2026-11-09-QWEN.md), [bounded Ollama transport](architecture/guarded_generation.py), signed [answer mode switch](architecture/search_api.py), [DB revoke-during-model tests](architecture/tests/test_generation_postgres.py) and [browser contract](bootstrap5/tests/enterprise-generated.spec.ts). Confirm extractive default is unchanged; the model cannot pick tenant, URL or citation metadata; SQL grants filter context before Ollama; fresh SQL checks ALL prompt sources after inference; wrong tenant/no evidence avoids a model call; malformed JSON/forged citation IDs are rejected; Ollama 503 does not break exact citations. **Never equate citation validity with semantic truth.**
 
+## AI Gateway / orchestration review (EP-10 branch)
+
+Read [AI Gateway trust boundaries](architecture/AI-GATEWAY.md), then
+[`ai_gateway.py`](architecture/ai_gateway.py), [Qwen3 MCP host](architecture/mcp_agent_host.py),
+[MCP evidence tool](architecture/mcp_evidence_server.py), [HTTP boundary](architecture/search_api.py),
+[EP-05b generation](architecture/guarded_generation.py), [one-use notes](architecture/agent_actions.py),
+and [gateway negative tests](architecture/tests/test_ai_gateway.py). Verify request/tool/source/response
+gates independently from actual SQL authorization. Any direct model or MCP
+invocation must be incapable of choosing tenant/subject or accessing arbitrary
+tools. Credential/injection regexes are imperfect; never credit them as a
+complete DLP, moderation, prompt-injection defense or production IAM system.
+The current gateway is a branch implementation until a separate review and
+integration acceptance. No model-backed new EP-10 E2E is claimed.
+
 ## Architect-level review route
 
 Start with [`architecture/README.md`](architecture/README.md), then inspect the linked ADRs, failure matrix, runnable [`architecture/decision_gate.py`](architecture/decision_gate.py) and [`architecture/evidence_flow.py`](architecture/evidence_flow.py) cross-project orchestration. The latter accepts a transcript *after* ASR; it is not a durable ASR worker. **Target-only components are not implemented features.** Evaluate one evidence-backed decision and one limitation before making hiring recommendations.

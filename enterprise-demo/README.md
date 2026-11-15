@@ -38,6 +38,19 @@ For **«Подготовить заметку для подтверждения�
 
 **Not** a generic autonomous LangGraph/multi-agent system or production IAM. The official MCP SDK is a Python dependency; this code exposes no remote public MCP port and does not automatically download or start Ollama. Real CPU 8B model inference can take ~2 minutes; CI uses genuine MCP+PostgreSQL but **scripted model responses**, while the separate real model record shows actual Ollama tool_calls.
 
+## AI Gateway request / source / response filters — EP-10
+
+The [security policy and threat model](../architecture/AI-GATEWAY.md)
+extends the existing Qwen3 tool-calling host and default generated-answer
+endpoint with deterministic ingress, tool, source and egress gates. In addition
+to *authoritative PostgreSQL grants* it rejects obvious credential dumps,
+override attempts, malformed tool parameters and external links in generated
+answers. The server emits only reason codes, never rejected source text.
+The Agent card shows the policy version and safe decisions, and displays
+rejections without disclosing credentials. This is an **implemented
+branch-scoped policy with automated unit evidence**, not proof that all
+prompt injections or sensitive data are detected or that production IAM exists.
+
 ## Prerequisites
 
 - A disposable `reliable_jobs` PostgreSQL database, with all six migrations `dotnet-outbox/sql/001_init.sql` → `006_agent_notes.sql`. Compose initializes **only 001 on a new volume**. The launcher checks schema read-only and **never** creates, alters or drops a DB.
