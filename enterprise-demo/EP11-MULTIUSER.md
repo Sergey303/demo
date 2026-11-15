@@ -235,3 +235,32 @@ branch remains available for review on RDC.
 - The three ephemeral HTTP/Chromium processes were terminated and the
   temporary dependency link removed. No production/shared database, server
   secret, or user data was used. No merge to `main` is claimed.
+
+
+## Final live acceptance and expanded CI — 2026-11-15
+
+**Supersedes the 2026-11-14 "NOT RUN" limitation for the two-user model path
+above; those earlier statements remain as historical records.**
+
+- **[Real Qwen3:8b + BGE-small ONNX + official MCP stdio + disposable PostgreSQL
+  + two Chromium clients: PASS](EP11-LIVE-QWEN-2026-11-15.md).**
+  Alice and Bob each received source- and job-bound answers from their own
+  documents (45 s / 55 s), with the third tenant's source excluded.
+  A subsequent offline grant revoke hid Alice's source from fresh signed
+  search without affecting Bob. No production IAM, full ASR, live approval,
+  blind model-quality test or model-inference revocation race is claimed.
+- The GitHub connector with appropriate workflow write permission updated
+  `.github/workflows/hiring-demo.yml` in commit
+  `e82397156e8af5dfc15660de26bd9fa0720e838c`.
+  This **supersedes the 2026-11-14 OAuth-token workflow limitation** for
+  the published branch. EP-11 browser, identity, Gateway and real-MCP/PG
+  regression modules are now selected in CI.
+- [Expanded GitHub Actions 2026-11-15](https://github.com/Sergey303/demo/actions/runs/43675162109):
+  **121 Python PASS; 36 browser contracts PASS; one separate recorded browser
+  test PASS; all three workflow jobs green**. CI uses scripted model
+  responses for its database/MCP regression and does not run Qwen3:8b.
+- The historical EP-09 live note proposal/approval evidence remains separate;
+  the new EP-11 live run used `task=answer` for both profiles.
+
+The published branch remains a draft stacked PR against
+`feature/ep10-ai-gateway`, not a merge to `main`.

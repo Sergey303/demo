@@ -107,5 +107,8 @@ Only trusted startup environment selects the profile; absence of BOTH variables
 keeps the historical default. Two localhost ports do not authenticate humans.
 Verify the real proxy tests, HTTP identity negatives, and
 `architecture/tests/test_multiuser_postgres.py` with its explicit deterministic
-encoder stdio fixture. Scripted models and synthetic vectors do not prove Qwen
-quality or new model-backed acceptance. Never run DB tests against shared data.
+encoder stdio fixture. These **CI** tests use scripted model outputs and
+deterministic vectors. Separately inspect the [2026-11-15 two-profile real Qwen3:8b + ONNX + MCP + SQL Chromium acceptance](enterprise-demo/EP11-LIVE-QWEN-2026-11-15.md), which validates two actual
+model-backed answers and a subsequent fresh-read revocation on disposable
+data. Neither test set proves semantic entailment or production IAM. Never
+run DB tests against shared data.
