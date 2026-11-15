@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DocumentUploadCard } from "./DocumentUploadCard";
 import { UnifiedSearchCard } from "./UnifiedSearchCard";
+import { AgentWorkflowCard } from "./AgentWorkflowCard";
 
 type JobStatus = "queued" | "done" | "failed";
 type Segment = { source: string; start: number; end: number; text: string };
@@ -320,7 +321,7 @@ export function EnterpriseAiPage() {
                 Повтор отправки должен вернуть прежний UUID.</p>
               <p className="small mb-0 text-secondary">
                 Авторизованный поиск по аудио и документам доступен ниже; он возвращает только
-                фрагменты источников. Опциональная генерация через локальную Qwen3 доступна ниже; агенты пока не подключены. Цитаты не гарантируют смысловую достоверность ответа.
+                фрагменты источников. Ниже доступны локальная генерация Qwen3 и MCP tool calling с подтверждением записей. Цитаты не гарантируют смысловую достоверность ответа.
               </p>
             </div>
           </div>
@@ -340,6 +341,7 @@ export function EnterpriseAiPage() {
       </div>
       <DocumentUploadCard />
       <UnifiedSearchCard />
+      <AgentWorkflowCard />
     </section>
   );
 }

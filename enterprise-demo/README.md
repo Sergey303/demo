@@ -30,9 +30,17 @@ On the same screen choose **«Сформировать ответ Qwen3 (лок�
 
 For the generated mode install `qwen3:8b` separately in local Ollama, start Ollama bound only to `127.0.0.1`, and configure the existing demo DB/auth secret normally. **The launcher does not download or start Ollama.** CPU Qwen3 8B can have high response latency and memory use; there is no production SLO.
 
+## Bounded MCP + genuine Qwen3 tool-calling — EP-09
+
+On the same Enterprise AI page choose **«Спросить через MCP»** to have Qwen3 actually return a structured Ollama `tool_calls` request. A trusted Python host validates its name/arguments and calls an **official Python MCP v2 Client over stdio** connected to the fixed two-tool [MCPServer](../architecture/mcp_evidence_server.py). `search_evidence` reads only current tenant/subject SQL-granted evidence and returns original citation IDs/job provenance. The model receives source excerpts but **never** PostgreSQL credentials, the bearer token or any arbitrary shell/tool access. Only an authorized answer with server-owned citations can be displayed.
+
+For **«Подготовить заметку для подтверждения»**, the model first calls authorized search, then selects `propose_review_note` for a job it just discovered. The MCP tool can **only create a proposal**. The browser explicitly shows the model's proposed text and original citation, warning that LLMs can invent details. Only after a separate human click does `POST /enterprise-search/agent/confirm` verify a five-minute one-use capability, **ALL** grants of the original prompt sources (not merely the target job) under PostgreSQL row locks to write exactly one note; rejecting consumes the capability without writing. On a failed confirmation the browser also clears all potentially stale source excerpts. **Every saved-note read** likewise checks all prompt-source grants; revoking even a non-target source hides the entire note. [Actual local Qwen3/MCP stdio/ONNX/PostgreSQL execution and negative test record](EVIDENCE-2026-11-09-MCP.md).
+
+**Not** a generic autonomous LangGraph/multi-agent system or production IAM. The official MCP SDK is a Python dependency; this code exposes no remote public MCP port and does not automatically download or start Ollama. Real CPU 8B model inference can take ~2 minutes; CI uses genuine MCP+PostgreSQL but **scripted model responses**, while the separate real model record shows actual Ollama tool_calls.
+
 ## Prerequisites
 
-- A disposable `reliable_jobs` PostgreSQL database, with all five migrations `dotnet-outbox/sql/001_init.sql` → `005_document_jobs.sql`. Compose initializes **only 001 on a new volume**. The launcher checks schema read-only and **never** creates, alters or drops a DB.
+- A disposable `reliable_jobs` PostgreSQL database, with all six migrations `dotnet-outbox/sql/001_init.sql` → `006_agent_notes.sql`. Compose initializes **only 001 on a new volume**. The launcher checks schema read-only and **never** creates, alters or drops a DB.
 - .NET 10 SDK; Node version supported by `bootstrap5/package.json`; Python with dependencies from `architecture/audio-requirements.txt`. Real inference also needs FFmpeg and cached `faster-whisper` + `fastembed` weights. The launcher never installs dependencies or downloads weights itself; **the underlying inference libraries may download model weights on first processing if they are not already cached**, so pre-warm/cache them deliberately if disk or networking is restricted.
 - A secret of at least 32 UTF-8 bytes, shared by API and Vite. Set it **in the terminal**, not in `.env` committed files or any `VITE_*` frontend variable.
 
@@ -43,7 +51,7 @@ At the repo root, on the machine that has Docker:
 ```bash
 docker compose -p demo-outbox -f dotnet-outbox/compose.yaml up -d --wait
 # Use this only on the isolated demo DB; 001 is initialized by Compose for NEW volumes.
-for migration in 002_audio_jobs.sql 003_audio_leases.sql 004_audio_acl.sql 005_document_jobs.sql; do
+for migration in 002_audio_jobs.sql 003_audio_leases.sql 004_audio_acl.sql 005_document_jobs.sql 006_agent_notes.sql; do
   docker exec -i demo-outbox-postgres-1 psql -v ON_ERROR_STOP=1 -U demo -d reliable_jobs < "dotnet-outbox/sql/$migration"
 done
 ```
