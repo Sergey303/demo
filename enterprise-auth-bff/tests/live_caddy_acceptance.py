@@ -78,8 +78,10 @@ def trusted_https_sanitization(ca: Path) -> None:
             status = response.status
     except urllib.error.HTTPError as error:
         status = error.code
-    if status not in (400, 403, 404, 421):
-        raise RuntimeError("Caddy accepted unexpected public Host")
+    if status != 421:
+        # HTTP 400 from BFF would still mean Caddy forwarded a bad Host.
+        # Prove denial happened at the edge's unconditional fallback.
+        raise RuntimeError("Caddy did not reject unexpected public Host at the edge")
     print("Caddy sanitized spoofed forwarding headers and denied wrong Host", flush=True)
 
 
