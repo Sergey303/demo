@@ -127,6 +127,11 @@ jobs:
         env:
           EP12_TEST_SESSION_CONNECTION: Host=127.0.0.1;Port=5432;Database=ep12_sessions;Username=demo;Password=demo
         run: dotnet test enterprise-auth-bff/tests/EnterpriseAuthBff.Tests.csproj -c Release --logger "console;verbosity=minimal"
+      - name: EP-12B Linux foreign-owner secret rejection (privileged fixture)
+        run: |
+          sudo dotnet test enterprise-auth-bff/tests/EnterpriseAuthBff.Tests.csproj -c Release --no-build \
+            --filter "FullyQualifiedName~KeyOwnershipTests.Foreign_owned_secret_file_or_directory_is_rejected_even_with_exact_modes" \
+            --logger "console;verbosity=normal"
       - name: Real PostgreSQL Qwen-generation grants, exact quotes, search and outbox
         env:
           JOBS_TEST_CONNECTION: host=127.0.0.1 port=5432 dbname=reliable_jobs user=demo password=demo
