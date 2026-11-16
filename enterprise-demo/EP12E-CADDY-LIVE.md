@@ -73,7 +73,7 @@ unrecognized socket is **not** blindly unlinked.
   incident response still require separate acceptance.
 - An upstream request authorized before its session was revoked can finish.
   The edge cannot retract already disclosed data.
-- The container image is pinned to a specific version tag for repeatability,
+- The disposable test uses the official patched Caddy **2.11.9-alpine** image (rather than 2.10.2), pinned to a specific version tag for repeatability,
   but image-digest pinning and container supply-chain policy remain an
   operational deployment concern.
 - Success must be verified from the `oidc-caddy-uds` CI job. Code review
@@ -103,3 +103,9 @@ trust entries exist only for the life of the **disposable hosted runner**,
 not on RDC or a user-owned device. File, container and database
 cleanup attempts are made on all normal exit paths; any abnormal runner
 termination requires the hosted runner to be discarded.
+
+The example's strict `host` matcher receives only the hostname (Caddy
+strips the port from the incoming request host before that comparison).
+The Caddy site address and upstream `Host`/`X-Forwarded-Host` retain
+port 18444. The test generator intentionally substitutes those values
+separately; otherwise it would reject even valid incoming requests.
