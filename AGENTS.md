@@ -116,3 +116,14 @@ run DB tests against shared data.
 ## EP-12D operational transport review
 
 Read [EP-12D proxy contract](enterprise-demo/EP12D-PROXY.md), `enterprise-auth-bff/src/BffTransport.cs`, Program startup ordering, and `enterprise-auth-bff/tests/UdsTransportTests.cs`. Require real Kestrel AF_UNIX tests, sole listener, service EUID and mode checks, strict forwarding before auth, and no shared DB. Caddy config is an example, not production deployment evidence. Same-UID processes/root are trusted; do not infer human authentication or multi-user OS isolation from UDS.
+
+
+## EP-12F OIDC admission review
+
+Read [EP-12F admission contract and evidence](enterprise-demo/EP12F-ADMISSION.md),
+`enterprise-auth-bff/src/OidcAdmission.cs`, middleware ordering in `BffApplication.cs`,
+and `OidcAdmissionTests` / `UdsAdmissionTests`. Require two independent host-local
+GET budgets before OIDC/cookie SQL, after validated ingress; zero XFF partitioning,
+empty no-cookie 429, bounded Retry-After, concurrent caps and canonical GET-only
+callbacks. These budgets are not distributed, per-user fairness, DDoS protection
+or complete production operational rate limiting. No live EP-12C/E rerun is implied.

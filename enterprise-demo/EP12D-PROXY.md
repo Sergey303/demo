@@ -104,3 +104,9 @@ DB tests remain opt-in and must use disposable data; no shared DB is needed here
 - Independent source review: **no actionable P0/P1/P2** found, but no live Caddy edge deployment, real production TLS termination or UDS+Keycloak full-browser acceptance was run.
 
 The published branch's GitHub Actions will be the separate post-commit regression evidence.
+
+
+[EP-12F](EP12F-ADMISSION.md) adds independent per-host login/callback admission
+before authentication and session SQL, after ingress validation. Read its exact
+429 contract, global false-positive risks and verification boundaries; this is
+not complete operational rate limiting or fleet-wide protection.

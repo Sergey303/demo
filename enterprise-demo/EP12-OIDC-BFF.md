@@ -205,7 +205,7 @@ EP-12B now requires protected persistent keys, a fresh PostgreSQL session check
 on each request, transactional per-session/logout-all revocation and minimal
 audit. The former EP-12A stolen-cookie-until-expiry limitation is superseded; see
 [EP-12B](EP12B-SESSIONS.md) for the exact commit/in-flight/concurrent-login boundary,
-mandatory setup and current evidence. IdP backchannel logout, rate controls,
+mandatory setup and current evidence. IdP backchannel logout, fleet-wide rate controls,
 managed secrets and real-provider/deployment acceptance remain outside this slice.
 Deprovisioning at the provider alone does not revoke existing BFF sessions;
 use local logout-all or remove the directory entry and restart all instances.
@@ -231,3 +231,9 @@ The HMAC wire-vector test matches a fixed-clock token independently accepted by
 confirmed the documented project command resolves the expected content root;
 it used synthetic configuration and an ephemeral HTTP loopback listener, and
 establishes no TLS or login acceptance. No push, deployment or CI run is claimed.
+
+
+[EP-12F](EP12F-ADMISSION.md) adds independent per-host login/callback admission
+before authentication and session SQL, after ingress validation. Read its exact
+429 contract, global false-positive risks and verification boundaries; this is
+not complete operational rate limiting or fleet-wide protection.

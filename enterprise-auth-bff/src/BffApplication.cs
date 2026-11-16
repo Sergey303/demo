@@ -31,6 +31,7 @@ public static class BffApplication
     private static void AddCoreServices(WebApplicationBuilder builder, BffSettings settings)
     {
         builder.Services.AddSingleton(settings);
+        builder.Services.AddSingleton<OidcAdmission>(_ => new OidcAdmission());
         builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = BffProxy.MaxBody);
         builder.Services.AddHttpClient("upstream", client => client.Timeout = TimeSpan.FromSeconds(120))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler {
@@ -146,6 +147,27 @@ public static class BffApplication
             { context.Response.StatusCode = 400; return; }
             if (context.Request.Path == "/oidc-remote-signout-disabled" || context.Request.Path == "/signout-callback-oidc")
             { context.Response.StatusCode = 404; return; }
+            // The framework matches callback paths without case sensitivity and can
+            // process form_post. This BFF supports only the canonical query GET;
+            // reject aliases/methods here so they cannot bypass its fixed budget.
+            var path = context.Request.Path.Value!;
+            if (path.Equals("/signin-oidc", StringComparison.OrdinalIgnoreCase) && path != "/signin-oidc")
+            { context.Response.StatusCode = 400; return; }
+            if (path is "/auth/login" or "/signin-oidc" && context.Request.Method != "GET")
+            { context.Response.StatusCode = 405; return; }
+            await next(context);
+        });
+        // Resolve once per host; the DI container disposes both limiter timers on teardown.
+        var admission = app.Services.GetRequiredService<OidcAdmission>();
+        app.Use(async (context, next) => {
+            if (!admission.Allows(context.Request.Method, context.Request.Path.Value))
+            {
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                // Advisory retry cadence, not a promise of capacity; no queued requests.
+                context.Response.Headers.RetryAfter = "10";
+                context.Response.ContentLength = 0;
+                return;
+            }
             await next(context);
         });
         app.Use(async (context, next) => {

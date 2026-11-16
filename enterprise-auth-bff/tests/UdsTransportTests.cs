@@ -150,3 +150,66 @@ public class RealUdsTests
         finally { await app.StopAsync(); settings.Transport.Cleanup(); Directory.Delete(dir, true); }
     }
 }
+
+// Separate admission fixture over a real kernel socket, with synthetic trusted-proxy headers.
+public class UdsAdmissionTests
+{
+    [Fact]
+    public async Task Invalid_proxy_headers_do_not_spend_budget_and_XFF_never_partitions_it()
+    {
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "ep12f-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir, (UnixFileMode)448);
+        var values = BoundaryTests.Settings();
+        values["EP12_TRANSPORT"] = "trusted-uds-proxy"; values["EP12_PROXY_SOCKET_PATH"] = dir + "/bff.sock";
+        var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder();
+        builder.Configuration.Sources.Clear(); builder.Configuration.AddInMemoryCollection(values);
+        var settings = BffSettings.Load(builder.Configuration);
+        settings.Transport.Configure(builder);
+        var registry = new ProbeRegistry();
+        BffApplication.AddServices(builder, settings, registry);
+        OidcAdmissionTests.SmallBudget(builder, 1, 1);
+        using var provider = new FakeProvider();
+        builder.Services.Configure<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions>(BffApplication.OidcScheme,
+            o => o.Backchannel = new HttpClient(provider));
+        await using var app = builder.Build();
+        BffApplication.Configure(app, settings);
+        try
+        {
+            await app.StartAsync(); settings.Transport.VerifyStarted();
+            using var handler = new SocketsHttpHandler {
+                AllowAutoRedirect = false, UseCookies = false, UseProxy = false,
+                ConnectCallback = async (_, token) => {
+                    var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.Unix, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Unspecified);
+                    try { await socket.ConnectAsync(new System.Net.Sockets.UnixDomainSocketEndPoint(settings.Transport.SocketPath!), token); return new System.Net.Sockets.NetworkStream(socket, true); }
+                    catch { socket.Dispose(); throw; }
+                }
+            };
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("http://bff.example.test") };
+            async Task<HttpResponseMessage> Send(string? xff = null, string proto = "https", string host = "bff.example.test")
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/auth/login");
+                request.Headers.Host = host;
+                request.Headers.Add("X-Forwarded-Proto", proto);
+                request.Headers.Add("X-Forwarded-Host", "bff.example.test");
+                if (xff != null) request.Headers.Add("X-Forwarded-For", xff);
+                return await client.SendAsync(request);
+            }
+            foreach (var xff in new[] { "203.0.113.1", "203.0.113.2" })
+                Assert.Equal(System.Net.HttpStatusCode.BadRequest, (await Send(xff)).StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.BadRequest, (await Send(proto: "http")).StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.BadRequest, (await Send(host: "bff.example.test:444")).StatusCode);
+            Assert.Equal(0, provider.Calls); Assert.Equal(0, registry.Calls);
+            Assert.Equal(System.Net.HttpStatusCode.Redirect, (await Send()).StatusCode);
+            var calls = provider.Calls;
+            await OidcAdmissionTests.Rejected(await Send());
+            Assert.Equal(System.Net.HttpStatusCode.BadRequest, (await Send("203.0.113.3")).StatusCode);
+            await OidcAdmissionTests.Rejected(await Send());
+            Assert.Equal(calls, provider.Calls); Assert.Equal(0, registry.Calls);
+            Assert.Single(app.Urls); Assert.All(app.Urls, url => Assert.StartsWith("http://unix:", url));
+        }
+        finally
+        {
+            await app.StopAsync(); settings.Transport.Cleanup(); Directory.Delete(dir, true);
+        }
+    }
+}
