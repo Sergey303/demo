@@ -72,13 +72,16 @@ persists budgets. Edge traffic/body/connection controls, provider budgets,
 capacity planning, fleet-wide enforcement and incident response remain operator
 responsibilities. Admitted work and non-OIDC paths can still overload resources.
 
-No metrics, exporter, remote logging or request labels are added. Framework log
+This EP-12F slice added no metrics, exporter, remote logging or request labels.
+The subsequent [EP-12G slice](EP12G-OBSERVABILITY.md) adds bounded built-in
+metrics and a tested numeric external-alert specification, without an exporter. Framework log
 suppression remains in Program; edge logs must continue to omit callback queries,
-cookies and tokens. An operator could later count admissions/rejections using
+cookies and tokens. At the EP-12F baseline an operator could later count admissions/rejections using
 only two fixed route names and two fixed decisions; never tag IP, identity,
 query, cookie, token or IdP values. Suggested future alerts: sustained 429 ratio
 per fixed route, callback error spikes, and host/provider saturation correlated
-with capacity. These alerts and dashboards are **not implemented**.
+with capacity. No deployed alerts or dashboards are implemented; EP-12G supplies only the
+external numeric specification and instrumentation described above.
 
 ## Executable evidence
 
