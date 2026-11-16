@@ -30,8 +30,12 @@ a generated long password and restricted permissions; only the existing
 EP-12B sessions migration is applied. No shared jobs or customer database
 is read or modified.
 
-Local Keycloak is published exclusively on loopback port 18443 and the BFF
-uses local HTTPS port 18444. Synthetic realm users and the confidential OIDC
+Local Keycloak is published exclusively on loopback port 18443 at
+idp.ep12c-idp.test; the BFF runs at bff.ep12c-app.test:18444 on loopback.
+The disposable GitHub runner resolves these different registrable domains
+through temporary /etc/hosts entries. This ensures the IdP-to-BFF callback
+is genuinely **cross-site**, so the Strict session cookie and data-free
+/auth/complete interstitial are exercised under the real browser policy. Synthetic realm users and the confidential OIDC
 client are generated for this run. Client passwords, bearer material and private
 keys are not committed. Short-lived ephemeral TLS certificates are trusted
 through the CI runner's OpenSSL and Chromium NSS stores. The DataProtection
