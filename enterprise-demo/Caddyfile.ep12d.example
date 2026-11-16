@@ -7,6 +7,9 @@
 
 https://bff.example.test {
     tls /etc/ep12-edge/tls.crt /etc/ep12-edge/tls.key
+    # Explicitly reject unrecognized public Host before canonicalizing upstream.
+    @unexpected_host not host bff.example.test
+    respond @unexpected_host 421
     # Separate request stage: wildcard deletion must precede header_up sets.
     request_header -Forwarded
     request_header -X-Original-*
