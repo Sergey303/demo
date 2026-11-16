@@ -219,7 +219,7 @@ def run_acceptance(tmp: Path, ca: Path, tls_pfx: Path, tls_password: str,
         env = os.environ.copy()
         env.update({
             "ASPNETCORE_ENVIRONMENT": "Production",
-            "ASPNETCORE_URLS": BFF_ORIGIN,
+            "ASPNETCORE_URLS": "https://127.0.0.1:18444",  # bind only loopback
             "ASPNETCORE_Kestrel__Certificates__Default__Path": str(tls_pfx),
             "ASPNETCORE_Kestrel__Certificates__Default__Password": tls_password,
             "EP12_AUTHORITY": AUTHORITY, "EP12_PUBLIC_ORIGIN": BFF_ORIGIN,
