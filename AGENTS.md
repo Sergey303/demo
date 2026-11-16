@@ -127,3 +127,15 @@ GET budgets before OIDC/cookie SQL, after validated ingress; zero XFF partitioni
 empty no-cookie 429, bounded Retry-After, concurrent caps and canonical GET-only
 callbacks. These budgets are not distributed, per-user fairness, DDoS protection
 or complete production operational rate limiting. No live EP-12C/E rerun is implied.
+
+## EP-12G BFF metrics review
+
+Read [EP-12G observability contract](enterprise-demo/EP12G-OBSERVABILITY.md),
+`enterprise-auth-bff/src/BffMetrics.cs`, its wiring in `BffApplication.cs`, and
+`enterprise-auth-bff/tests/MetricsTests.cs`. Require instance-filtered runtime
+MeterListener evidence, finite route/outcome/failure tags, outer request observation,
+and unchanged fail-closed transport/auth behavior. Registry cancellation exclusions
+apply only to client-aborted OperationCanceledException. No endpoint/exporter or
+production monitoring is implemented. Run `python3 scripts/check_ep12g_alert_spec.py`
+for numeric external-alert examples; this does not validate Prometheus syntax or
+prove alert delivery, live database outages, load/soak or EP-12C/E acceptance.

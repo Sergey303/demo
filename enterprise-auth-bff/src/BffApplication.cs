@@ -31,6 +31,7 @@ public static class BffApplication
     private static void AddCoreServices(WebApplicationBuilder builder, BffSettings settings)
     {
         builder.Services.AddSingleton(settings);
+        builder.Services.AddSingleton<BffMetrics>();
         builder.Services.AddSingleton<OidcAdmission>(_ => new OidcAdmission());
         builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = BffProxy.MaxBody);
         builder.Services.AddHttpClient("upstream", client => client.Timeout = TimeSpan.FromSeconds(120))
@@ -56,8 +57,10 @@ public static class BffApplication
                 var now = DateTimeOffset.UtcNow;
                 c.Properties.IssuedUtc = now; c.Properties.ExpiresUtc = now.AddMinutes(30);
                 var sid = SessionId.New();
-                await c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
-                    .Create(sid, mapped, now, c.Properties.ExpiresUtc.Value, c.HttpContext.RequestAborted);
+                await c.HttpContext.RequestServices.GetRequiredService<BffMetrics>().Registry(
+                    BffMetrics.Operation.Create, c.HttpContext.RequestAborted, () =>
+                    c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
+                        .Create(sid, mapped, now, c.Properties.ExpiresUtc.Value, c.HttpContext.RequestAborted));
                 // Replace rather than append untrusted provider claims. No external SID accepted.
                 c.Principal = mapped.Principal();
                 ((System.Security.Claims.ClaimsIdentity)c.Principal.Identity!).AddClaim(new(SessionId.Claim, sid));
@@ -66,8 +69,10 @@ public static class BffApplication
                 var mapped = c.Principal == null ? null : settings.FromCookie(c.Principal);
                 var sid = c.Principal == null ? null : SessionId.From(c.Principal);
                 if (mapped == null || sid == null || c.Principal!.Claims.Count() != 5 ||
-                    !await c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
-                        .Validate(sid, mapped, c.HttpContext.RequestAborted))
+                    !await c.HttpContext.RequestServices.GetRequiredService<BffMetrics>().Registry(
+                        BffMetrics.Operation.Validate, c.HttpContext.RequestAborted, () =>
+                        c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
+                            .Validate(sid, mapped, c.HttpContext.RequestAborted)))
                 {
                     c.RejectPrincipal();
                     await c.HttpContext.SignOutAsync(CookieScheme);
@@ -103,6 +108,7 @@ public static class BffApplication
                 return Task.CompletedTask;
             };
             o.Events.OnRemoteFailure = c => {
+                c.HttpContext.RequestServices.GetRequiredService<BffMetrics>().RemoteFailure();
                 c.HandleResponse(); c.Response.StatusCode = 401;
                 return c.Response.WriteAsJsonAsync(new { error = "OIDC authentication failed." });
             };
@@ -113,6 +119,8 @@ public static class BffApplication
 
     public static void Configure(WebApplication app, BffSettings settings)
     {
+        var metrics = app.Services.GetRequiredService<BffMetrics>();
+        app.Use((context, next) => metrics.Observe(context, next));
         // Explicitly handle failures even when hosting is started in Development.
         // Do not log exception objects: provider/network errors can include protocol data.
         app.Use(async (context, next) => {
@@ -207,8 +215,9 @@ public static class BffApplication
             {
                 if (context.Request.Method != "POST") { context.Response.StatusCode = 405; return; }
                 if (context.Request.QueryString.HasValue) { context.Response.StatusCode = 400; return; }
-                await context.RequestServices.GetRequiredService<ISessionRegistry>()
-                    .Revoke(SessionId.From(context.User)!, mapped, path == "/auth/logout-all", context.RequestAborted);
+                await metrics.Registry(BffMetrics.Operation.Revoke, context.RequestAborted, () =>
+                    context.RequestServices.GetRequiredService<ISessionRegistry>()
+                        .Revoke(SessionId.From(context.User)!, mapped, path == "/auth/logout-all", context.RequestAborted));
                 await context.SignOutAsync(CookieScheme); context.Response.StatusCode = 204; return;
             }
             if (path is "/auth/session" or "/enterprise-search/agent/identity")
