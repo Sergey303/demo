@@ -20,8 +20,8 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-AUTHORITY = "https://localhost:18443/realms/ep12c"
-BFF_ORIGIN = "https://localhost:18444"
+AUTHORITY = "https://idp.ep12c-idp.test:18443/realms/ep12c"
+BFF_ORIGIN = "https://bff.ep12c-app.test:18444"
 ALICE_SUB = "32c47cbf-8fcf-423f-a46d-d8fe88f9a531"
 BOB_SUB = "72d47cbf-8fcf-423f-a46d-d8fe88f9a532"
 
@@ -70,7 +70,7 @@ def certs(tmp: Path) -> tuple[Path, Path, str, Path, str]:
              "-subj", "/CN=localhost"])
     extensions = tmp / "tls.ext"
     extensions.write_text(
-        "subjectAltName=DNS:localhost,IP:127.0.0.1\n"
+        "subjectAltName=DNS:idp.ep12c-idp.test,DNS:bff.ep12c-app.test,DNS:localhost,IP:127.0.0.1\n"
         "basicConstraints=critical,CA:FALSE\n"
         "keyUsage=critical,digitalSignature,keyEncipherment\n"
         "extendedKeyUsage=serverAuth\n", encoding="utf-8")
@@ -200,7 +200,7 @@ def run_acceptance(tmp: Path, ca: Path, tls_pfx: Path, tls_password: str,
             "-e", "KC_BOOTSTRAP_ADMIN_USERNAME=ep12c-test-admin",
             "-e", "KC_BOOTSTRAP_ADMIN_PASSWORD=" + secrets.token_hex(20),
             "quay.io/keycloak/keycloak:26.7.2",
-            "start-dev", "--import-realm", "--hostname=" + "https://localhost:18443",
+            "start-dev", "--import-realm", "--hostname=" + AUTHORITY.split("/realms/")[0],
             "--hostname-strict=true", "--https-port=8443", "--http-enabled=false",
             "--https-certificate-file=/opt/keycloak/conf/ep12c.crt",
             "--https-certificate-key-file=/opt/keycloak/conf/ep12c.key",
@@ -269,6 +269,19 @@ def run_acceptance(tmp: Path, ca: Path, tls_pfx: Path, tls_password: str,
         subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=15)
 
 
+def register_isolated_test_domains() -> None:
+    # Different registrable domains are essential: two localhost ports are
+    # same-site and cannot validate the Strict-cookie cross-site callback.
+    hosts = "127.0.0.1 idp.ep12c-idp.test bff.ep12c-app.test # EP12C-only\n"
+    result = subprocess.run(["sudo", "tee", "-a", "/etc/hosts"],
+                            input=hosts, capture_output=True, text=True)
+    if result.returncode:
+        raise RuntimeError("Failed to register isolated test hostnames")
+    local_names = "idp.ep12c-idp.test,bff.ep12c-app.test,localhost,127.0.0.1"
+    for name in ("NO_PROXY", "no_proxy"):
+        os.environ[name] = (os.environ.get(name, "") + "," + local_names).strip(",")
+
+
 def main() -> int:
     if (os.environ.get("EP12C_DISPOSABLE_POSTGRES") != "1" or
             not os.environ.get("EP12C_PG_ADMIN_PASSWORD")):
@@ -280,6 +293,7 @@ def main() -> int:
     if not shutil.which("docker") or not shutil.which("openssl") or not shutil.which("certutil"):
         print("Missing isolated Keycloak/TLS certificate prerequisites.", file=sys.stderr)
         return 2
+    register_isolated_test_domains()
     with tempfile.TemporaryDirectory(prefix="ep12c-", dir="/tmp") as directory:
         tmp = Path(directory)
         tmp.chmod(0o700)
