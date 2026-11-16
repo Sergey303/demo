@@ -10,8 +10,10 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
   });
 
   const bff = 'https://bff.ep12c-app.test:18444';
+  const bobProvisioned = process.env.EP12C_PHASE === 'mapped_bob';
 
   test('real authorization-code/PKCE login and stolen-cookie replay after logout-all', async ({ page }) => {
+    test.skip(bobProvisioned, 'This checks Alice before BFF is restarted with Bob mapping');
     const alicePassword = process.env.EP12C_ALICE_PASSWORD;
     expect(alicePassword).toBeTruthy();
 
@@ -70,6 +72,7 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
   });
 
   test('valid real IdP credentials without trusted principal mapping cannot sign in', async ({ page }) => {
+    test.skip(bobProvisioned, 'This negative control runs only without Bob mapping');
     const bobPassword = process.env.EP12C_BOB_PASSWORD;
     expect(bobPassword).toBeTruthy();
 
@@ -91,5 +94,26 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
     expect(ticket).toHaveLength(0);
     const response = await page.request.get(bff + '/auth/session');
     expect(response.status()).toBe(401);
+  });
+
+  test('same Keycloak Bob succeeds when server mapping is provisioned', async ({ page }) => {
+    test.skip(!bobProvisioned, 'Positive Bob control runs only after mapping is provisioned');
+    const bobPassword = process.env.EP12C_BOB_PASSWORD;
+    expect(bobPassword).toBeTruthy();
+
+    await page.goto('/auth/login');
+    expect(new URL(page.url()).origin).toBe('https://idp.ep12c-idp.test:18443');
+    await expect(page.locator('#username')).toBeVisible();
+    await page.locator('#username').fill('bob');
+    await page.locator('#password').fill(bobPassword!);
+    await page.locator('#kc-login').click();
+    await expect(page).toHaveURL(bff + '/auth/complete');
+    await page.getByRole('link', { name: 'Continue to workspace' }).click();
+    await expect(page.getByTestId('enterprise-identity'))
+      .toHaveText('OIDC identity: ep12c-test / bob');
+    await expect(page.locator('#enterprise-wav')).toBeVisible();
+    const response = await page.request.get(bff + '/auth/session');
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({ tenant: 'ep12c-test', sub: 'bob' });
   });
 });

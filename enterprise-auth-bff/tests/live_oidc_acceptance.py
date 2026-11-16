@@ -120,10 +120,9 @@ def trust_local_ca(ca: Path, tmp: Path) -> Path:
     return installed
 
 
-def database(tmp: Path, admin_password: str) -> tuple[str, str, str]:
-    # This job has its own disposable postgres:16-alpine service on loopback.
-    suffix = secrets.token_hex(4)
-    db, user = "ep12c_" + suffix, "ep12c_user_" + suffix
+def database(admin_password: str, db: str, user: str) -> str:
+    # The caller allocates db/user BEFORE the first mutation, so cleanup
+    # always knows which resources to remove after a partial setup failure.
     password = secrets.token_hex(24)
     env = os.environ | {"PGPASSWORD": admin_password}
 
@@ -142,7 +141,7 @@ def database(tmp: Path, admin_password: str) -> tuple[str, str, str]:
                f"GRANT SELECT,INSERT ON ep12_bff_session_audit TO {user}; "
                f"GRANT USAGE,SELECT ON SEQUENCE ep12_bff_session_audit_event_id_seq TO {user};",
          target_db=db)
-    return db, user, password
+    return password
 
 
 def keycloak_realm(tmp: Path, client_secret: str, alice_password: str,
@@ -249,12 +248,31 @@ def run_acceptance(tmp: Path, ca: Path, tls_pfx: Path, tls_password: str,
         print("BFF running with real HTTPS and protected PostgreSQL session registry", flush=True)
         # Playwright output contains only synthetic test accounts. Stream it to
         # CI so a genuine IdP/TLS failure can be debugged without disabling TLS.
-        result = subprocess.run(["npx", "playwright", "test",
-                                 "tests/enterprise-oidc-live.spec.ts",
-                                 "--workers=1", "--retries=0"],
-                                cwd=ROOT / "bootstrap5", env=env, timeout=150)
-        if result.returncode:
-            raise RuntimeError("Chromium real HTTPS OIDC acceptance failed")
+        def run_browser_phase(phase: str) -> None:
+            env["EP12C_PHASE"] = phase
+            result = subprocess.run(["npx", "playwright", "test",
+                                     "tests/enterprise-oidc-live.spec.ts",
+                                     "--workers=1", "--retries=0"],
+                                    cwd=ROOT / "bootstrap5", env=env, timeout=150)
+            if result.returncode:
+                raise RuntimeError("Chromium real HTTPS OIDC acceptance failed: " + phase)
+
+        # Negative Bob control: provider credentials are valid but Bob is NOT
+        # server-provisioned. Then prove those exact credentials and issuer/sub
+        # DO succeed when only the trusted directory changes.
+        run_browser_phase("unmapped_bob")
+        bff.terminate()
+        bff.wait(timeout=8)
+        bff = None
+        env["EP12_PRINCIPALS"] = json.dumps([
+            {"issuer": AUTHORITY, "sub": ALICE_SUB, "tenant": "ep12c-test", "subject": "alice"},
+            {"issuer": AUTHORITY, "sub": BOB_SUB, "tenant": "ep12c-test", "subject": "bob"},
+        ])
+        bff = subprocess.Popen(["dotnet", "bin/Release/net10.0/EnterpriseAuthBff.dll"],
+                               cwd=src, env=env, stdout=bff_log, stderr=subprocess.STDOUT)
+        wait_for(BFF_ORIGIN + "/auth/session", ca, expected=401, process=bff, seconds=70)
+        run_browser_phase("mapped_bob")
+        print("Bob negative mapping vs positive mapping control: PASS", flush=True)
     finally:
         if bff is not None:
             bff.terminate()
@@ -298,11 +316,13 @@ def main() -> int:
         tmp = Path(directory)
         tmp.chmod(0o700)
         ca_location = None
-        db = user = None
+        # Allocate both cleanup identifiers before even creating the role.
+        suffix = secrets.token_hex(4)
+        db, user = "ep12c_" + suffix, "ep12c_user_" + suffix
         try:
             ca, tls_pfx, tls_password, dp_pfx, dp_password = certs(tmp)
             ca_location = trust_local_ca(ca, tmp)
-            db, user, db_password = database(tmp, os.environ["EP12C_PG_ADMIN_PASSWORD"])
+            db_password = database(os.environ["EP12C_PG_ADMIN_PASSWORD"], db, user)
             run_acceptance(tmp, ca, tls_pfx, tls_password, dp_pfx,
                            dp_password, db, user, db_password)
             print("EP12C PASS: real Keycloak OIDC/PKCE and Chromium HTTPS cookie revocation", flush=True)

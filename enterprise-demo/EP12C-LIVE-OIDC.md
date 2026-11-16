@@ -13,7 +13,9 @@ never disabled.
 
 The live browser verifies authorization-code + S256 PKCE login, nonce/state
 validation, mapped Alice's issuer/sub, failure of a fully authenticated but
-unmapped Bob, a Secure HttpOnly SameSite=Strict host cookie, cross-origin CSRF
+unmapped Bob **followed by a positive control using the same Keycloak account
+with only the server-side issuer/sub mapping enabled**, a Secure HttpOnly
+SameSite=Strict host cookie, cross-origin CSRF
 denial, and rejection of a retained cookie copy after logout-all.
 
 These are integration checks with a real provider, not the deterministic fake
@@ -60,3 +62,7 @@ Operational hardening, certificate rotation, session incident handling,
 provider-specific federation and real-provider deployment review remain later
 acceptance gates. EP-12C is test infrastructure, not a claim of production
 security certification.
+
+Partial provisioning failures are also cleaned up: database and role names
+are recorded before the first PostgreSQL mutation rather than after the
+migration succeeds. The exact identifiers are scoped to this CI run.
