@@ -85,6 +85,10 @@ def certs(tmp: Path) -> tuple[Path, Path, str, Path, str]:
              "-certfile", str(ca), "-out", str(tls_pfx),
              "-passout", "pass:" + tls_password])
     tls_pfx.chmod(0o600)
+    # The isolated Keycloak container runs as a different UID; only this
+    # throwaway TLS leaf key is world-readable for its read-only bind mount.
+    # The DataProtection PFX below must remain 0600 and service-owned.
+    (tmp / "server.key").chmod(0o644)
 
     command(["openssl", "req", "-x509", "-newkey", "rsa:3072", "-nodes",
              "-keyout", str(tmp / "wrap.key"), "-out", str(tmp / "wrap.crt"),
@@ -239,11 +243,14 @@ def run_acceptance(tmp: Path, ca: Path, tls_pfx: Path, tls_password: str,
             cwd=src, env=env, stdout=bff_log, stderr=subprocess.STDOUT)
         wait_for(BFF_ORIGIN + "/auth/session", ca, expected=401, process=bff, seconds=70)
         print("BFF running with real HTTPS and protected PostgreSQL session registry", flush=True)
-        output = command(["npx", "playwright", "test",
-                          "tests/enterprise-oidc-live.spec.ts",
-                          "--workers=1", "--retries=0"],
-                         cwd=ROOT / "bootstrap5", env=env, timeout=150)
-        print(output[-3500:], flush=True)
+        # Playwright output contains only synthetic test accounts. Stream it to
+        # CI so a genuine IdP/TLS failure can be debugged without disabling TLS.
+        result = subprocess.run(["npx", "playwright", "test",
+                                 "tests/enterprise-oidc-live.spec.ts",
+                                 "--workers=1", "--retries=0"],
+                                cwd=ROOT / "bootstrap5", env=env, timeout=150)
+        if result.returncode:
+            raise RuntimeError("Chromium real HTTPS OIDC acceptance failed")
     finally:
         if bff is not None:
             bff.terminate()
