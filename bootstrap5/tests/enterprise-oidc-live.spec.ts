@@ -16,7 +16,11 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
     expect(alicePassword).toBeTruthy();
 
     await page.goto('/auth/login');
-    await expect(page).toHaveURL(/localhost:18443\/realms\/ep12c\/protocol\/openid-connect\/auth/);
+    // Keycloak 26 redirects the authorization endpoint to login-actions while
+    // displaying the form. Verify the IdP origin and real credential inputs,
+    // not a transient internal login URL.
+    expect(new URL(page.url()).origin).toBe('https://localhost:18443');
+    await expect(page.locator('#username')).toBeVisible();
     await page.locator('#username').fill('alice');
     await page.locator('#password').fill(alicePassword!);
     await page.locator('#kc-login').click();
@@ -70,7 +74,11 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
     expect(bobPassword).toBeTruthy();
 
     await page.goto('/auth/login');
-    await expect(page).toHaveURL(/localhost:18443\/realms\/ep12c\/protocol\/openid-connect\/auth/);
+    // Keycloak 26 redirects the authorization endpoint to login-actions while
+    // displaying the form. Verify the IdP origin and real credential inputs,
+    // not a transient internal login URL.
+    expect(new URL(page.url()).origin).toBe('https://localhost:18443');
+    await expect(page.locator('#username')).toBeVisible();
     await page.locator('#username').fill('bob');
     await page.locator('#password').fill(bobPassword!);
     await page.locator('#kc-login').click();
