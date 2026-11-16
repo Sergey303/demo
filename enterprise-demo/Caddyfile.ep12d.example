@@ -1,0 +1,24 @@
+# Example only; replace hostname, socket and certificate paths consistently.
+# Run Caddy and BFF with the same dedicated service UID. No access logs/debug.
+{
+    admin off
+    auto_https disable_redirects
+}
+
+https://bff.example.test {
+    tls /etc/ep12-edge/tls.crt /etc/ep12-edge/tls.key
+    # Separate request stage: wildcard deletion must precede header_up sets.
+    request_header -Forwarded
+    request_header -X-Original-*
+    request_header -X-Forwarded-*
+    reverse_proxy unix//run/ep12-bff/bff.sock {
+        header_up Host bff.example.test
+        header_up X-Forwarded-Host bff.example.test
+        header_up X-Forwarded-Proto https
+        # Caddy normally adds XFF; explicitly remove it too.
+        header_up -X-Forwarded-For
+        transport http {
+            versions 1.1
+        }
+    }
+}
