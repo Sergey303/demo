@@ -195,6 +195,7 @@ def run(tmp: Path, ca: Path, dp_pfx: Path, dp_password: str,
             "EP12_DP_CERT_PFX": str(dp_pfx),
             "EP12_DP_CERT_PASSWORD": dp_password,
             "EP12C_LIVE_TEST": "true",
+            "NODE_EXTRA_CA_CERTS": str(ca),  # Node Playwright API HTTP TLS verification
             "EP12C_BFF_ORIGIN": c.BFF_ORIGIN,
             "EP12C_ALICE_PASSWORD": alice_password,
             "EP12C_BOB_PASSWORD": bob_password,
@@ -220,15 +221,28 @@ def run(tmp: Path, ca: Path, dp_pfx: Path, dp_password: str,
 
         def browser_phase(phase: str) -> None:
             env["EP12C_PHASE"] = phase
+            env["FORCE_COLOR"] = "0"
+            # Exit 0 with every test skipped must never count as acceptance.
+            expected, skipped = (2, 1) if phase == "unmapped_bob" else (1, 2)
             output = subprocess.run(
                 ["npx", "playwright", "test",
                  "tests/enterprise-oidc-live.spec.ts",
-                 "--workers=1", "--retries=0"],
+                 "--workers=1", "--retries=0", "--reporter=json"],
                 cwd=c.ROOT / "bootstrap5", env=env, timeout=160,
-                check=False,
+                check=False, capture_output=True, text=True,
             )
             if output.returncode:
                 raise RuntimeError("Real Caddy+Keycloak browser phase failed: " + phase)
+            try:
+                stats = json.loads(output.stdout)["stats"]
+            except (ValueError, KeyError, TypeError) as error:
+                raise RuntimeError("Missing trustworthy Playwright counters") from error
+            if (stats.get("expected") != expected or
+                stats.get("skipped") != skipped or
+                stats.get("unexpected") != 0 or
+                stats.get("flaky") != 0):
+                raise RuntimeError("Wrong number of executed browser acceptance cases")
+            print(f"EP12E browser {phase}: {expected} PASS, {skipped} intentionally skipped", flush=True)
 
         browser_phase("unmapped_bob")
         bff.terminate()
@@ -275,7 +289,8 @@ def run(tmp: Path, ca: Path, dp_pfx: Path, dp_password: str,
 def main() -> int:
     if (os.environ.get("GITHUB_ACTIONS") != "true" or
         os.environ.get("EP12E_DISPOSABLE_POSTGRES") != "1" or
-        not os.environ.get("EP12E_PG_ADMIN_PASSWORD")):
+        not os.environ.get("EP12E_PG_ADMIN_PASSWORD") or
+        os.geteuid() == 0):
         print("EP12E only accepts explicit disposable GitHub Actions fixture",
               file=sys.stderr)
         return 2
@@ -287,12 +302,16 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="ep12e-", dir="/tmp") as dirname:
         tmp = Path(dirname)
         tmp.chmod(0o700)
-        ca_location = None
+        # Remember the unique cleanup target before CA installation can fail.
+        ca_location = Path("/usr/local/share/ca-certificates") / (
+            "ep12c-" + tmp.name + ".crt")
         suffix = secrets.token_hex(4)
         db, user = "ep12e_" + suffix, "ep12e_user_" + suffix
         try:
             ca, tls_pfx, tls_pass, dp_pfx, dp_pass = c.certs(tmp)
-            ca_location = c.trust_local_ca(ca, tmp)
+            installed_ca = c.trust_local_ca(ca, tmp)
+            if installed_ca != ca_location:
+                raise RuntimeError("Unexpected CA trust installation path")
             db_password = c.database(
                 os.environ["EP12E_PG_ADMIN_PASSWORD"], db, user)
             run(tmp, ca, dp_pfx, dp_pass, db, user, db_password)
