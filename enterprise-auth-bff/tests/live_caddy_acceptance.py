@@ -26,7 +26,7 @@ import urllib.request
 import live_oidc_acceptance as c
 
 
-CADDY_IMAGE = "caddy:2.10.2"
+CADDY_IMAGE = "caddy:2.11.9-alpine"
 BFF_HOST = "bff.ep12c-app.test:18444"
 
 
@@ -138,8 +138,18 @@ def run(tmp: Path, ca: Path, dp_pfx: Path, dp_password: str,
         sample = sample.replace(
             "tls /etc/ep12-edge/tls.crt /etc/ep12-edge/tls.key",
             "tls /certs/server.crt /certs/server.key")
+        # Caddy's 'host' matcher strips the Host port, but the URL/site and
+        # proxy Host must retain that port. Replace the matcher separately
+        # BEFORE substituting the public authority everywhere else.
+        expected_matcher = "@unexpected_host not host bff.example.test"
+        if sample.count(expected_matcher) != 1:
+            raise RuntimeError("Missing strict Caddy host matcher")
+        sample = sample.replace(expected_matcher,
+                                "@unexpected_host not host " + BFF_HOST.split(":")[0])
         sample = sample.replace("bff.example.test", BFF_HOST)
-        if sample.count("bind 127.0.0.1") != 1 or "bff.example.test" in sample:
+        if (sample.count("bind 127.0.0.1") != 1 or
+            sample.count("@unexpected_host not host " + BFF_HOST.split(":")[0]) != 1 or
+            "bff.example.test" in sample):
             raise RuntimeError("Unrecognized Caddyfile reference configuration")
         caddyfile = tmp / "Caddyfile"
         caddyfile.write_text(sample, encoding="utf-8")
