@@ -134,7 +134,7 @@ public class OidcFlowTests
         builder.Services.Configure<OpenIdConnectOptions>(BffApplication.OidcScheme, o => {
             o.Backchannel = new HttpClient(provider); // test-only replacement of transport, not validation
         }), environment);
-    private static HttpRequestMessage Callback(HttpResponseMessage login, string state, bool cookies = true)
+    internal static HttpRequestMessage Callback(HttpResponseMessage login, string state, bool cookies = true)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "/signin-oidc?code=one-time-code&state=" + Uri.EscapeDataString(state));
         if (cookies) request.Headers.Add("Cookie", string.Join("; ", login.Headers.GetValues("Set-Cookie").Select(x => x.Split(';')[0])));
@@ -150,8 +150,11 @@ internal sealed class FakeProvider : HttpMessageHandler
     public string Challenge { get; set; } = "";
     public bool PkceVerified { get; private set; }
     public int Redemptions { get; private set; }
+    private int calls;
+    public int Calls => Volatile.Read(ref calls);
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        Interlocked.Increment(ref calls);
         if (Failure == "unavailable") throw new HttpRequestException("secret-marker");
         Assert.Equal("https", request.RequestUri!.Scheme); Assert.Equal("idp.example.test", request.RequestUri.Host);
         if (request.RequestUri.AbsolutePath == "/.well-known/openid-configuration")
