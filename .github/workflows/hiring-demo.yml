@@ -156,3 +156,60 @@ jobs:
             bootstrap5/playwright-report/
           retention-days: 14
           if-no-files-found: warn
+
+  oidc-real-https:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: reliable_jobs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d reliable_jobs"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local PostgreSQL and Chromium certificate trust tooling
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client libnss3-tools
+      - name: Build real BFF with .NET 10
+        run: dotnet build enterprise-auth-bff/src/EnterpriseAuthBff.csproj -c Release
+      - name: Build bundled React SPA and install real Chromium
+        working-directory: bootstrap5
+        run: |
+          npm ci
+          npm run build
+          npx playwright install --with-deps chromium
+      - name: Real Keycloak HTTPS OIDC/PKCE login and stolen-cookie revocation
+        env:
+          EP12C_DISPOSABLE_POSTGRES: "1"
+          EP12C_PG_ADMIN_PASSWORD: demo
+        run: python3 enterprise-auth-bff/tests/live_oidc_acceptance.py
+      - name: Preserve failing OIDC browser traces only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ep12c-real-keycloak-https-playwright-failure
+          path: |
+            bootstrap5/test-results/
+            bootstrap5/playwright-report/
+          retention-days: 7
+          if-no-files-found: warn
