@@ -12,6 +12,7 @@ BffSettings settings;
 try
 {
     settings = BffSettings.Load(builder.Configuration);
+    settings.Transport.Configure(builder);
     BffApplication.AddServices(builder, settings);
     app = builder.Build();
     app.Services.GetRequiredService<BffInfrastructure>().Probe(app.Services.GetRequiredService<IDataProtectionProvider>());
@@ -28,11 +29,13 @@ app.Logger.LogWarning("EP-12 isolated BFF: keep demo Vite stopped and backend po
 try
 {
     BffApplication.Configure(app, settings);
-    await app.RunAsync();
+    await app.StartAsync();
+    settings.Transport.VerifyStarted();
+    await app.WaitForShutdownAsync();
 }
 catch (Exception)
 {
     Console.Error.WriteLine("EP-12 BFF host unavailable.");
     Environment.ExitCode = 1;
 }
-finally { await app.DisposeAsync(); }
+finally { await app.DisposeAsync(); settings.Transport.Cleanup(); }

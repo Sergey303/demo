@@ -112,3 +112,7 @@ deterministic vectors. Separately inspect the [2026-11-15 two-profile real Qwen3
 model-backed answers and a subsequent fresh-read revocation on disposable
 data. Neither test set proves semantic entailment or production IAM. Never
 run DB tests against shared data.
+
+## EP-12D operational transport review
+
+Read [EP-12D proxy contract](enterprise-demo/EP12D-PROXY.md), `enterprise-auth-bff/src/BffTransport.cs`, Program startup ordering, and `enterprise-auth-bff/tests/UdsTransportTests.cs`. Require real Kestrel AF_UNIX tests, sole listener, service EUID and mode checks, strict forwarding before auth, and no shared DB. Caddy config is an example, not production deployment evidence. Same-UID processes/root are trusted; do not infer human authentication or multi-user OS isolation from UDS.

@@ -131,7 +131,10 @@ public static class BffApplication
             context.Response.Headers["X-EP12-BFF"] = "1";
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             context.Response.Headers["Referrer-Policy"] = "no-referrer";
-            // No forwarded-header middleware: Host and TLS must match the configured origin.
+            // Transport validation precedes infrastructure, OIDC and cookie authentication.
+            if (!settings.Transport.Validate(context, settings.PublicOrigin))
+            { context.Response.StatusCode = 400; return; }
+            // No generic forwarded-header middleware.
             if (!context.Request.IsHttps || context.Request.Scheme + "://" + context.Request.Host != settings.PublicOrigin
                 || context.Request.PathBase.HasValue)
             { context.Response.StatusCode = 400; return; }

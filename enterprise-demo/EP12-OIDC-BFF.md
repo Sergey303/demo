@@ -46,8 +46,9 @@ DB owner is outside this boundary.
    | `ASPNETCORE_Kestrel__Certificates__Default__Password` | Certificate password, if needed |
 
    Use a locally trusted certificate valid for the public origin. Do not disable
-   certificate validation. No forwarded-header/TLS-termination deployment is
-   supported by this slice. `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` is rejected.
+   certificate validation. For TLS termination use only the explicit
+   [EP-12D protected UDS mode](EP12D-PROXY.md); direct mode never trusts forwarded
+   metadata. `ASPNETCORE_FORWARDEDHEADERS_ENABLED` must be absent.
    HTTP or a mismatched Host receives 400. Do not log request headers, callback
    queries, token responses, cookie values or configuration dumps in surrounding
    infrastructure. Framework request/authentication logs are suppressed by the entrypoint.

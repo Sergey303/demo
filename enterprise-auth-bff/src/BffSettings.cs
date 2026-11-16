@@ -9,6 +9,7 @@ namespace EnterpriseAuthBff;
 // Trusted startup snapshot: never bind any part of this configuration from HTTP.
 public sealed class BffSettings
 {
+    public BffTransport Transport { get; init; } = BffTransport.Direct;
     public required string Authority { get; init; }
     public required string ClientId { get; init; }
     public required string ClientSecret { get; init; }
@@ -22,7 +23,7 @@ public sealed class BffSettings
         {
             string Read(string name) => !string.IsNullOrWhiteSpace(configuration[name])
                 ? configuration[name]! : throw new InvalidOperationException();
-            if (string.Equals(configuration["ASPNETCORE_FORWARDEDHEADERS_ENABLED"], "true", StringComparison.OrdinalIgnoreCase))
+            if (configuration["ASPNETCORE_FORWARDEDHEADERS_ENABLED"] != null || configuration["FORWARDEDHEADERS_ENABLED"] != null)
                 throw new InvalidOperationException();
             var authority = Read("EP12_AUTHORITY");
             var origin = Read("EP12_PUBLIC_ORIGIN");
@@ -40,7 +41,7 @@ public sealed class BffSettings
                 p.Sub.Any(c => c < 0x21 || c > 0x7e) || !Identifier(p.Tenant) || !Identifier(p.Subject)) ||
                 entries.Select(p => (p.Issuer, p.Sub)).Distinct().Count() != entries.Length)
                 throw new InvalidOperationException();
-            return new BffSettings { Authority = authority, PublicOrigin = origin, ClientId = id,
+            return new BffSettings { Transport = BffTransport.Load(configuration), Authority = authority, PublicOrigin = origin, ClientId = id,
                 ClientSecret = secret, SigningSecret = signing, Principals = Array.AsReadOnly(entries) };
         }
         catch (Exception ex) when (ex is InvalidOperationException or JsonException or ArgumentException)
