@@ -1,9 +1,16 @@
-# EP-12-A: isolated OIDC BFF first slice
+# EP-12 OIDC BFF (EP-12A protocol + EP-12B sessions)
 
-Base: `c3a27e01bc30de5ccf4fe07f037762d328ffc3e1`, branch
+EP-12A historical base: `c3a27e01bc30de5ccf4fe07f037762d328ffc3e1`, branch
 `feature/ep12-oidc-bff`. This is an opt-in, independently started .NET 10
 BFF. The existing EP-11 startup-fixed demo proxy and `enterprise-demo/run.py`
 are unchanged. This branch does not establish production IAM or AI quality.
+
+EP-12B supersedes the process-ephemeral/stateless-cookie limitations below with
+mandatory PostgreSQL revocation and an encrypted persistent key ring. Read
+[EP-12B setup, threat model and evidence](EP12B-SESSIONS.md) before starting:
+`EP12_SESSION_DSN`, `EP12_DP_KEYS_DIR`, `EP12_DP_CERT_PFX` and
+`EP12_DP_CERT_PASSWORD` are mandatory, Linux-only, with no fallback. Program
+performs a read-only schema probe; apply the session migration separately.
 
 ## Deployment and setup
 
@@ -59,7 +66,7 @@ DB owner is outside this boundary.
    Unknown users fail login; there is no fallback principal or self-registration.
    Provision source grants separately using existing trusted mechanisms.
 5. Start only the required existing APIs/workers separately on loopback 5077/5088,
-   with their normal configuration; no DB changes are introduced here. This slice
+   with their normal configuration; EP-12B requires its separate session database. This slice
    does not automatically start anything or run migrations. Use disposable data.
 6. From the repository root run:
 
@@ -87,9 +94,9 @@ metadata/endpoints. No custom JWT/OAuth implementation is used in production cod
 See [Microsoft's .NET 10 OIDC guidance](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/configure-oidc-web-authentication?view=aspnetcore-10.0).
 
 Only an exact validated `(issuer, sub)` lookup creates a session. `OnTokenValidated`
-replaces every raw IdP claim with four internal `bff_*` claims. Tenant/email/name
+replaces every raw IdP claim with four internal `bff_*` claims; cookie signing adds one server-created SID. Tenant/email/name
 claims supplied by the IdP have no authorization effect. Every cookie validation
-rechecks all four against the directory; inconsistent or removed identities are
+rechecks all four against the directory and freshly validates the internal SID against PostgreSQL; inconsistent or removed identities are
 rejected and the cookie is expired. Directory changes take effect by restarting
 with a new snapshot; there is no hot reload/admin directory API.
 
@@ -114,7 +121,8 @@ or tenant is accepted). Callback failures return a generic 401.
 | `GET /auth/login` | Framework challenge, fixed callback and fixed post-login return, no returnUrl/query; cross-site Fetch Metadata rejected |
 | `GET /auth/complete` | Public data-free HTML with a fixed workspace link; no identity, query parameters or redirect target |
 | `GET /auth/session` | Authenticated JSON `{tenant,sub}`; `sub` is the verified internal subject, never raw IdP sub/token |
-| `POST /auth/logout` | Authenticated same-origin request, local cookie signout, 204; GET is 405 |
+| `POST /auth/logout` | Authenticated same-origin request, server-side per-session revocation then cookie signout, 204; GET is 405 |
+| `POST /auth/logout-all` | Exact-account server-side revocation, same CSRF boundary, then cookie signout, 204 |
 | `GET /enterprise-search/agent/identity` | BFF-local JSON `{tenant,subject,identity_kind:"oidc"}` |
 | `/enterprise-api/*` | Authenticated fixed `http://127.0.0.1:5077/*` |
 | `/enterprise-search/*` | Authenticated fixed `http://127.0.0.1:5088/*` |
@@ -190,19 +198,16 @@ Browser tests mock HTTP and verify UI identity/clearing only.
 
 **Real IdP + browser login: NOT TESTED.** No real provider credentials were used.
 No model or shared DB was run. Existing model-backed evidence remains separate.
-CI workflow is deliberately unchanged; commands above are independent checks.
+EP-12A historical checks are below; CI now also runs the EP-12B isolated session-database tests.
 
-Keys are deliberately **ephemeral and single-process**: restart signs everyone
-out. There is no protected persistent DataProtection key ring, multi-instance
-session store, per-session revocation list, IdP backchannel logout, audit trail,
-rate limiting or security certification. Local logout deletes the current cookie;
-a previously stolen cookie can be replayed until ticket expiry or restart. It does
-not log out the IdP; a subsequent login may reuse its SSO session. Deprovisioning in
-the provider alone does not revoke an existing BFF ticket; remove the directory
-entry and restart. Production requires protected persisted keys, revocation and
-lifecycle controls, managed secrets, trustworthy TLS deployment, threat review,
-monitoring/auditing and real-provider acceptance. Do not weaken these checks to
-work around an incompatible provider: this slice fails closed.
+EP-12B now requires protected persistent keys, a fresh PostgreSQL session check
+on each request, transactional per-session/logout-all revocation and minimal
+audit. The former EP-12A stolen-cookie-until-expiry limitation is superseded; see
+[EP-12B](EP12B-SESSIONS.md) for the exact commit/in-flight/concurrent-login boundary,
+mandatory setup and current evidence. IdP backchannel logout, rate controls,
+managed secrets and real-provider/deployment acceptance remain outside this slice.
+Deprovisioning at the provider alone does not revoke existing BFF sessions;
+use local logout-all or remove the directory entry and restart all instances.
 
 Local verification on 2026-11-15 (Linux x64, .NET SDK 10.0.112, Node 24.20.0,
 Playwright 1.63.0 Chromium), against the implementation based on the SHA above:

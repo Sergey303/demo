@@ -45,7 +45,8 @@ public class OidcFlowTests
         var options = host.App.Services.GetRequiredService<IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>>().Get(BffApplication.CookieScheme);
         var ticket = options.TicketDataFormat.Unprotect(cookie.Split(';')[0].Split('=', 2)[1])!;
         Assert.Empty(ticket.Properties.GetTokens());
-        Assert.Equal(4, ticket.Principal.Claims.Count());
+        Assert.Equal(5, ticket.Principal.Claims.Count());
+        Assert.NotNull(SessionId.From(ticket.Principal));
         Assert.DoesNotContain(ticket.Principal.Claims, c => c.Type is "email" or "tenant" or "access_token");
         Assert.False(options.SlidingExpiration); Assert.True(options.ExpireTimeSpan <= TimeSpan.FromHours(1));
     }
@@ -110,6 +111,23 @@ public class OidcFlowTests
         var text = await response.Content.ReadAsStringAsync();
         Assert.DoesNotContain("secret-marker", text);
         Assert.DoesNotContain("Exception", text);
+    }
+
+    [Fact]
+    public async Task Database_create_failure_never_issues_framework_cookie()
+    {
+        using var provider = new FakeProvider();
+        await using var host = await Harness.Start(builder =>
+            builder.Services.Configure<OpenIdConnectOptions>(BffApplication.OidcScheme,
+                o => o.Backchannel = new HttpClient(provider)), registry: new MemorySessionRegistry { FailCreate = true });
+        var login = await host.Client.GetAsync("/auth/login");
+        var query = QueryHelpers.ParseQuery(login.Headers.Location!.Query);
+        provider.Nonce = query["nonce"].ToString(); provider.Challenge = query["code_challenge"].ToString();
+        using var callback = Callback(login, query["state"].ToString());
+        var response = await host.Client.SendAsync(callback);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.DoesNotContain(response.Headers.TryGetValues("Set-Cookie", out var cookies) ? cookies : [], x => x.StartsWith("__Host-Http-EP12="));
+        Assert.DoesNotContain("secret-marker", await response.Content.ReadAsStringAsync());
     }
 
     private static Task<Harness> Start(FakeProvider provider, string environment = "Testing") => Harness.Start(builder =>

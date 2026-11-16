@@ -15,9 +15,22 @@ public static class BffApplication
 
     public static void AddServices(WebApplicationBuilder builder, BffSettings settings)
     {
-        builder.Services.AddSingleton(settings);
-        // This slice intentionally has process-lifetime keys: restart invalidates all cookies.
+        var infrastructure = BffInfrastructure.Load(builder.Configuration);
+        infrastructure.Configure(builder.Services);
+        AddCoreServices(builder, settings);
+    }
+
+    // Explicit dependency injection for isolated test hosts; Program never calls this overload.
+    public static void AddServices(WebApplicationBuilder builder, BffSettings settings, ISessionRegistry registry)
+    {
+        builder.Services.AddSingleton(registry);
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
+        AddCoreServices(builder, settings);
+    }
+
+    private static void AddCoreServices(WebApplicationBuilder builder, BffSettings settings)
+    {
+        builder.Services.AddSingleton(settings);
         builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = BffProxy.MaxBody);
         builder.Services.AddHttpClient("upstream", client => client.Timeout = TimeSpan.FromSeconds(120))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler {
@@ -35,8 +48,25 @@ public static class BffApplication
             o.ExpireTimeSpan = TimeSpan.FromMinutes(30); o.SlidingExpiration = false;
             o.Events.OnRedirectToLogin = c => { c.Response.StatusCode = 401; return Task.CompletedTask; };
             o.Events.OnRedirectToAccessDenied = c => { c.Response.StatusCode = 403; return Task.CompletedTask; };
+            o.Events.OnSigningIn = async c => {
+                var mapped = c.Principal == null ? null : settings.FromCookie(c.Principal);
+                if (mapped == null || c.Principal!.Claims.Count() != 4)
+                    throw new InvalidOperationException("Invalid session identity.");
+                var now = DateTimeOffset.UtcNow;
+                c.Properties.IssuedUtc = now; c.Properties.ExpiresUtc = now.AddMinutes(30);
+                var sid = SessionId.New();
+                await c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
+                    .Create(sid, mapped, now, c.Properties.ExpiresUtc.Value, c.HttpContext.RequestAborted);
+                // Replace rather than append untrusted provider claims. No external SID accepted.
+                c.Principal = mapped.Principal();
+                ((System.Security.Claims.ClaimsIdentity)c.Principal.Identity!).AddClaim(new(SessionId.Claim, sid));
+            };
             o.Events.OnValidatePrincipal = async c => {
-                if (c.Principal == null || settings.FromCookie(c.Principal) == null)
+                var mapped = c.Principal == null ? null : settings.FromCookie(c.Principal);
+                var sid = c.Principal == null ? null : SessionId.From(c.Principal);
+                if (mapped == null || sid == null || c.Principal!.Claims.Count() != 5 ||
+                    !await c.HttpContext.RequestServices.GetRequiredService<ISessionRegistry>()
+                        .Validate(sid, mapped, c.HttpContext.RequestAborted))
                 {
                     c.RejectPrincipal();
                     await c.HttpContext.SignOutAsync(CookieScheme);
@@ -115,6 +145,10 @@ public static class BffApplication
             { context.Response.StatusCode = 404; return; }
             await next(context);
         });
+        app.Use(async (context, next) => {
+            context.RequestServices.GetService<BffInfrastructure>()?.CheckFiles();
+            await next(context);
+        });
         app.UseAuthentication();
         app.Run(async context => {
             var path = context.Request.Path.Value!;
@@ -144,9 +178,12 @@ public static class BffApplication
             if (mapped == null) { context.Response.StatusCode = 401; return; }
             if (context.Request.Method is not ("GET" or "HEAD") && !BffProxy.SameOrigin(context.Request, settings))
             { context.Response.StatusCode = 403; return; }
-            if (path == "/auth/logout")
+            if (path is "/auth/logout" or "/auth/logout-all")
             {
                 if (context.Request.Method != "POST") { context.Response.StatusCode = 405; return; }
+                if (context.Request.QueryString.HasValue) { context.Response.StatusCode = 400; return; }
+                await context.RequestServices.GetRequiredService<ISessionRegistry>()
+                    .Revoke(SessionId.From(context.User)!, mapped, path == "/auth/logout-all", context.RequestAborted);
                 await context.SignOutAsync(CookieScheme); context.Response.StatusCode = 204; return;
             }
             if (path is "/auth/session" or "/enterprise-search/agent/identity")
