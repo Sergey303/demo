@@ -5,11 +5,11 @@ import { expect, request as playwrightRequest, test } from '@playwright/test';
 test.describe('EP-12C real Keycloak over verified HTTPS', () => {
   test.skip(process.env.EP12C_LIVE_TEST !== 'true', 'Requires isolated Keycloak HTTPS fixture');
   test.use({
-    baseURL: process.env.EP12C_BFF_ORIGIN ?? 'https://localhost:18444',
+    baseURL: process.env.EP12C_BFF_ORIGIN ?? 'https://bff.ep12c-app.test:18444',
     ignoreHTTPSErrors: false,
   });
 
-  const bff = 'https://localhost:18444';
+  const bff = 'https://bff.ep12c-app.test:18444';
 
   test('real authorization-code/PKCE login and stolen-cookie replay after logout-all', async ({ page }) => {
     const alicePassword = process.env.EP12C_ALICE_PASSWORD;
@@ -19,7 +19,7 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
     // Keycloak 26 redirects the authorization endpoint to login-actions while
     // displaying the form. Verify the IdP origin and real credential inputs,
     // not a transient internal login URL.
-    expect(new URL(page.url()).origin).toBe('https://localhost:18443');
+    expect(new URL(page.url()).origin).toBe('https://idp.ep12c-idp.test:18443');
     await expect(page.locator('#username')).toBeVisible();
     await page.locator('#username').fill('alice');
     await page.locator('#password').fill(alicePassword!);
@@ -77,7 +77,7 @@ test.describe('EP-12C real Keycloak over verified HTTPS', () => {
     // Keycloak 26 redirects the authorization endpoint to login-actions while
     // displaying the form. Verify the IdP origin and real credential inputs,
     // not a transient internal login URL.
-    expect(new URL(page.url()).origin).toBe('https://localhost:18443');
+    expect(new URL(page.url()).origin).toBe('https://idp.ep12c-idp.test:18443');
     await expect(page.locator('#username')).toBeVisible();
     await page.locator('#username').fill('bob');
     await page.locator('#password').fill(bobPassword!);
