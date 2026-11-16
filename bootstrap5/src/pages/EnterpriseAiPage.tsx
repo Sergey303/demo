@@ -154,7 +154,7 @@ export function EnterpriseAiPage() {
     };
   }, [verifyIdentity]);
 
-  async function signOut() {
+  async function signOut(all = false) {
     logoutStarted.current = true;
     identityController.current?.abort();
     identityController.current = null;
@@ -164,12 +164,12 @@ export function EnterpriseAiPage() {
     setSession(null);
     setIdentityError("Signing out…");
     try {
-      const response = await fetch("/auth/logout", { method: "POST", cache: "no-store", signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw new Error("Sign out failed. Close this page and retry.");
+      const response = await fetch(all ? "/auth/logout-all" : "/auth/logout", { method: "POST", cache: "no-store", signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error("Logout status unknown.");
       setSignIn(true);
       setIdentityError("Signed out.");
-    } catch (err) {
-      setIdentityError(err instanceof Error ? err.message : "Sign out failed.");
+    } catch {
+      setIdentityError("Logout status unknown. Close this page and sign in again.");
     }
   }
 
@@ -180,6 +180,8 @@ export function EnterpriseAiPage() {
     {signIn && <a href="/auth/login">Sign in</a>}
     {session?.oidc && <button type="button" className="btn btn-sm btn-outline-secondary mb-3"
       onClick={() => void signOut()}>Sign out</button>}
+    {session?.oidc && <button type="button" className="btn btn-sm btn-outline-secondary mb-3 ms-2"
+      onClick={() => void signOut(true)}>Sign out everywhere</button>}
     {session && <VerifiedEnterprisePage key={session.epoch}
       identity={session.identity} verifyIdentity={verifyIdentity} oidc={session.oidc} />}
   </>;

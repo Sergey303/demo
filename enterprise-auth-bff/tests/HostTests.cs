@@ -244,24 +244,34 @@ internal sealed class Harness : IAsyncDisposable
     public required WebApplication App { get; init; }
     public required HttpClient Client { get; init; }
     public required CaptureHandler Outbound { get; init; }
-    public static async Task<Harness> Start(Action<WebApplicationBuilder>? customize = null, string environment = "Testing", string? contentRoot = null)
+    public required ISessionRegistry Registry { get; init; }
+    public static async Task<Harness> Start(Action<WebApplicationBuilder>? customize = null, string environment = "Testing", string? contentRoot = null, ISessionRegistry? registry = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment, ContentRootPath = contentRoot ?? Path.GetTempPath() });
         builder.WebHost.UseTestServer();
         var settings = BoundaryTests.Config();
-        BffApplication.AddServices(builder, settings);
+        registry ??= new MemorySessionRegistry();
+        BffApplication.AddServices(builder, settings, registry);
         var outbound = new CaptureHandler();
         builder.Services.AddHttpClient("upstream").ConfigurePrimaryHttpMessageHandler(() => outbound);
         customize?.Invoke(builder);
         var app = builder.Build(); BffApplication.Configure(app, settings);
         await app.StartAsync();
         var client = app.GetTestClient(); client.BaseAddress = new Uri(settings.PublicOrigin);
-        return new Harness { App = app, Client = client, Outbound = outbound };
+        return new Harness { App = app, Client = client, Outbound = outbound, Registry = registry };
     }
-    public string Cookie(ClaimsPrincipal? principal = null)
+    public string Cookie(ClaimsPrincipal? principal = null, bool register = true)
     {
         var options = App.Services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>().Get(BffApplication.CookieScheme);
-        var ticket = new AuthenticationTicket(principal ?? BoundaryTests.Config().Resolve("https://idp.example.test", "stable-001")!.Principal(),
+        principal ??= BoundaryTests.Config().Resolve("https://idp.example.test", "stable-001")!.Principal();
+        if (register)
+        {
+            var sid = SessionId.New();
+            ((ClaimsIdentity)principal.Identity!).AddClaim(new Claim(SessionId.Claim, sid));
+            Registry.Create(sid, BoundaryTests.Config().Resolve("https://idp.example.test", "stable-001")!,
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(29), CancellationToken.None).GetAwaiter().GetResult();
+        }
+        var ticket = new AuthenticationTicket(principal,
             new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) }, BffApplication.CookieScheme);
         return options.Cookie.Name + "=" + options.TicketDataFormat.Protect(ticket);
     }
