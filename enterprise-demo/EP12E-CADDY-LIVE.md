@@ -43,7 +43,8 @@ The separate `oidc-caddy-uds` GitHub Actions job provisions:
    denied until explicitly mapped (then successful with identical provider
    credentials), logout-all and stolen-cookie replay denial. Additional
    HTTP probes verify Caddy's sanitation of malicious forwarding metadata
-   and reject a nonmatching public Host.
+   and reject a nonmatching public Host at the Caddy edge with an
+   explicit negative host matcher.
 7. Kernel socket mode/UID/type check, direct unproxied socket request
    returning 400, and `ss -ltnp` process check proving that **the BFF
    itself does not listen on any TCP port**.
@@ -77,3 +78,28 @@ unrecognized socket is **not** blindly unlinked.
   operational deployment concern.
 - Success must be verified from the `oidc-caddy-uds` CI job. Code review
   or local compilation of the test harness alone is **not** acceptance.
+
+### Additional acceptance safeguards
+
+The example Caddyfile now explicitly rejects a caller-supplied HTTP
+`Host` that differs from the configured public hostname **before**
+normalizing the upstream Host. A valid TLS SNI alone must not authorize
+an unexpected HTTP Host.
+
+The fixture refuses UID 0 and runs Caddy under the same nonroot Linux
+effective UID as BFF. Both Chromium and Node's Playwright HTTP client
+verify the ephemeral CA; `NODE_EXTRA_CA_CERTS` is supplied explicitly,
+without turning off TLS validation.
+
+The browser driver checks Playwright JSON counters: its initial phase
+requires exactly two passed tests (Alice and unmapped Bob) with one
+intentionally skipped control; the second phase requires exactly one
+passed test (mapped Bob) with two skips. An all-skipped suite cannot
+produce a successful acceptance result.
+
+The synthetic CA location is computed before installation to support
+cleanup after partial setup failure. Temporary `/etc/hosts` and NSS
+trust entries exist only for the life of the **disposable hosted runner**,
+not on RDC or a user-owned device. File, container and database
+cleanup attempts are made on all normal exit paths; any abnormal runner
+termination requires the hosted runner to be discarded.
