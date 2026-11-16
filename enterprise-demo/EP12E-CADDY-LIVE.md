@@ -44,7 +44,7 @@ The separate `oidc-caddy-uds` GitHub Actions job provisions:
    credentials), logout-all and stolen-cookie replay denial. Additional
    HTTP probes verify Caddy's sanitation of malicious forwarding metadata
    and reject a nonmatching public Host at the Caddy edge with an
-   explicit negative host matcher.
+   explicit expected-host allow route and unconditional 421 fallback.
 7. Kernel socket mode/UID/type check, direct unproxied socket request
    returning 400, and `ss -ltnp` process check proving that **the BFF
    itself does not listen on any TCP port**.
@@ -81,10 +81,12 @@ unrecognized socket is **not** blindly unlinked.
 
 ### Additional acceptance safeguards
 
-The example Caddyfile now explicitly rejects a caller-supplied HTTP
-`Host` that differs from the configured public hostname **before**
-normalizing the upstream Host. A valid TLS SNI alone must not authorize
-an unexpected HTTP Host.
+The Caddyfile now uses one hostless HTTPS listener with two exclusive
+`handle` routes: only the exact expected hostname is proxied to BFF;
+all other HTTP Host values receive **421 Misdirected Request**.
+This is necessary because a matcher inside a hostname-specific Caddy
+site cannot handle requests discarded by that site's outer host filter.
+Valid TLS SNI alone must not authorize an unexpected HTTP Host.
 
 The fixture refuses UID 0 and runs Caddy under the same nonroot Linux
 effective UID as BFF. Both Chromium and Node's Playwright HTTP client
@@ -104,8 +106,8 @@ not on RDC or a user-owned device. File, container and database
 cleanup attempts are made on all normal exit paths; any abnormal runner
 termination requires the hosted runner to be discarded.
 
-The example's strict `host` matcher receives only the hostname (Caddy
-strips the port from the incoming request host before that comparison).
-The Caddy site address and upstream `Host`/`X-Forwarded-Host` retain
-port 18444. The test generator intentionally substitutes those values
-separately; otherwise it would reject even valid incoming requests.
+The expected-host matcher receives only the hostname (Caddy strips
+the port before comparing). The test Caddy listener is hostless and
+bound to `127.0.0.1:18444`, whereas upstream `Host` and
+`X-Forwarded-Host` contain the public port. The generator substitutes
+these values separately and verifies the 421 fallback is preserved.

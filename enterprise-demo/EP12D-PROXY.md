@@ -45,8 +45,14 @@ in effect. Post-start statx verifies service ownership, socket type and mode
 request rechecks parent safety and the socket's device/inode/type/mode identity.
 
 Use the [Caddy example](Caddyfile.ep12d.example) with a trusted certificate for the
-explicit hostname. Change the hostname in **all** four locations and PublicOrigin;
-if using a non-default public port, include it in Host and X-Forwarded-Host too.
+explicit hostname. The Caddyfile deliberately uses one hostless HTTPS listener
+with an expected-host `handle` route and an unconditional **421 Misdirected
+Request** fallback. This is necessary because a named matcher inside a
+hostname-specific site cannot process requests rejected by that site's outer
+hostname filter. Change the expected-host matcher and both upstream Host
+headers, plus PublicOrigin; if using a non-default public port, include that
+port in the listener and both upstream Host fields, but **not** in the host
+matcher, which compares hostnames without the port.
 The original HTTP Host must be the exact public authority. Never replace it with
 `localhost`, the socket path, or an inherited client forwarding header. The BFF
 requires exactly one `https` Proto and one exact Host, rejects all other

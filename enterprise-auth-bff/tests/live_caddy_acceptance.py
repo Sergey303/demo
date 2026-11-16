@@ -132,23 +132,25 @@ def run(tmp: Path, ca: Path, dp_pfx: Path, dp_password: str,
         # Use the *repository's own sample*, changing only the fictional
         # hostname, host port, and runtime TLS paths. No alternate proxy recipe.
         sample = (c.ROOT / "enterprise-demo/Caddyfile.ep12d.example").read_text()
+        # The Caddyfile uses a hostless HTTPS catch-all so unmatched Host
+        # requests hit a 421 fallback instead of an empty HTTP 200.
         sample = sample.replace(
-            "https://bff.example.test {",
-            "https://" + BFF_HOST + " {\n    bind 127.0.0.1")
+            "https://:443 {",
+            "https://:18444 {\n    bind 127.0.0.1")
         sample = sample.replace(
             "tls /etc/ep12-edge/tls.crt /etc/ep12-edge/tls.key",
             "tls /certs/server.crt /certs/server.key")
-        # Caddy's 'host' matcher strips the Host port, but the URL/site and
-        # proxy Host must retain that port. Replace the matcher separately
-        # BEFORE substituting the public authority everywhere else.
-        expected_matcher = "@unexpected_host not host bff.example.test"
+        # 'host' matches just the hostname, but upstream Host requires
+        # public authority including the nondefault test port.
+        expected_matcher = "@expected_host host bff.example.test"
         if sample.count(expected_matcher) != 1:
-            raise RuntimeError("Missing strict Caddy host matcher")
+            raise RuntimeError("Missing exact public Caddy hostname allow-route")
         sample = sample.replace(expected_matcher,
-                                "@unexpected_host not host " + BFF_HOST.split(":")[0])
+                                "@expected_host host " + BFF_HOST.split(":")[0])
         sample = sample.replace("bff.example.test", BFF_HOST)
         if (sample.count("bind 127.0.0.1") != 1 or
-            sample.count("@unexpected_host not host " + BFF_HOST.split(":")[0]) != 1 or
+            sample.count("@expected_host host " + BFF_HOST.split(":")[0]) != 1 or
+            sample.count('respond "Misdirected Request" 421') != 1 or
             "bff.example.test" in sample):
             raise RuntimeError("Unrecognized Caddyfile reference configuration")
         caddyfile = tmp / "Caddyfile"
