@@ -213,3 +213,61 @@ jobs:
             bootstrap5/playwright-report/
           retention-days: 7
           if-no-files-found: warn
+
+  oidc-caddy-uds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: reliable_jobs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d reliable_jobs"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real TLS/Unix socket acceptance prerequisites
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client libnss3-tools iproute2
+      - name: Build real .NET 10 BFF (UDS transport)
+        run: dotnet build enterprise-auth-bff/src/EnterpriseAuthBff.csproj -c Release
+      - name: Build React SPA and install Chromium
+        working-directory: bootstrap5
+        run: |
+          npm ci
+          npm run build
+          npx playwright install --with-deps chromium
+      - name: Real Caddy HTTPS to owner-only UDS BFF and Keycloak/PostgreSQL
+        env:
+          EP12E_DISPOSABLE_POSTGRES: "1"
+          EP12E_PG_ADMIN_PASSWORD: demo
+        run: python3 enterprise-auth-bff/tests/live_caddy_acceptance.py
+      - name: Preserve failed real Caddy browser traces only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ep12e-caddy-uds-keycloak-failure
+          path: |
+            bootstrap5/test-results/
+            bootstrap5/playwright-report/
+          retention-days: 7
+          if-no-files-found: warn
