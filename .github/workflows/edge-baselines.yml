@@ -78,6 +78,23 @@ jobs:
           python -B EdgeNetworkSecurity/implementations/edgecenter-ru/contract/validate.py EdgeNetworkSecurity/implementations/edgecenter-ru/contract/fixtures/enforce.json
           python -B EdgeNetworkSecurity/implementations/yandex-cloud/contract/validate.py EdgeNetworkSecurity/implementations/yandex-cloud/contract/fixtures/enforce.json
 
+  evidence-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: EdgeIntegratedScenarios/dashboard/package-lock.json
+      - name: Validate checked-in evidence and React dashboard contracts
+        working-directory: EdgeIntegratedScenarios/dashboard
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+
   onnx-cpu:
     runs-on: ubuntu-latest
     timeout-minutes: 12
