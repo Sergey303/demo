@@ -38,6 +38,10 @@ jobs:
           python -B -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/ai-assisted-ddos-defense/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/tests -v
+          python -B -m unittest discover -s EdgeAI/tests -v
+          python -B EdgeIntegratedScenarios/run.py
+          python -B EdgeIntegratedScenarios/task_inventory.py --check
+          python -B EdgeAI/benchmarks/compare.py
       - name: Loopback HTTP, safe probe and real disposable Redis 7 tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -47,6 +51,32 @@ jobs:
           docker version
           python -B -m unittest discover -s EdgeNetworkSecurity/shared/traffic-generator/tests -v
           python -B -m unittest discover -s EdgeNetworkSecurity/implementations/local/tests -v
+          RUN_EDGE_HTTP_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -v
+
+  provider-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Cloudflare Worker contract unit tests (no provider API calls)
+        run: |
+          node --check EdgeNetworkSecurity/implementations/cloudflare/workers/request-guard/worker.mjs
+          node --test EdgeNetworkSecurity/implementations/cloudflare/workers/request-guard/worker.test.mjs
+      - name: Offline EdgeCenter and Yandex staging intent validation
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -m pip install -r EdgeNetworkSecurity/implementations/edgecenter-ru/contract/requirements.txt
+          python -B -m unittest discover -s EdgeNetworkSecurity/implementations/edgecenter-ru/contract -p test_contract.py -v
+          python -B -m unittest discover -s EdgeNetworkSecurity/implementations/yandex-cloud/contract -p test_contract.py -v
+          python -B EdgeNetworkSecurity/implementations/edgecenter-ru/contract/validate.py EdgeNetworkSecurity/implementations/edgecenter-ru/contract/fixtures/enforce.json
+          python -B EdgeNetworkSecurity/implementations/yandex-cloud/contract/validate.py EdgeNetworkSecurity/implementations/yandex-cloud/contract/fixtures/enforce.json
 
   onnx-cpu:
     runs-on: ubuntu-latest
