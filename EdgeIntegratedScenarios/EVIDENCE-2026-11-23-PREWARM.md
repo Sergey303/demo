@@ -1,6 +1,6 @@
 # Sixth-wave native ONNX API prewarm acceptance — 2026-11-23
 
-**Scope:** `Sergey303/demo`, Linux RDC isolated merge worktree, .NET 10, Python 3.12 with pinned NumPy/ONNX/ONNX Runtime, Linux libseccomp. **Source status:** LOCAL-VERIFIED; GitHub Actions must still pass for the published revision.
+**Scope:** `Sergey303/demo`, Linux RDC isolated merge worktree, .NET 10, Python 3.12 with pinned NumPy/ONNX/ONNX Runtime, Linux libseccomp. **Source status:** LOCAL-VERIFIED and **CI-VERIFIED**. [GitHub Actions run 45219298281](https://github.com/Sergey303/demo/actions/runs/45219298281) completed successfully with all four jobs green, including real native ASP.NET Core → ONNX prewarm on the clean runner.
 
 ## Change
 
@@ -35,6 +35,10 @@ All measurements are **individual samples**, not controlled benchmarking or prod
 | Prewarmed, second full integrated run | **37.04 ms** | **3.23 ms** | Independent repeat, same E2E invariants |
 
 Bounded standalone localhost latency sample: `EdgeIntegratedScenarios/sample_latency.py`, **2 RPS × 5 seconds = 10 requests**, loopback only. All 10 responses were HTTP 200 with native ONNX-score; **0 HTTP/transport failures, 0 worker restarts and 0 fallbacks**. Warm **response-header** latency: p50 **2.27 ms**, p95/p99 **44.45 ms** (nearest-rank method, 10 points; p95 and p99 are both the maximum). The model had already been prewarmed and `advisoryPrewarmAttempts=1`, `advisoryPrewarmFailures=0`, and `started=0` before sampling. These percentile figures are **not stable estimates**: N=10, no CI performance reference, no controlled CPU/disk memory profile.
+
+## Independent clean GitHub runner verification
+
+The clean `onnx-cpu` job explicitly restored pinned .NET dependencies once and then performed the strict native HTTP/ONNX E2E under an isolated Python virtual environment. All five `test_inline_end_to_end` cases passed without skips, along with the original ONNX suites. **Individual** runner samples: on-demand persistent first/warm HTTP **554.71/5.84 ms**; prewarmed first/second HTTP **21.27/5.43 ms**; the earlier one-shot path **640.73 ms**. This corroborates the qualitative latency improvement on two different machines, **not** a general SLO or production benchmark.
 
 ## Replicate (no public traffic)
 
