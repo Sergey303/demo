@@ -1,3 +1,5 @@
 # EAI-05 — image inference demo
 
-**P2.** Pick licensed small dataset, include provenance and synthetic smoke sample, route through capability-specific image classifier. Tests: shape/format errors, corrupt payload, confidence calibration limits, deterministic baseline; measure local CPU. TODO: provider parity and real image benchmark with labelled holdout.
+**P2 · Local synthetic baseline implemented and tested.** Train separate stripe centroids, score a disjoint authored holdout, and classify a local 8×8 PGM. Tests cover valid inference and malformed payloads. See [README](README.md).
+
+**Open:** independently labeled, licensed dataset with provenance and SHA-256, local image timing, calibration, broader image formats, and provider parity.

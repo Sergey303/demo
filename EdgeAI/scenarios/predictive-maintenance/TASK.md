@@ -1,3 +1,5 @@
 # EAI-06 — predictive maintenance demo
 
-**P2.** Synthetic sensors and time-indexed train/test split, compare simple threshold baseline with optional model. Avoid data leakage. Measure alert precision/recall and lead time; test missing/delayed samples. TODO: independently sourced licensed dataset and inference deployment.
+**P2 · Local synthetic baseline implemented and tested.** Fit a vibration threshold on earlier healthy samples and score later alerts, missing/delayed skips, and first-alert lead time. See [README](README.md).
+
+**Open:** independently sourced licensed telemetry, validation across machines and operating conditions, learned-model comparison, and deployment.

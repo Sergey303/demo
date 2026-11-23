@@ -2,7 +2,7 @@
 
 **Отдельная инженерная лаборатория выполнения ML-моделей рядом с источником данных.** Цель — сравнивать ограниченные по ресурсам сценарии inference: от детерминированного алгоритма без ML до локальной ONNX-модели, а позднее — реализаций на разных облачных платформах. Проект **не сводится к anti-DDoS**: анализ трафика — первый пример, а обработка изображений, сигналов датчиков и автономная работа выделены в самостоятельные сценарии.
 
-**Текущее состояние:** эвристика и её оценка на искусственных данных **локально проверены**; ONNX-модель, генератор, CPU-runner и тесты **написаны и опубликованы**, и **настоящий CPU inference ONNX Runtime проверен локально**; облачные адаптеры и сценарии изображений/датчиков — **TODO**.
+**Текущее состояние:** эвристика и её оценка на искусственных данных **локально проверены**; ONNX-модель, генератор, CPU-runner и тесты **написаны и опубликованы**, и **настоящий CPU inference ONNX Runtime проверен локально**; также доступны синтетические примеры для изображений, датчиков и автономного inference. Облачные адаптеры остаются **TODO**.
 
 ## Что находится в проекте
 
@@ -15,7 +15,15 @@
 | [Yandex Cloud inference](implementations/yandex-cloud/README.md) | План проверки API, исполнения моделей и локализации данных | **TODO**; региональное облако не означает физический edge |
 | [Другие российские варианты](implementations/russian-cloud/README.md) | Критерии выбора провайдера и размещения вычислений | **TODO** |
 
-Отдельные направления [image inference](scenarios/image-inference/TASK.md), [predictive maintenance](scenarios/predictive-maintenance/TASK.md) и [offline inference](scenarios/offline-inference/TASK.md) пока представлены заданиями, а не готовыми моделями.
+Локальные примеры без внешних зависимостей: [image inference](scenarios/image-inference/README.md), [predictive maintenance](scenarios/predictive-maintenance/README.md), [offline inference](scenarios/offline-inference/README.md) и [benchmark на общих входах](benchmarks/README.md#shared-traffic-inputs).
+
+```bash
+python3 -B EdgeAI/scenarios/image-inference/inference.py
+python3 -B EdgeAI/scenarios/predictive-maintenance/evaluate.py
+python3 -B EdgeAI/scenarios/offline-inference/run.py
+python3 -B EdgeAI/benchmarks/compare.py
+python3 -B -m unittest discover -s EdgeAI/tests -v
+```
 
 ## Два способа получить оценку
 

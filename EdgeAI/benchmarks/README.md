@@ -12,12 +12,17 @@ python3 EdgeAI/implementations/onnx-local/benchmark.py --iterations 50
 
 These are **local CPU execution timings on synthetic examples**, not real-world security effectiveness, network-edge latency or cloud performance. No actual benchmark numbers should be asserted without a captured run. The synthetic holdout label hash records the test distribution but cannot serve as an independent externally verified dataset.
 
-## TODO for Codex
+## Shared traffic inputs
 
-- Build a common versioned JSONL dataset shared by rules-only heuristic, ONNX and provider-backed models; keep a pinned SHA and known licensing.
-- Report true positive/false positive rates on independently labelled held-out examples; separate in-sample and holdout performance.
-- Record CPU type, RAM, cold-start, warm-up count, error distribution and concurrency; do not compare different input/model versions without disclosure.
-- Add latency p50/p95/p99 **for complete HTTP pipeline** separately from model inference.
-- Compare Cloudflare/Yandex/other inference locations only once providers are configured and their real telemetry is available; no fabricated costs or SLA.
+Run from the repository root. The default command measures the rules-only scorer. The second command also measures the existing CPU ONNX scorer when its dependencies and generated artifacts already exist locally.
 
-See [TASK.md](TASK.md).
+```bash
+python3 -B EdgeAI/benchmarks/compare.py --iterations 20
+python3 -B EdgeAI/benchmarks/compare.py --iterations 20 --onnx-artifacts EdgeAI/implementations/onnx-local/artifacts
+```
+
+Both scorers receive the same validated JSONL traffic windows and use threshold 0.5. A single report records the input SHA-256 and each model/source SHA-256. The default dataset comes from the 12 authored traffic fixtures and is separate from the ONNX feature-space training generator. Use `--dataset` to evaluate another JSONL file with the same schema. Missing or invalid data and scoring failures abort the run.
+
+The first scoring pass supplies quality metrics and warms each scorer. Timed predictions then repeat the whole corpus, one window at a time. Warm percentiles include score validation and scorer-specific feature work. ONNX setup measures model loading and session creation after imports. Timed process CPU and throughput include loop overhead. For comparisons between reports, check schema, dataset hash, batch size, threshold, environment and run settings, and disclose model/backend changes. Machine-specific latency and synthetic quality have limited applicability to external workloads.
+
+See [TASK.md](TASK.md) for open benchmark work.

@@ -17,13 +17,11 @@ def _rate(numerator: int, denominator: int) -> float | None:
     return round(numerator / denominator, 6) if denominator else None
 
 
-def evaluate_text(data: str, threshold: float = 0.5) -> dict:
-    if not isinstance(threshold, (int, float)) or not isfinite(threshold) or not 0 < threshold <= 1:
-        raise ValueError("threshold must be finite and in (0, 1]")
+def load_records(data: str) -> list[tuple[int, dict, Window]]:
     if len(data.encode("utf-8")) > MAX_BYTES:
         raise ValueError("dataset too large")
 
-    counts = {"tp": 0, "tn": 0, "fp": 0, "fn": 0}
+    records = []
     seen: set[str] = set()
     for n, line in enumerate(data.splitlines(), start=1):
         if n > MAX_RECORDS:
@@ -42,22 +40,32 @@ def evaluate_text(data: str, threshold: float = 0.5) -> dict:
             if not isinstance(row["window"], dict) or set(row["window"]) != FIELDS:
                 raise ValueError("invalid window keys")
             window = Window(**row["window"])
-            predicted = int(score(window) >= threshold)
-            actual = row["label"]
-            key = "tp" if predicted and actual else "fp" if predicted else "fn" if actual else "tn"
-            counts[key] += 1
+            records.append((row["label"], row["window"], window))
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise ValueError(f"record {n} is invalid: {exc}") from exc
 
     if not seen:
         raise ValueError("empty dataset")
+    return records
+
+
+def evaluate_text(data: str, threshold: float = 0.5) -> dict:
+    if not isinstance(threshold, (int, float)) or not isfinite(threshold) or not 0 < threshold <= 1:
+        raise ValueError("threshold must be finite and in (0, 1]")
+    records = load_records(data)
+    counts = {"tp": 0, "tn": 0, "fp": 0, "fn": 0}
+    for actual, _, window in records:
+        predicted = score(window) >= threshold
+        key = "tp" if predicted and actual else "fp" if predicted else "fn" if actual else "tn"
+        counts[key] += 1
+
     tp, tn, fp, fn = (counts[k] for k in ("tp", "tn", "fp", "fn"))
     return {
         "status": "simulated",
         "algorithm": "heuristic-v1-rules-only",
         "dataset_sha256": sha256(data.encode("utf-8")).hexdigest(),
         "threshold": threshold,
-        "records": len(seen),
+        "records": len(records),
         "counts": counts,
         "precision": _rate(tp, tp + fp),
         "recall": _rate(tp, tp + fn),
