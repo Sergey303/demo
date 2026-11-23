@@ -48,7 +48,7 @@ All traffic remained on literal loopback. No cloud providers, public DDoS traffi
 | React evidence dashboard normalizer tests | 6 |
 | **Total non-overlapping tests** | **147** |
 
-Merged suite: `dotnet build` **0 errors/0 warnings**, 25 ASP.NET/Redis cases passed, 36 EIS cases counted. Three tests requiring explicit native/localhost opts were skipped in the default EIS run **and successfully executed separately**: one CLI native ONNX and two complete HTTP→ONNX tests. Prior to the new wave, the existing 57 base, 20 ONNX, 3 ONNX/EIS and 6 dashboard tests were also independently passed. No GitHub Actions outcome is claimed in this document until that run is checked.
+Merged suite: `dotnet build` **0 errors/0 warnings**, 25 ASP.NET/Redis cases passed, 36 EIS cases counted. Three tests requiring explicit native/localhost opts were skipped in the default EIS run **and successfully executed separately**: one CLI native ONNX and two complete HTTP→ONNX tests. Prior to the new wave, the existing 57 base, 20 ONNX, 3 ONNX/EIS and 6 dashboard tests were also independently passed. **GitHub Actions verified:** [Edge baseline offline tests, run 45194487736](https://github.com/Sergey303/demo/actions/runs/45194487736) completed **success** on commit `34c09d9`; all four jobs (`offline`, `onnx-cpu`, `provider-contracts`, `evidence-dashboard`) passed. The ONNX job explicitly ran both opt-in CLI/native and full ASP.NET→Python→ONNX tests. CI verifies bounded synthetic localhost behavior, not production security or cloud deployment.
 
 ### Reproduce
 
