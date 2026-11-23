@@ -18,6 +18,12 @@ var port = ConfigInt("LOCAL_EDGE_PORT", 5088, 1024, 65535);
 var permits = ConfigInt("LOCAL_EDGE_PERMITS", 4, 1, 100);
 var windowSeconds = ConfigInt("LOCAL_EDGE_WINDOW_SECONDS", 2, 1, 60);
 var concurrency = ConfigInt("LOCAL_EDGE_CONCURRENCY", 2, 1, 32);
+var redisPortRaw = Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_PORT");
+var redisQuota = redisPortRaw is null
+    ? null
+    : new RedisQuota(ConfigInt("LOCAL_EDGE_REDIS_PORT", 0, 1024, 65535),
+        Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_NAMESPACE") ?? "demo-local",
+        permits, windowSeconds);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
@@ -25,7 +31,9 @@ builder.WebHost.ConfigureKestrel(options =>
     options.AddServerHeader = false;
     options.Listen(IPAddress.Loopback, port); // Cannot be switched to 0.0.0.0 by ASPNETCORE_URLS.
 });
-builder.Services.AddSingleton<DemoCounters>();
+builder.Services.AddSingleton(new DemoCounters(redisQuota is not null));
+if (redisQuota is not null)
+    builder.Services.AddSingleton(redisQuota);
 builder.Services.AddSingleton(new SemaphoreSlim(concurrency, concurrency));
 builder.Services.AddRateLimiter(options =>
 {
@@ -59,7 +67,7 @@ app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", loopbackOnly = true }));
 app.MapGet("/metrics", (DemoCounters counters) => Results.Ok(counters.Snapshot()));
 
-app.MapGet("/api/expensive", async (HttpContext request, DemoCounters counters, SemaphoreSlim slots) =>
+var expensiveEndpoint = app.MapGet("/api/expensive", async (HttpContext request, DemoCounters counters, SemaphoreSlim slots) =>
 {
     var holdMs = 0;
     if (request.Request.Query.Keys.Any(key => key != "holdMs") ||
@@ -87,13 +95,56 @@ app.MapGet("/api/expensive", async (HttpContext request, DemoCounters counters, 
     {
         slots.Release();
     }
-}).RequireRateLimiting("expensive");
+});
+
+if (redisQuota is null)
+{
+    // Existing single-process limiter retained when shared Redis mode is not configured.
+    expensiveEndpoint.RequireRateLimiting("expensive");
+}
+else
+{
+    // All configured replicas share one Redis key. No local fallback on Redis errors:
+    // silently accepting via independent local counters would bypass the global quota.
+    expensiveEndpoint.AddEndpointFilter(async (filter, next) =>
+    {
+        var http = filter.HttpContext;
+        var counters = http.RequestServices.GetRequiredService<DemoCounters>();
+        try
+        {
+            var quota = await redisQuota.CheckAsync(http.RequestAborted);
+            if (!quota.Allowed)
+            {
+                counters.Rejected();
+                http.Response.Headers.RetryAfter = quota.RetryAfterSeconds
+                    .ToString(CultureInfo.InvariantCulture);
+                return Results.Json(new { error = "rate_limited" },
+                    statusCode: StatusCodes.Status429TooManyRequests);
+            }
+            return await next(filter);
+        }
+        catch (OperationCanceledException) when (http.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // Do not leak Redis network details or switch to an independent local limit.
+            counters.RedisUnavailable();
+            return Results.Json(new { error = "quota_dependency_unavailable" },
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+    });
+}
 
 app.Run();
 
 internal sealed class DemoCounters
 {
-    private long _started, _completed, _rejected, _busy;
+    private readonly bool _redisShared;
+    private long _started, _completed, _rejected, _busy, _redisUnavailable;
+    public DemoCounters(bool redisShared) => _redisShared = redisShared;
+    public void RedisUnavailable() => Interlocked.Increment(ref _redisUnavailable);
     public void Started() => Interlocked.Increment(ref _started);
     public void Completed() => Interlocked.Increment(ref _completed);
     public void Rejected() => Interlocked.Increment(ref _rejected);
@@ -106,7 +157,8 @@ internal sealed class DemoCounters
         completed = Interlocked.Read(ref _completed),
         rateRejected = Interlocked.Read(ref _rejected),
         concurrencyRejected = Interlocked.Read(ref _busy),
-        scope = "single_process",
+        redisUnavailable = Interlocked.Read(ref _redisUnavailable),
+        scope = _redisShared ? "redis_shared" : "single_process",
         status = "local-tested",
     };
 }
