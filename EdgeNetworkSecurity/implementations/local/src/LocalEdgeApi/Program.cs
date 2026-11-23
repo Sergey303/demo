@@ -14,6 +14,14 @@ static int ConfigInt(string name, int fallback, int min, int max)
     return value;
 }
 
+static string? AbsolutePath(string name)
+{
+    var path = Environment.GetEnvironmentVariable(name);
+    return path is not null && Path.IsPathFullyQualified(path)
+        && !path.StartsWith(@"\\", StringComparison.Ordinal)
+        && !path.StartsWith("//", StringComparison.Ordinal) ? path : null;
+}
+
 var port = ConfigInt("LOCAL_EDGE_PORT", 5088, 1024, 65535);
 var permits = ConfigInt("LOCAL_EDGE_PERMITS", 4, 1, 100);
 var windowSeconds = ConfigInt("LOCAL_EDGE_WINDOW_SECONDS", 2, 1, 60);
@@ -25,13 +33,25 @@ await using var redisQuota = redisPortRaw is null
         Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_NAMESPACE") ?? "demo-local",
         permits, windowSeconds);
 
+var script = AbsolutePath("LOCAL_EDGE_ADVISORY_SCRIPT");
+var advisory = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_ENABLED") == "1"
+    ? new InlineAdvisory(
+        AbsolutePath("LOCAL_EDGE_ADVISORY_PYTHON"),
+        Path.GetFileName(script) == "inline_advisory.py" && File.Exists(script) ? script : null,
+        AbsolutePath("LOCAL_EDGE_ADVISORY_ARTIFACTS"),
+        ConfigInt("LOCAL_EDGE_ADVISORY_TIMEOUT_MS", 1500, 100, 3000),
+        ConfigInt("LOCAL_EDGE_ADVISORY_THRESHOLD_PCT", 80, 1, 100),
+        ConfigInt("LOCAL_EDGE_ADVISORY_BASELINE_RPS", 2, 1, 100),
+        windowSeconds)
+    : null;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false;
     options.Listen(IPAddress.Loopback, port); // Cannot be switched to 0.0.0.0 by ASPNETCORE_URLS.
 });
-builder.Services.AddSingleton(new DemoCounters(redisQuota is not null));
+builder.Services.AddSingleton(new DemoCounters(redisQuota is not null, advisory));
 builder.Services.AddSingleton(new SemaphoreSlim(concurrency, concurrency));
 builder.Services.AddRateLimiter(options =>
 {
@@ -60,6 +80,15 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 app.UseRouting();
+if (advisory is not null)
+{
+    app.Use(async (context, next) =>
+    {
+        if (context.GetEndpoint()?.Metadata.GetMetadata<AdvisoryEndpoint>() is not null)
+            advisory.CountRequest(context);
+        await next(context);
+    });
+}
 app.UseRateLimiter();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", loopbackOnly = true }));
@@ -103,13 +132,17 @@ var expensiveEndpoint = app.MapGet("/api/expensive", async (HttpContext request,
         if (holdMs > 0)
             await Task.Delay(holdMs, request.RequestAborted);
         counters.Completed();
-        return Results.Ok(new { status = "processed" });
     }
     finally
     {
         slots.Release();
     }
-});
+
+    if (advisory is null)
+        return Results.Ok(new { status = "processed" });
+    var result = await advisory.ScoreAsync(request.RequestAborted);
+    return Results.Ok(new { status = "processed", advisory = result });
+}).WithMetadata(new AdvisoryEndpoint());
 
 if (redisQuota is null)
 {
@@ -152,11 +185,11 @@ else
 
 app.Run();
 
-internal sealed class DemoCounters
+internal sealed class AdvisoryEndpoint;
+
+internal sealed class DemoCounters(bool redisShared, InlineAdvisory? advisory)
 {
-    private readonly bool _redisShared;
     private long _started, _completed, _rejected, _busy, _redisUnavailable;
-    public DemoCounters(bool redisShared) => _redisShared = redisShared;
     public void RedisUnavailable() => Interlocked.Increment(ref _redisUnavailable);
     public void Started() => Interlocked.Increment(ref _started);
     public void Completed() => Interlocked.Increment(ref _completed);
@@ -171,7 +204,10 @@ internal sealed class DemoCounters
         rateRejected = Interlocked.Read(ref _rejected),
         concurrencyRejected = Interlocked.Read(ref _busy),
         redisUnavailable = Interlocked.Read(ref _redisUnavailable),
-        scope = _redisShared ? "redis_shared" : "single_process",
+        advisoryScored = advisory?.Scored ?? 0,
+        advisoryFallback = advisory?.Fallback ?? 0,
+        advisoryObserved = advisory?.Observed ?? 0,
+        scope = redisShared ? "redis_shared" : "single_process",
         status = "local-tested",
     };
 }

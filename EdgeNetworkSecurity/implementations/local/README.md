@@ -59,6 +59,33 @@ Readiness checks Redis with a non-mutating PING. It does not consume permits or 
 
 `LOCAL_EDGE_PERMITS` 1..100, `LOCAL_EDGE_WINDOW_SECONDS` 1..60, `LOCAL_EDGE_CONCURRENCY` 1..32, `LOCAL_EDGE_PORT` 1024..65535. A per-process semaphore independently permits at most two simultaneous expensive requests by default, returning 503 `concurrency_exhausted` when saturated. **This is not distributed concurrency control.** Invalid inputs return 400 when they pass the rate filter. Metrics have no client identifiers, tokens or dynamic labels.
 
+### Opt-in inline AI advisory
+
+Set `LOCAL_EDGE_ADVISORY_ENABLED=1` and configure the absolute paths
+`LOCAL_EDGE_ADVISORY_PYTHON`, `LOCAL_EDGE_ADVISORY_SCRIPT` (the existing EIS
+`inline_advisory.py`), and `LOCAL_EDGE_ADVISORY_ARTIFACTS`. Configure these at
+startup with trusted local files. The API adds an advisory only to successful
+`/api/expensive` responses, after quota admission and protected work.
+
+| Setting | Range | Default |
+| --- | --- | --- |
+| `LOCAL_EDGE_ADVISORY_TIMEOUT_MS` | 100–3000 | 1500 |
+| `LOCAL_EDGE_ADVISORY_THRESHOLD_PCT` | 1–100 | 80 |
+| `LOCAL_EDGE_ADVISORY_BASELINE_RPS` | 1–100 | 2 |
+
+The API sends exactly four aggregate integers to one local Python worker per
+replica. It counts up to 10,000 requests per monotonic fixed window using
+`LOCAL_EDGE_WINDOW_SECONDS`. An error response contributes to the window only
+if its counted request entered during that same window. The API applies the
+configured threshold to the published score. When the worker is occupied or a
+score is unavailable, the API uses the sum of baseline-relative load and the
+error fraction, capped at one. Observation and fallback both preserve HTTP 200.
+`/metrics` exposes per-replica `advisoryScored` (accepted worker scores),
+`advisoryFallback` (local fallback scores), and `advisoryObserved` (published
+observe actions). The HTTP fixture tests exercise the subprocess contract with
+simulated scores and failures.
+
+
 ## Verification from repo root
 
 ```bash

@@ -38,7 +38,7 @@ client -----------------------------------> edge site
 - **Отказ Redis:** в Redis-режиме запрос к дорогостоящему API возвращает 503; переключение на независимые локальные лимиты запрещено, чтобы не ослабить общую квоту. `/health` остаётся liveness, не dependency readiness.
 - **Два API:** одинаковые namespace/параметры должны давать общую квоту, поэтому запросы, отправленные разным экземплярам, учитываются в одном атомарном Redis-скрипте по серверному времени.
 - **Simulated outage:** падение виртуального edge в модели Anycast не является доказательством работоспособности настоящей сети провайдера.
-- **ML-advisory:** [EdgeAI](../../EdgeAI/README.md) и [EdgeIntegratedScenarios](../../EdgeIntegratedScenarios/README.md) существуют отдельно. Модель не должна становиться единственной защитой и не запускается в HTTP API текущей версии.
+- **ML-advisory:** [EdgeAI](../../EdgeAI/README.md) и [EdgeIntegratedScenarios](../../EdgeIntegratedScenarios/README.md) существуют отдельно. Локальный HTTP API поддерживает [опциональный advisory](../implementations/local/README.md#opt-in-inline-ai-advisory) через Python CLI после проверки квоты. Advisory возвращается только с HTTP 200.
 
 ## Проверенные этапы и приёмка следующего
 
