@@ -26,15 +26,17 @@ complete prompt-injection classifier, or proof of semantic truth.**
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
 
-## Edge networking and AI architecture labs (offline simulations + provider TODOs)
+## Edge architecture labs — три самостоятельных проекта
 
-The BGP/Anycast simulators and synthetic anomaly/policy evaluators now contain **runnable offline code and unit tests**. Cloudflare, EdgeCenter and Yandex deployments remain **TODO**, not verified production integrations:
+Три связанных демонстрации, которые показывают **маршрутизацию, устойчивость API, выполнение ML и безопасное использование AI-рекомендаций**. Это части инженерного портфолио, **не развёрнутая облачная anti-DDoS-платформа**.
 
-- [Edge Network Security](EdgeNetworkSecurity/README.md) — BGP/Anycast simulation, anti-DDoS, and **three strictly separated providers**: [Cloudflare](EdgeNetworkSecurity/implementations/cloudflare/README.md), [EdgeCenter (RU)](EdgeNetworkSecurity/implementations/edgecenter-ru/README.md), [Yandex Cloud (RU)](EdgeNetworkSecurity/implementations/yandex-cloud/README.md), plus a local baseline.
-- [Edge AI](EdgeAI/README.md) — independent Cloudflare Workers AI / ONNX local / Russian cloud inference experiments and quality benchmarks.
-- [Edge Integrated Scenarios](EdgeIntegratedScenarios/README.md) — planned rule-only vs AI-assisted defense evaluation with false-positive and latency measurements.
+| Проект | Что есть в исходниках | Подтверждение и ограничения |
+| --- | --- | --- |
+| **[Edge Network Security](EdgeNetworkSecurity/README.md)** | Симуляторы [BGP](EdgeNetworkSecurity/simulator/bgp/README.md) и [Anycast](EdgeNetworkSecurity/simulator/anycast/README.md); настоящий локальный .NET 10 API (429/503), [атомарная общая квота Redis](EdgeNetworkSecurity/implementations/local/README.md), безопасный loopback HTTP-пробник | Симуляции + [локальные HTTP](EdgeIntegratedScenarios/EVIDENCE-2026-11-23-HTTP.md)/[Redis](EdgeIntegratedScenarios/EVIDENCE-2026-11-23-REDIS.md)-тесты. [Cloudflare](EdgeNetworkSecurity/implementations/cloudflare/README.md), [EdgeЦентр](EdgeNetworkSecurity/implementations/edgecenter-ru/README.md), [Yandex Cloud](EdgeNetworkSecurity/implementations/yandex-cloud/README.md) — пока документация и TODO |
+| **[Edge AI](EdgeAI/README.md)** | Эвристический baseline с [синтетической оценкой](EdgeAI/scenarios/traffic-anomaly-detection/README.md), генератор маленькой обучаемой ONNX-модели, CPU inference и [benchmark-код](EdgeAI/implementations/onnx-local/README.md) | Эвристика локально проверена; ONNX-код опубликован, **нативное исполнение ещё ждёт подтверждения**. Облачные AI-адаптеры не реализованы |
+| **[Edge Integrated Scenarios](EdgeIntegratedScenarios/README.md)** | [Policy + offline replay](EdgeIntegratedScenarios/ai-assisted-ddos-defense/README.md), сравнение rule-only / anomaly-advisory, аудируемые решения и опциональный ONNX scorer | Replay на 12 искусственных примерах проверен. **AI может предложить наблюдение, но не блокировку**. К работающему HTTP/Redis API модель пока не подключена |
 
-No cloud resources have been provisioned, no BGP announcements made, and no DDoS load tests run. See each README for scope and acceptance TODOs.
+Для знакомства начните с соответствующего README: там есть **реальные пути к коду, команды воспроизведения, статус компонентов и оставшиеся задачи**. Общая [очередь для Codex CLI](EdgeIntegratedScenarios/EXECUTION_PLAN.md) и [протокол ONNX](EdgeIntegratedScenarios/EVIDENCE-2026-11-23-ONNX.md) отделяют реализованное от неподтверждённого. Внешних BGP-анонсов, реальных DDoS-атак, cloud-деплоев и расходов в этих лабораториях нет.
 
 ## Working Enterprise AI Platform — one user journey
 
@@ -130,6 +132,9 @@ demo/
   GosVet/         # Veterinary clinic application
   dotnet-outbox/  # ASP.NET Core, PostgreSQL and tests
   python-ai/     # Audio search, Neural RAG, classification and tool agent
+  EdgeNetworkSecurity/    # BGP/Anycast simulators, local ASP.NET Core + Redis, provider plans
+  EdgeAI/                 # Rules-only anomaly scoring, synthetic ONNX model, inference plans
+  EdgeIntegratedScenarios/ # Offline rule-only vs AI-advisory decision replay
   README.md
 ```
 
