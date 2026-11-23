@@ -108,6 +108,45 @@ GET `/api/expensive`, по одной секунде отправки на фа�
 инициализацию и inference. При тайм-ауте, отсутствии модели или ошибке
 возвращается исходное решение правила. Runner ничего не загружает.
 
+## Inline advisory CLI
+
+The standalone [Python worker](ai-assisted-ddos-defense/inline_advisory.py)
+accepts one UTF-8 JSON object over stdin. The caller sends at most 4096 bytes
+and closes stdin. All four fields are required integers: `requests` and
+`baseline_rps` in 0–10,000,000, `seconds` in 1–3600, and `errors` in
+0–`requests`.
+
+```bash
+printf '%s' '{"requests":10,"seconds":1,"errors":0,"baseline_rps":10}' |
+  python3 -I -B "$PWD/EdgeIntegratedScenarios/ai-assisted-ddos-defense/inline_advisory.py" \
+    --timeout-ms 2500 --threshold 0.8
+```
+
+A successful response contains `schema_version`, `action`, `source`, `score`,
+`fallback`, `status` and `policy_id`. A score at or above the threshold returns
+`observe`. Lower scores return `allow`. The recommendation is always simulated
+and carries policy ID `demo-policy-v1`. The adapter should pin the threshold to
+0.8. The CLI accepts finite thresholds in [0, 1].
+
+The optional `--artifact-dir` takes a trusted absolute directory containing
+locally generated artifacts. Omit it for deterministic rules. On Linux, the
+existing scorer uses a seccomp-filtered CPU ONNX child. A missing or unusable
+model yields `rule-only` / `unavailable`. An expired scoring budget yields
+`rule-only` / `timeout`. Input and scoring share the 100–2500 ms budget.
+The caller still owns the whole-process deadline, which includes interpreter
+startup, filesystem setup, and cleanup. A CLI error yields a nonzero exit,
+empty stdout and a fixed diagnostic on stderr. The caller must apply its own
+deterministic fallback when the CLI fails or its response is invalid.
+
+The tests exercise the Python CLI directly. ASP.NET adapter acceptance and
+HTTP request latency remain open.
+
+```bash
+python3 -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_advisory.py -v
+# Linux with the local EdgeAI ONNX dependencies and libseccomp installed:
+RUN_EDGE_INLINE_ONNX_TESTS=1 python3 -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_advisory.py -v
+```
+
 ## Поток данных и инварианты
 
 ```text
