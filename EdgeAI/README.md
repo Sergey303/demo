@@ -1,6 +1,6 @@
 # Edge AI — независимые сценарии inference
 
-**Статус: детерминированный baseline и синтетическая оценка работают; реальные ML-модели и провайдерские адаптеры — TODO.** Самостоятельный проект, не подмодуль anti-DDoS.
+**Статус: deterministic baseline и синтетическая оценка проверены; локальная обучаемая ONNX-модель, CPU-runner и тесты подготовлены; нативный запуск ONNX ещё ожидает подтверждения CI. Облачные провайдеры — TODO.** Самостоятельный проект, не подмодуль anti-DDoS.
 
 ## Реализации
 - [Cloudflare Workers AI](implementations/cloudflare-workers-ai/README.md) — серверлесс edge inference.
@@ -17,6 +17,9 @@
 
 Общий интерфейс **по сценариям**, не один мегаконтракт для всех AI. Входы/выходы и качество сравниваются только при эквивалентной задаче и модели. Интеграция с защитой — в [EdgeIntegratedScenarios](../EdgeIntegratedScenarios/README.md).
 
-## Первый исполняемый срез (без ML)
+## Выполнено и готовится к проверке
 
 [baseline.py](scenarios/traffic-anomaly-detection/baseline.py) считает ограниченный детерминированный heuristic score для синтетических окон трафика. **Это не обученная модель и не калиброванная вероятность атаки.** [Синтетическая оценка](scenarios/traffic-anomaly-detection/README.md) вычисляет precision/recall и FPR/FNR на 12 авторских сценариях; тесты: `python -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v`. Это не измерение реального DDoS. Дальнейшая работа: [TASK для детектора](scenarios/traffic-anomaly-detection/TASK.md), [ONNX](implementations/onnx-local/TASK.md) и [бенчмарков](benchmarks/TASK.md).
+
+
+[ONNX CPU лаборатория](implementations/onnx-local/README.md) генерирует маленькую логистическую модель на полностью синтетических данных, экспортирует настоящий ONNX graph и использует `onnxruntime.InferenceSession`. Это *реальное выполнение операций модели*, но не достоверная классификация атак. Для него выделен отдельный обязательный CI job `onnx-cpu`; на момент добавления запуск ещё не подтверждён. Интеграционный replay расположен в [EdgeIntegratedScenarios](../EdgeIntegratedScenarios/ai-assisted-ddos-defense/README.md).
