@@ -40,6 +40,26 @@ python3 -B EdgeIntegratedScenarios/task_inventory.py
 python3 -B EdgeIntegratedScenarios/task_inventory.py --check
 ```
 
+## Панель просмотра результатов
+
+React/Vite читает [офлайн-реплей](EVIDENCE-OFFLINE.json) и [локальный HTTP-эксперимент](EVIDENCE-HTTP-ADVICE.json) при сборке. Панель показывает симуляции, измерения loopback HTTP, результаты offline advice и заблокированные облачные проверки. Небольшие синтетические выборки ограничивают интерпретацию счётчиков и задержек.
+
+Из корня репозитория, с Node.js 20.19+ (ветка 20) или 22.12+:
+
+```bash
+cd EdgeIntegratedScenarios/dashboard
+npm ci
+npm test
+npm run build
+npm run preview
+```
+
+Откройте `http://127.0.0.1:4173`. Для разработки используйте `npm run dev`.
+Браузер загружает статические ресурсы с локального сервера. Для запуска панели
+после установки зависимостей достаточно локальных файлов. Изменения JSON
+требуют повторной сборки или перезапуска dev-сервера. Проверки и следующие
+задачи описаны в [dashboard/TASK.md](dashboard/TASK.md).
+
 ## Что реализовано
 
 | Компонент | Назначение | Статус |

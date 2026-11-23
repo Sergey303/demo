@@ -18,5 +18,5 @@ Cloudflare, Yandex Cloud and EdgeCenter acceptance remains **BLOCKED** on
 verified service capabilities and entitlement, approved staging, and separate
 provider evidence. See the [README](README.md) and [task inventory](TASK-INVENTORY.md).
 
-- [ ] Build a React visualization of the offline evidence.
+- [x] Build a [React visualization](dashboard/TASK.md) of the offline and local HTTP evidence.
 - [ ] Compare provider configurations and measure actual cloud paths after prerequisites are met.

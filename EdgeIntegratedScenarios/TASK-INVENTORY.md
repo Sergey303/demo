@@ -63,8 +63,14 @@ do not create additional entries.
 
 [EdgeIntegratedScenarios/TASK.md:1](TASK.md#L1)
 
-- Build a React visualization of the offline evidence. [EdgeIntegratedScenarios/TASK.md:21](TASK.md#L21)
 - Compare provider configurations and measure actual cloud paths after prerequisites are met. [EdgeIntegratedScenarios/TASK.md:22](TASK.md#L22)
+
+## EIS-00-UI — bundled evidence dashboard
+
+[EdgeIntegratedScenarios/dashboard/TASK.md:1](dashboard/TASK.md#L1)
+
+- Add repeatable browser coverage for failure views and screen-reader checks. [EdgeIntegratedScenarios/dashboard/TASK.md:13](dashboard/TASK.md#L13)
+- Add a version-specific reader when the evidence contract evolves. [EdgeIntegratedScenarios/dashboard/TASK.md:14](dashboard/TASK.md#L14)
 
 ## EIS-01 — rule-only vs AI-assisted decision pipeline
 
