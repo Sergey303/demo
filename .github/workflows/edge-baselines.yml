@@ -42,6 +42,8 @@ jobs:
           python -B EdgeIntegratedScenarios/run.py
           python -B EdgeIntegratedScenarios/task_inventory.py --check
           python -B EdgeAI/benchmarks/compare.py
+      - name: Prepare disposable Redis 7 test image
+        run: docker pull redis:7-alpine
       - name: Loopback HTTP, safe probe and real disposable Redis 7 tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
