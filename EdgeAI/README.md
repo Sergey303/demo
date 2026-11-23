@@ -16,3 +16,7 @@
 - `benchmarks/` — единый протокол качества, задержек, затрат и доступности.
 
 Общий интерфейс **по сценариям**, не один мегаконтракт для всех AI. Входы/выходы и качество сравниваются только при эквивалентной задаче и модели. Интеграция с защитой — в [EdgeIntegratedScenarios](../EdgeIntegratedScenarios/README.md).
+
+## Первый исполняемый срез (без ML)
+
+[baseline.py](scenarios/traffic-anomaly-detection/baseline.py) считает ограниченный детерминированный heuristic score для синтетических окон трафика. **Это не обученная модель и не калиброванная вероятность атаки.** Offline unit-тесты: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v`. Дальнейшая работа: [TASK для детектора](scenarios/traffic-anomaly-detection/TASK.md), [ONNX](implementations/onnx-local/TASK.md) и [бенчмарков](benchmarks/TASK.md).
