@@ -1,9 +1,23 @@
-# ENS-04 — Local ASP.NET Core L7 protection
+# ENS-04 — Local ASP.NET Core L7 protection (Codex task)
 
-**Priority P0; status PARTIAL — real API, 429 and 503, recovery and HTTP integration tests implemented.** Code: `src/LocalEdgeApi/Program.cs`; tests: `tests/test_local_edge_api.py`. Run commands in [README.md](README.md). Compose, Redis and proxy integration remain TODO.
+**Priority P0; status PARTIAL.** Implemented and locally verified: single-process fixed-window HTTP 429/503, real ASP.NET Core integration, **Redis-backed shared quota across two replicas**, fail-closed behavior when Redis is unavailable, reconnection, and namespace isolation. See [README.md](README.md) and [Redis-specific code tasks](src/LocalEdgeApi/TASK.md).
 
-Deliver a minimal .NET 8+ HTTP API /health and /api/expensive with rate limiting, 429 + Retry-After when valid, hard concurrency budget, graceful overload, structured sanitized metrics. Redis-backed shared limit is a second phase; explicitly mark single-node baseline.
+## Implemented
+- `src/LocalEdgeApi/Program.cs`: loopback-only Kestrel; `/health`, `/metrics`, `/api/expensive`; controlled 429/503, sanitized counters, no trust in request-supplied X-Forwarded-For.
+- `src/LocalEdgeApi/RedisQuota.cs`: atomic Lua fixed-window quota based on Redis server time, shared namespace, timeouts and reconnect cooldowns.
+- `tests/test_local_edge_api.py`: real HTTP rate rejection, concurrency exhaustion, recovery, bounded payload, generator roundtrip.
+- `tests/test_redis_shared_quota.py`: opt-in disposable Redis 7, two-replica concurrence, namespace isolation, cold/warm outages and recovery.
+- Local fixed-window behavior is retained when `LOCAL_EDGE_REDIS_PORT` is unset.
 
-Acceptance: no externally reachable default listener; no untrusted X-Forwarded-For without known proxy; real HTTP integration test demonstrates burst rejection, recovery and isolation; no PII in labels; README includes run/check commands and boundaries. DO NOT describe this as network L3/L4 DDoS protection.
+## Next P0/P1
+- [ ] [Detailed Redis tasks](src/LocalEdgeApi/TASK.md): dependency readiness, injected latency/timeouts, Redis failover, window boundary and real latency p95.
+- [ ] Sliding-window/token bucket comparison with measured impact on legitimate bursts.
+- [ ] Trusted reverse proxy, known-proxy allowlist and origin-only ingress; consider authenticated identity partitions only with a validated security boundary.
+- [ ] Distributed concurrency control separate from current per-process semaphore.
+- [ ] OpenTelemetry/Prometheus counters/traces with no PII and bounded label cardinality.
+- [ ] Container/Compose with secure Redis ACL/TLS options; no public defaults or secrets.
+- [ ] Provider staging comparison Cloudflare, EdgeCenter and Yandex Cloud. Never confuse app L7 quota with network L3/L4 DDoS protection.
 
-Implemented: fixed-window single-node limiter, bounded concurrency, sanitized JSON metric counters. TODO: sliding-window/token-bucket comparison, Redis shared limits/failure policy, trusted reverse-proxy config, Docker Compose, metrics endpoint in OpenTelemetry/Prometheus, controlled fault injection.
+## Acceptance
+
+Only bounded localhost synthetic traffic; no public DDoS or automatic cloud deployment. Default unit tests must run without Docker. Real Redis tests require `RUN_REDIS_TESTS=1`. Every future change should test failure, recovery and concurrency, and distinguish locally tested from provider-verified.
