@@ -110,6 +110,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Pre-cache pinned .NET dependencies for hermetic ONNX-to-HTTP E2E
+        run: |
+          dotnet restore EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/LocalEdgeApi.csproj --source https://api.nuget.org/v3/index.json -p:NuGetAudit=false
       - name: Install pinned CPU ONNX packages in a dedicated virtual environment
         run: |
           python -m venv .edge-onnx-venv
