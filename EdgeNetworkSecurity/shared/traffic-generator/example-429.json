@@ -1,0 +1,7 @@
+{
+  "id": "local-429-demo",
+  "target": "local",
+  "durationSeconds": 2,
+  "maxRequestsPerSecond": 10,
+  "trafficProfile": "baseline"
+}

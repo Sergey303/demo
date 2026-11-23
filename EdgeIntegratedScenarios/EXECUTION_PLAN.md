@@ -4,8 +4,8 @@ All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project'
 
 ## Current verified scope
 - Implemented: [BGP replay](../EdgeNetworkSecurity/simulator/bgp/README.md), [Anycast failover simulation](../EdgeNetworkSecurity/simulator/anycast/README.md), [synthetic quality evaluation](../EdgeAI/scenarios/traffic-anomaly-detection/README.md), [policy + decision replay](ai-assisted-ddos-defense/README.md).
-- Offline tests: 37 passing at this increment (8 original + 6 BGP + 6 Anycast + 7 anomaly + 10 integrated); see `.github/workflows/edge-baselines.yml` and test commands in each README.
-- Not implemented: live provider-backed Anycast/BGP, trained ML inference, CDN/WAF/IaC deployment, actual L7 API/rate limiting, real traffic latency/availability/cost benchmarks. Local simulators are **not** a real provider.
+- Offline/local HTTP tests: **47 passing** in the current increment (37 prior + 6 loopback-generator + 4 real ASP.NET Core HTTP integration). See [HTTP evidence](EVIDENCE-2026-11-23-HTTP.md) and test commands in each README.
+- Not implemented: provider-backed Anycast/BGP, trained ML inference, CDN/WAF/IaC deployment, distributed rate limits or production latency/availability/cost benchmarks. **Implemented**: loopback ASP.NET Core L7 rate limiting, real HTTP 429 and 503 with tests, and bounded probe. Local simulations are **not** a real provider.
 
 ## Dependency-oriented work order
 
@@ -15,8 +15,8 @@ All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project'
 | 2 | ENS | [ENS-02](../EdgeNetworkSecurity/simulator/anycast/TASK.md) | **DONE (offline)**: site outage/routing, overload and interrupted sessions |
 | 3 | EAI | [EAI-01](../EdgeAI/scenarios/traffic-anomaly-detection/TASK.md) | **PARTIAL**: labelled synthetic quality evaluation; trained scorer TODO |
 | 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | **PARTIAL**: offline replay, bounded synthetic audit and FPR/FNR; provider integration TODO |
-| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | localhost-only actual HTTP 429 and recovery |
-| 6 | ENS | [ENS-03](../EdgeNetworkSecurity/shared/traffic-generator/TASK.md) | bounded loopback generator |
+| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | **PARTIAL / locally verified**: ASP.NET Core HTTP 429, 503, recovery, sanitized counters; distributed Redis/proxy TODO |
+| 6 | ENS | [ENS-03](../EdgeNetworkSecurity/shared/traffic-generator/TASK.md) | **PARTIAL / locally verified**: loopback generator, redirect protection, bounds and real 429 test; burst profiles TODO |
 | 7 | EAI | [EAI-02](../EdgeAI/implementations/onnx-local/TASK.md) | actual offline ONNX smoke with permitted model |
 | 8 | EAI | [EAI-08](../EdgeAI/benchmarks/TASK.md) | repeatable quality/latency report |
 | 9 | ENS | [ENS-05 Cloudflare](../EdgeNetworkSecurity/implementations/cloudflare/TASK.md) | validated staging plans and Worker tests |
