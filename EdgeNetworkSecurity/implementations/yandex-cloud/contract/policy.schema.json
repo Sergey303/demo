@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline edge policy intent v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "environment",
+    "revision",
+    "rollback_revision",
+    "origin",
+    "waf",
+    "rate_limit",
+    "cdn",
+    "logging"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "environment": {
+      "const": "staging"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "rollback_revision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 999999
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostname",
+        "tls",
+        "direct_access"
+      ],
+      "properties": {
+        "hostname": {
+          "type": "string",
+          "maxLength": 253,
+          "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+invalid$(?![\\s\\S])"
+        },
+        "tls": {
+          "const": "required"
+        },
+        "direct_access": {
+          "const": "deny"
+        }
+      }
+    },
+    "waf": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "disabled",
+            "observe",
+            "enforce"
+          ]
+        }
+      }
+    },
+    "rate_limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "requests",
+        "window_seconds"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "disabled",
+            "observe",
+            "enforce"
+          ]
+        },
+        "requests": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "window_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "expected_status": {
+          "const": 429
+        }
+      }
+    },
+    "cdn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cache"
+      ],
+      "properties": {
+        "cache": {
+          "enum": [
+            "bypass",
+            "static-only"
+          ]
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "const": "metadata-only"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rate_limit": {
+            "properties": {
+              "mode": {
+                "const": "enforce"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "rate_limit": {
+            "required": [
+              "expected_status"
+            ],
+            "properties": {
+              "expected_status": {
+                "const": 429
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "rate_limit": {
+            "not": {
+              "required": [
+                "expected_status"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

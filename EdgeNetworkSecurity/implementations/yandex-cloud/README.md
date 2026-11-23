@@ -1,46 +1,18 @@
-# Yandex Cloud (РФ) — план Edge Network Security
+# Yandex Cloud — Edge Network Security
 
-**Статус: только проектная структура и задания Codex CLI.** Ресурсы Yandex Cloud **не создавались**, Terraform не применялся, тестовых доменов/аккаунтов для этой реализации нет. Каталог не должен создавать впечатление готового провайдерского стенда.
+**Local-tested:** the [offline staging policy contract](contract/README.md)
+validates CDN, WAF, rate limit, origin protection, logging and rollback intent.
 
-## Цель варианта
+**Provider-configured / provider-verified:** unavailable. Published product
+features are listed below. Account eligibility, region, prices, rights and current
+Terraform resource coverage for the proposed staging environment are unknown.
 
-Показать независимую реализацию задач edge-защиты на российской облачной платформе и сравнивать её с [Cloudflare](../cloudflare/README.md) и [EdgeЦентром](../edgecenter-ru/README.md) **по одинаковым сценариям**, сохраняя различия тарифов, API и областей ответственности.
-
-## Компоненты и их статус
-
-| Каталог | Сервис/область, которую предстоит проверить и подключить | Статус |
+| Area | Public documentation | Deployment evidence still needed |
 | --- | --- | --- |
-| [smart-web-security](smart-web-security/README.md) | Smart Web Security: Security Profile и L7-защита | **TODO** |
-| [waf](waf/README.md) | WAF-правила, исключения, журнал false positives, rollback | **TODO** |
-| [rate-limits](rate-limits/README.md) | Advanced Rate Limiter: HTTP-квоты, условия 429, доступность по тарифу | **TODO** |
-| [anti-ddos](anti-ddos/README.md) | DDoS Protection: границы провайдерской L3/L4-защиты | **TODO** |
-| [cdn](cdn/README.md) | Cloud CDN: кеширование, origin, TLS, failover, опциональные особенности выделенного IP | **TODO** |
-| [terraform](terraform/README.md) | Закрепить provider, подтвердить схему ресурсов, `validate/plan` без автоматического `apply` | **TODO** |
+| [Smart Web Security](smart-web-security/README.md) / [WAF](waf/README.md) | SWS profiles include Smart Protection (L7) and WAF rules. [SWS overview](https://yandex.cloud/en/docs/smartwebsecurity/concepts/) | Attachment to the intended frontend, staged policy, monitoring, false positives and rollback |
+| [Advanced Rate Limiter](rate-limits/README.md) | Blocking over quota returns 429. CAPTCHA is a separate action. [SWS rules](https://yandex.cloud/en/docs/smartwebsecurity/concepts/rules) | Confirm the chosen action, scope and quota behavior |
+| [DDoS Protection](anti-ddos/README.md) | VPC DDoS Protection covers the network and transport layers. [VPC DDoS documentation](https://yandex.cloud/en/docs/vpc/ddos-protection/) | Confirm coverage of the target IP separately from SWS |
+| [Cloud CDN](cdn/README.md) | Dedicated IP addressing has documented Anycast/GSLB behavior. [CDN dedicated IP documentation](https://yandex.cloud/en/docs/cdn/concepts/dedicated-ip-addressing) | Confirm assignment and routing before claiming Anycast for an instance. Verify caching and origin controls separately |
+| [Terraform](terraform/README.md) | Staging resource mapping and version pin remain open | Review actual resource schema and a plan before any configuration |
 
-Код [локального HTTP/Redis](../local/README.md) **не является** Yandex Cloud-адаптером, хотя его тестовые сценарии могут стать основой для будущих сравнений.
-
-## Важные технические границы
-
-- **L3/L4 и L7 — разные уровни.** Подключение Smart Web Security или получение HTTP 429 само по себе не подтверждает защиту канала от объёмной сетевой атаки.
-- **Anycast требует доказательства.** Документация Yandex Cloud описывает BGP Anycast/GSLB для отдельных вариантов CDN с выделенными IP; нельзя переносить это свойство на любой CDN/HTTP-трафик. Нужно проверить фактический режим и ограничения.
-- **WAF ML ≠ произвольный Edge AI inference.** Своя модель, ONNX и российское AI-облако находятся в [EdgeAI](../../../EdgeAI/README.md).
-- **Безопасность origin:** понадобится ограничить прямой обход edge, проверить TLS, доверенные заголовки, logging, права сервисного аккаунта, хранение секретов и откат.
-- **Никаких автоматических платных операций или тестовых атак** на реальные публичные ресурсы.
-
-## Критерии приёмки провайдерской реализации
-
-1. [ ] Проверены актуальные сервисы, API, права, регионы, тарифные возможности и ограничения.
-2. [ ] Реализована воспроизводимая конфигурация staging с защищёнными параметрами, проверяемым `plan` и явным ручным `apply`.
-3. [ ] Описаны и измерены разрешённые HTTP-сценарии: обычные запросы, rate limiting/WAF, ложные блокировки, доступ к origin.
-4. [ ] Отдельно подтверждены реальные свойства CDN и L3/L4-защиты; сетевой маршрут не выводится из локального BGP-симулятора.
-5. [ ] Зафиксированы логи, результаты, стоимость, rollback и статус `provider-configured` / `provider-verified` с доказательствами.
-
-**Рабочий backlog:** [TASK.md](TASK.md) рядом с кодом, [общие архитектурные критерии](../../docs/ARCHITECTURE.md).
-
-## Документация для последующей проверки
-
-- [Smart Web Security](https://yandex.cloud/ru/docs/smartwebsecurity/)
-- [Rules and security profile](https://yandex.cloud/ru/docs/smartwebsecurity/concepts/rules)
-- [Cloud CDN: dedicated IP addressing](https://yandex.cloud/ru/docs/cdn/concepts/dedicated-ip-addressing)
-
-Наличие ссылок на документацию **не означает**, что соответствующий сервис сейчас проверен, подключён или доступен в выбранном аккаунте.
+See [TASK.md](TASK.md) for provider acceptance criteria.

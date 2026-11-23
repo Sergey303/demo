@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "revision": 2,
+  "rollback_revision": 1,
+  "origin": {
+    "hostname": "yandex-cloud.invalid",
+    "tls": "required",
+    "direct_access": "deny"
+  },
+  "waf": {
+    "mode": "observe"
+  },
+  "rate_limit": {
+    "mode": "observe",
+    "requests": 20,
+    "window_seconds": 60
+  },
+  "cdn": {
+    "cache": "bypass"
+  },
+  "logging": {
+    "mode": "metadata-only"
+  }
+}

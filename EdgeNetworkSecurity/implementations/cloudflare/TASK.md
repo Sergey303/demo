@@ -1,11 +1,14 @@
 # ENS-05 — Cloudflare provider implementation
 
-**Priority P1; status TODO.** Implement only under cloudflare/{workers,waf,rate-limits,terraform}. Prefer config-as-code staged plans, not blind apply.
+- [x] Local Worker and Node tests for the fixed route, request ID, header isolation,
+  origin restrictions, deadline and failure mapping. See the [Worker README](workers/request-guard/README.md).
+- [ ] Confirm staging zone entitlements and pin supported IaC and runtime versions.
+  Acceptance requires reviewed resource schemas and a staging plan.
+- [ ] Define staged WAF/rate limit policies and rollback. Acceptance requires an
+  approved test zone, ingress and origin access checks, safe HTTP checks,
+  false-positive review and observed rollback. Check where blocks and 429s
+  originate and whether the chosen plan supports observation mode.
 
-1. Verify the current official Cloudflare API/Terraform schema, product entitlements and supported Workers runtime.
-2. Worker: request ID, fixed test route, no bypass of WAF; bounded timeout and upstream error mapping.
-3. WAF and rate limits: use staged/observe mode if available, document plan + safe rollback and API 429 behavior.
-4. Lock zone/account to test environment, pin versions, parameterize IDs, no secrets in repo.
-5. Separate Cloudflare-managed Anycast/L3-L4 from features this code configures.
-
-Acceptance: static validation and Worker tests in CI; IaC validate/plan with no apply; provider acceptance requires separate manual evidence including false positives, logs, health and rollback. No live attack generation. Mark resource availability and pricing uncertain until verified.
+The local handler emits no logs. Health, WAF enforcement, alternate ingress,
+origin shielding and rollback require separate provider evidence. Status
+`provider-configured` and `provider-verified` is unavailable.

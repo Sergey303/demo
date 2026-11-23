@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "revision": 3,
+  "rollback_revision": 2,
+  "origin": {
+    "hostname": "edgecenter-ru.invalid",
+    "tls": "required",
+    "direct_access": "deny"
+  },
+  "waf": {
+    "mode": "enforce"
+  },
+  "rate_limit": {
+    "mode": "enforce",
+    "requests": 20,
+    "window_seconds": 60,
+    "expected_status": 429
+  },
+  "cdn": {
+    "cache": "bypass"
+  },
+  "logging": {
+    "mode": "metadata-only"
+  }
+}

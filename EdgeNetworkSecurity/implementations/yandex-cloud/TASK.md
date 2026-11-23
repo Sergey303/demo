@@ -1,13 +1,14 @@
 # ENS-07 — Yandex Cloud provider implementation
 
-**Priority P1; status TODO.** Work in yandex-cloud/{smart-web-security,waf,rate-limits,anti-ddos,cdn,terraform}. Use official documentation to verify concrete resources, service interactions and tariff constraints.
+- [x] Document separate SWS, WAF, ARL, VPC DDoS and Cloud CDN capabilities in
+  the [README](README.md).
+- [x] Add a credential-free JSON Schema, validator and offline fixture tests.
+  See the [contract README](contract/README.md).
+- [ ] Confirm account, rights, regions, pricing and supported IaC schemas.
+  Acceptance requires a version-pinned configuration and reviewed staging plan.
+- [ ] In approved staging, verify benign traffic, SWS observation logs, WAF false
+  positives, origin access restrictions, and rollback to the previous revision.
+  Verify 429 only with ARL blocking enabled. Require separate evidence for CDN
+  cache behavior, dedicated-IP routing and VPC L3/L4 coverage.
 
-Acceptance:
-- separation of SWS Smart Protection, WAF, Advanced Rate Limiter, DDoS Protection L3/L4 and Cloud CDN;
-- staged security profile with explicit rollback and logging;
-- 429 behavior tested only where enabled; never assert SWS equals all-network DDoS protection;
-- dedicated-IP CDN Anycast only claimed if configured/verified;
-- Terraform version-pinned validate/plan, manual apply only, never commit state/secrets;
-- contract tests and documented price/region limits with sources.
-
-TODO: eligible Yandex account, test domain, provider acceptance and evidence. No inference code in this project.
+Status `provider-configured` and `provider-verified` is unavailable.
