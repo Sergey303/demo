@@ -15,6 +15,17 @@ Reports include independent confusion matrices for **flagging** (`observe` OR `b
 
 ## Limits / TODO
 
-- No WAF/CDN/provider SDK, no real model, no live traffic, no replay of recorded user data.
+- No WAF/CDN/provider SDK, no real customer model, no live traffic, no replay of recorded user data. The optional ONNX path executes an authored synthetic-trained model, not a validated security model.
 - TODO: versioned transport contracts, explicit simulated model latency/timeout/retries, immutable policy audit, negative tests for signed updates, real holdout corpus with provenance, per-provider staged integration and measured observability.
 - See [TASK.md](TASK.md) and [global execution plan](../EXECUTION_PLAN.md).
+
+## Optional real ONNX CPU inference (EAI-02 integration)
+
+After following [EdgeAI ONNX setup](../../EdgeAI/implementations/onnx-local/README.md):
+
+```bash
+python3 EdgeIntegratedScenarios/ai-assisted-ddos-defense/onnx_replay.py
+python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
+```
+
+This CLI calls the genuine ONNX Runtime CPU session while keeping the same **12 labelled synthetic windows** and policy. Model score may add `observe` but never an automatic `block`; existing deterministic rule blocks remain authoritative. Outputs are marked `simulated` because the traffic and policy evaluation are artificial. The dedicated `onnx-cpu` CI job must pass before the ONNX path can be called runtime-verified.
