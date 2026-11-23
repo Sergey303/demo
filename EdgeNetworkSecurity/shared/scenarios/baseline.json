@@ -1,0 +1,7 @@
+{
+  "id": "baseline-01",
+  "target": "local",
+  "durationSeconds": 10,
+  "maxRequestsPerSecond": 2,
+  "trafficProfile": "baseline"
+}
