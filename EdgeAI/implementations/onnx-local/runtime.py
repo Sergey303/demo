@@ -24,9 +24,11 @@ class OnnxWindowScorer:
         manifest_path = artifact_dir / "manifest.json"
         if not model_path.is_file() or not manifest_path.is_file():
             raise ValueError("Model or manifest absent; run build_model.py explicitly, no downloads")
-        if manifest_path.stat().st_size > MAX_MANIFEST_BYTES:
+        with manifest_path.open("rb") as manifest:
+            manifest_bytes = manifest.read(MAX_MANIFEST_BYTES + 1)
+        if len(manifest_bytes) > MAX_MANIFEST_BYTES:
             raise ValueError("oversized model manifest")
-        meta = json.loads(manifest_path.read_text(encoding="utf-8"))
+        meta = json.loads(manifest_bytes.decode("utf-8"))
         if (not isinstance(meta, dict) or meta.get("id") != MODEL_ID
                 or meta.get("model_file") != "model.onnx"
                 or meta.get("features") != list(FEATURE_NAMES)
@@ -35,9 +37,13 @@ class OnnxWindowScorer:
                 or meta.get("opset") != 13 or meta.get("ir_version") != 8):
             raise ValueError("incompatible model manifest/version")
         checksum = meta.get("model_sha256")
-        if not isinstance(checksum, str) or len(checksum) != 64 or model_path.stat().st_size > MAX_MODEL_BYTES:
-            raise ValueError("invalid model size/hash")
-        model_bytes = model_path.read_bytes()
+        if (not isinstance(checksum, str) or len(checksum) != 64
+                or any(digit not in "0123456789abcdef" for digit in checksum)):
+            raise ValueError("invalid model SHA256")
+        with model_path.open("rb") as model:
+            model_bytes = model.read(MAX_MODEL_BYTES + 1)
+        if not 0 < len(model_bytes) <= MAX_MODEL_BYTES:
+            raise ValueError("invalid model size")
         if sha256(model_bytes).hexdigest() != checksum:
             raise ValueError("model SHA256 mismatch")
 
@@ -50,9 +56,9 @@ class OnnxWindowScorer:
         inputs, outputs = self.session.get_inputs(), self.session.get_outputs()
         if (len(inputs) != 1 or len(outputs) != 1
                 or inputs[0].name != "features" or inputs[0].type != "tensor(float)"
-                or inputs[0].shape[-1] != len(FEATURE_NAMES)
+                or inputs[0].shape != ["batch", len(FEATURE_NAMES)]
                 or outputs[0].name != "risk_score" or outputs[0].type != "tensor(float)"
-                or outputs[0].shape[-1] != 1
+                or outputs[0].shape != ["batch", 1]
                 or self.session.get_providers() != ["CPUExecutionProvider"]):
             raise ValueError("unexpected model input/output or execution provider")
         self.model_sha256 = checksum

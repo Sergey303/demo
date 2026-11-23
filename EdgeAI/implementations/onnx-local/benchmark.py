@@ -38,8 +38,10 @@ def run(artifact_dir: Path, iterations: int = 50) -> dict:
         result = scorer.session.run(["risk_score"], {"features": input_tensor})
         delta_ms = (perf_counter() - tick) * 1000
         if index >= 5:
+            if len(result) != 1 or result[0].shape != (1, 1):
+                raise RuntimeError("unexpected inference output shape")
             durations.append(delta_ms)
-            outputs.append(float(result[0][0][0]))
+            outputs.append(result[0].item())
     if not all(np.isfinite(score) and 0 <= score <= 1 for score in outputs):
         raise RuntimeError("invalid inference output")
     return {

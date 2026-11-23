@@ -1,6 +1,6 @@
 # EAI-02 — Codex CLI: local ONNX inference
 
-**Status: IMPLEMENTED (source and tests) / PENDING native CPU verification.** The RDC device became unavailable before this increment could run ONNX tests locally. The `.github/workflows/edge-baselines.yml` `onnx-cpu` job installs pinned dependencies and must run them; never mark **local-tested** solely because files compile statically.
+**Status: LOCAL CPU VERIFIED (2026-11-23).** Ran the generator, scorer, 11 tests and 50-iteration benchmark in an isolated venv on Linux x86-64. See the [exact run results](README.md#verified-cpu-run-2026-11-23). Worktree base SHA was `9275849a9fa3028ef867b5f30608ca50eccb4a1a`.
 
 ## Implemented
 
@@ -13,7 +13,8 @@
 
 ## P0 verification and follow-up
 
-- [ ] Confirm the **`onnx-cpu` GitHub Actions job completes successfully** or run the exact commands in [README.md](README.md) on the restored RDC machine. If it fails, fix and rerun; never report a pass without evidence.
+- [x] Run the standalone README commands with pinned dependencies and native `CPUExecutionProvider`. Local evidence covers generation, scoring, integrity and shape regressions, and warm inference timing.
+- [ ] Confirm the `onnx-cpu` GitHub Actions job and repeat on the RDC machine when available.
 - [ ] Add hard wall-clock timeouts/isolation (killable subprocess or dedicated restricted worker). An ONNX Runtime session API call itself cannot currently be bounded by our request timeout.
 - [ ] Validate tampering of manifest itself, graph op allowlist, model size/metadata and failure modes of malformed ONNX protobufs.
 - [ ] Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection.

@@ -17,7 +17,7 @@ from unittest.mock import patch
 HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 from features import MODEL_ID, vectorize
-from build_model import build, train
+from build_model import build, create_graph, train
 from runtime import OnnxWindowScorer
 from benchmark import run as benchmark_run
 
@@ -45,15 +45,29 @@ class TestRealOnnxInference(unittest.TestCase):
         direct = float(self.scorer.session.run(["risk_score"], {"features": x})[0][0, 0])
         predicted = self.scorer.score(example)
         self.assertAlmostEqual(predicted, direct, places=6)
-        expected = float(1.0 / (1.0 + np.exp(-float(x @ w + b))))
+        expected = float(1.0 / (1.0 + np.exp(-(x @ w + b).item())))
         self.assertAlmostEqual(predicted, expected, places=5)
 
     def test_reproducible_model_bytes_and_sha(self):
         with tempfile.TemporaryDirectory() as second:
             metadata = build(Path(second))
             self.assertEqual(metadata["model_sha256"], self.manifest["model_sha256"])
-            self.assertEqual(sha256((self.out / "model.onnx").read_bytes()).hexdigest(),
-                             self.manifest["model_sha256"])
+            first_payload = (self.out / "model.onnx").read_bytes()
+            self.assertEqual((Path(second) / "model.onnx").read_bytes(), first_payload)
+            self.assertEqual(sha256(first_payload).hexdigest(), self.manifest["model_sha256"])
+
+    def test_rejects_fixed_batch_even_with_matching_hash(self):
+        model = create_graph(*train())
+        for tensor in (model.graph.input[0], model.graph.output[0]):
+            tensor.type.tensor_type.shape.dim[0].dim_value = 1
+        payload = model.SerializeToString(deterministic=True)
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            (directory / "model.onnx").write_bytes(payload)
+            metadata = dict(self.manifest, model_sha256=sha256(payload).hexdigest())
+            (directory / "manifest.json").write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "input/output"):
+                OnnxWindowScorer(directory)
 
     def test_tampering_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -63,14 +77,20 @@ class TestRealOnnxInference(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "SHA256"):
                 OnnxWindowScorer(directory)
             (directory / "model.onnx").write_bytes((self.out / "model.onnx").read_bytes())
+            metadata = dict(self.manifest, model_sha256="z" * 64)
+            (directory / "manifest.json").write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid model SHA256"):
+                OnnxWindowScorer(directory)
             metadata = dict(self.manifest, id="wrong-model-version")
             (directory / "manifest.json").write_text(json.dumps(metadata))
             with self.assertRaisesRegex(ValueError, "manifest/version"):
                 OnnxWindowScorer(directory)
 
     def test_batch_bounds_bad_values_and_pii(self):
-        self.assertEqual(len(self.scorer.score_many([
-            {"requests": 2, "seconds": 5, "errors": 0, "baseline_rps": 1}] * 2)), 2)
+        example = {"requests": 2, "seconds": 5, "errors": 0, "baseline_rps": 1}
+        scores = self.scorer.score_many([example] * 32)
+        self.assertEqual(len(scores), 32)
+        np.testing.assert_allclose(scores, self.scorer.score(example), rtol=1e-6)
         for windows in ([], [{}], [1], [
             {"requests": 1, "seconds": 1, "errors": 2, "baseline_rps": 1}],
             [{"requests": 1, "seconds": 1, "errors": 0, "baseline_rps": 1, "ip": "secret"}],
@@ -82,8 +102,9 @@ class TestRealOnnxInference(unittest.TestCase):
     def test_offline_cpu_execution_requires_no_socket(self):
         example = {"requests": 250, "seconds": 10, "errors": 100, "baseline_rps": 3}
         with patch.object(socket, "socket", side_effect=AssertionError("network attempted")):
-            self.assertGreaterEqual(self.scorer.score(example), 0)
-        self.assertEqual(self.scorer.session.get_providers(), ["CPUExecutionProvider"])
+            scorer = OnnxWindowScorer(self.out)
+            self.assertGreaterEqual(scorer.score(example), 0)
+        self.assertEqual(scorer.session.get_providers(), ["CPUExecutionProvider"])
 
     def test_real_benchmark_reports_latency(self):
         metrics = benchmark_run(self.out, iterations=10)

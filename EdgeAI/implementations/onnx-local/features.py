@@ -3,7 +3,6 @@
 Inputs describe synthetic request windows. Features are not real-world attack evidence.
 """
 from __future__ import annotations
-from math import isfinite
 
 MODEL_ID = "synthetic-window-logreg-v1"
 FEATURE_NAMES = ("rate_ratio_16", "error_fraction", "rps_100", "volume_3000")
@@ -21,7 +20,7 @@ def vectorize(window: dict) -> list[float]:
         raise ValueError("invalid seconds")
     if type(errors) is not int or not 0 <= errors <= requests:
         raise ValueError("invalid errors")
-    if type(baseline) not in (float, int) or not isfinite(baseline) or not 0 <= baseline <= 10_000_000:
+    if type(baseline) not in (float, int) or not 0 <= baseline <= 10_000_000:
         raise ValueError("invalid baseline_rps")
 
     rps = requests / seconds

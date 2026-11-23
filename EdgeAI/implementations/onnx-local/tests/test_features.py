@@ -28,6 +28,7 @@ class FeatureTests(unittest.TestCase):
             dict(good, errors=11), dict(good, seconds=0),
             dict(good, baseline_rps=float("nan")),
             dict(good, baseline_rps=float("inf")),
+            dict(good, baseline_rps=10**400),
             dict(good, ip="127.0.0.1"), dict(good, baseline_rps=-1),
         ]
         for window in bad:
