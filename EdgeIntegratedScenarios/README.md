@@ -11,3 +11,7 @@
 - TODO: сравнивать метрики false positives, latency, availability и origin load.
 
 Никаких автоматических блокировок реальных пользователей на основании невалидированной модели.
+
+## Первый исполняемый срез (simulated)
+
+[policy.py](ai-assisted-ddos-defense/policy.py) реализует `allow / observe / block` с детерминированным fallback, когда модель недоступна или возвращает недопустимое значение. AI score может переводить `allow` только в `observe`, а не в `block`. Общая проверка: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v`; покрыты 8 коротких тестов BGP, baseline и policy. Следующий этап — [TASK EIS-01](ai-assisted-ddos-defense/TASK.md), воспроизводимый replay/metrics и полноценные негативные сценарии.
