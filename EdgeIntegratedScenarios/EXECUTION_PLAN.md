@@ -4,8 +4,8 @@ All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project'
 
 ## Current verified scope
 - Implemented: [BGP replay](../EdgeNetworkSecurity/simulator/bgp/README.md), [Anycast failover simulation](../EdgeNetworkSecurity/simulator/anycast/README.md), [synthetic quality evaluation](../EdgeAI/scenarios/traffic-anomaly-detection/README.md), [policy + decision replay](ai-assisted-ddos-defense/README.md).
-- Offline/local HTTP tests: **47 passing** in the current increment (37 prior + 6 loopback-generator + 4 real ASP.NET Core HTTP integration). See [HTTP evidence](EVIDENCE-2026-11-23-HTTP.md) and test commands in each README.
-- Not implemented: provider-backed Anycast/BGP, trained ML inference, CDN/WAF/IaC deployment, distributed rate limits or production latency/availability/cost benchmarks. **Implemented**: loopback ASP.NET Core L7 rate limiting, real HTTP 429 and 503 with tests, and bounded probe. Local simulations are **not** a real provider.
+- **51 tests observed passing locally across the test groups**: 37 simulator/policy, 6 bounded loopback probe, 4 original real HTTP, 4 new Redis tests. See [HTTP evidence](EVIDENCE-2026-11-23-HTTP.md) and [Redis fault/concurrency evidence](EVIDENCE-2026-11-23-REDIS.md). The latest direct-GitHub test-only boundary alignment still requires CI confirmation.
+- Not implemented: provider-backed Anycast/BGP, trained ML inference, CDN/WAF/IaC deployment, Redis Cluster failover or production latency/availability/cost benchmarks. **Implemented:** real loopback L7 HTTP 429/503, bounded probe and an optional **atomic shared Redis fixed-window quota across two API replicas**, including outage/recovery tests. No distributed concurrency limit. Local simulations and quotas are **not** provider-level DDoS protection.
 
 ## Dependency-oriented work order
 
@@ -15,7 +15,7 @@ All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project'
 | 2 | ENS | [ENS-02](../EdgeNetworkSecurity/simulator/anycast/TASK.md) | **DONE (offline)**: site outage/routing, overload and interrupted sessions |
 | 3 | EAI | [EAI-01](../EdgeAI/scenarios/traffic-anomaly-detection/TASK.md) | **PARTIAL**: labelled synthetic quality evaluation; trained scorer TODO |
 | 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | **PARTIAL**: offline replay, bounded synthetic audit and FPR/FNR; provider integration TODO |
-| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | **PARTIAL / locally verified**: ASP.NET Core HTTP 429, 503, recovery, sanitized counters; distributed Redis/proxy TODO |
+| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | **PARTIAL / locally verified**: ASP.NET Core 429/503, Redis-time atomic quota across replicas, cold/warm dependency outages and recovery; production proxy/Redis failover TODO |
 | 6 | ENS | [ENS-03](../EdgeNetworkSecurity/shared/traffic-generator/TASK.md) | **PARTIAL / locally verified**: loopback generator, redirect protection, bounds and real 429 test; burst profiles TODO |
 | 7 | EAI | [EAI-02](../EdgeAI/implementations/onnx-local/TASK.md) | actual offline ONNX smoke with permitted model |
 | 8 | EAI | [EAI-08](../EdgeAI/benchmarks/TASK.md) | repeatable quality/latency report |
