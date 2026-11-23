@@ -11,7 +11,7 @@ Python and the checked-in fixtures. Base SHA
 **Local HTTP plus offline advice is implemented and opt-in tested.** See
 [runner](run_http.py) and [experiment instructions](README.md#локальный-http-эксперимент).
 The same measured synthetic windows feed both policy modes after the HTTP run.
-ASP.NET inline adapter now has real localhost HTTP → EIS CLI → isolated ONNX CPU and deterministic fallback acceptance (opt-in). A persistent bounded worker or async advice queue remains open. Base SHA
+ASP.NET inline adapter now has real localhost HTTP → EIS CLI → isolated ONNX CPU and deterministic fallback acceptance (opt-in). The persistent worker is implemented and locally verified; production-safe asynchronous advisory and performance budgets remain open. Base SHA
 `236046772dc330a3fd6043455faf74661bc813b4`.
 
 Cloudflare, Yandex Cloud and EdgeCenter acceptance remains **BLOCKED** on
@@ -27,9 +27,9 @@ integration passed native CPU E2E** on loopback with bounded HTTP 429 preservati
 process/session reuse and rule-only fallback; one-shot mode remains available. Base SHA `2b7219deb5739b4cb03041660f04452f83a78fac`.
 See [evidence](EVIDENCE-WAVE5-PERSISTENT-PYTHON.md).
 
-**API prewarm acceptance pending.** The [opt-in suite](tests/test_inline_end_to_end.py)
+**API prewarm acceptance verified locally.** The [opt-in suite](tests/test_inline_end_to_end.py)
 covers readiness before HTTP traffic, single-attempt prewarm, native session reuse,
 quota preservation, lazy default, and missing-model fallback. Base SHA
 `dc24f8557192b93be54890cad6fba81624c5ae20`.
 
-- [ ] Independently run and record the real Linux / .NET 10 / pinned ONNX prewarm E2E after the API change merges.
+- [x] Independently run real Linux / .NET 10 / pinned ONNX prewarm E2E: the worker became ready before the first accepted HTTP request, retained its model after on-disk artifact removal, and returned two CPU scores without weakening the 429 quota; see [evidence](EVIDENCE-2026-11-23-PREWARM.md).

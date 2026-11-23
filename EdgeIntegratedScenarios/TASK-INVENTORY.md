@@ -17,7 +17,6 @@ do not create additional entries.
 
 [EdgeAI/implementations/onnx-local/TASK.md:1](../EdgeAI/implementations/onnx-local/TASK.md#L1)
 
-- Confirm the `onnx-cpu` GitHub Actions job and repeat on the RDC machine when available. [EdgeAI/implementations/onnx-local/TASK.md:17](../EdgeAI/implementations/onnx-local/TASK.md#L17)
 - Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection. [EdgeAI/implementations/onnx-local/TASK.md:20](../EdgeAI/implementations/onnx-local/TASK.md#L20)
 - Make model architecture/feature versions and test scenario snapshots backward-compatible or explicitly reject upgrades. [EdgeAI/implementations/onnx-local/TASK.md:21](../EdgeAI/implementations/onnx-local/TASK.md#L21)
 - Add .NET 10 inference adapter and real edge-device/WASM execution under an explicit hardware budget. [EdgeAI/implementations/onnx-local/TASK.md:25](../EdgeAI/implementations/onnx-local/TASK.md#L25)
@@ -61,7 +60,6 @@ do not create additional entries.
 [EdgeIntegratedScenarios/TASK.md:1](TASK.md#L1)
 
 - Compare provider configurations and measure actual cloud paths after prerequisites are met. [EdgeIntegratedScenarios/TASK.md:22](TASK.md#L22)
-- Independently run and record the real Linux / .NET 10 / pinned ONNX prewarm E2E after the API change merges. [EdgeIntegratedScenarios/TASK.md:35](TASK.md#L35)
 
 ## EIS-00-UI — bundled evidence dashboard
 

@@ -302,7 +302,7 @@ and the [opt-in tests](tests/test_inline_end_to_end.py).
 
 ### Opt-in API prewarm acceptance
 
-**Pending an independent E2E run after the API change merges.** The suite
+**Independently verified on the merged local ASP.NET Core and native Linux seccomp/ONNX runtime.** The suite
 starts the real Linux seccomp worker with `LOCAL_EDGE_ADVISORY_ENABLED=1`,
 `LOCAL_EDGE_ADVISORY_MODE=persistent`, and `LOCAL_EDGE_ADVISORY_PREWARM=1`.
 It polls `/metrics` for up to 15 seconds after API health, before sending
@@ -313,7 +313,7 @@ the artifacts aside establish reuse of the initialized session. A third
 request must return HTTP 429 without scoring. The suite logs both warm
 HTTP latencies and allows up to 1000 ms per request as a local smoke bound.
 It also covers lazy startup with the flag unset and missing-model prewarm
-with rule-only fallback and healthy `/ready`.
+with rule-only fallback and healthy `/ready`. [Independent evidence](EVIDENCE-2026-11-23-PREWARM.md) also records two measured 200-response latencies (82.89/4.10 ms) after readiness, a second run (37.04/3.23 ms), and a 10-request bounded localhost latency probe (p50 2.27 ms, p95/p99 44.45 ms); these are small-sample local observations, not production SLO.
 
 After merge, run from the repository root with Linux, libseccomp, the .NET 10
 SDK, the API's NuGet dependencies already in the local package cache, and a

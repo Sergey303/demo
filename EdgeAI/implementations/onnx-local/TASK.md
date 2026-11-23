@@ -14,7 +14,7 @@
 ## P0 verification and follow-up
 
 - [x] Run the standalone README commands with pinned dependencies and native `CPUExecutionProvider`. Local evidence covers generation, scoring, integrity and shape regressions, and warm inference timing.
-- [ ] Confirm the `onnx-cpu` GitHub Actions job and repeat on the RDC machine when available.
+- [x] Confirm the `onnx-cpu` GitHub Actions job ([green native ONNX run 45209131000](https://github.com/Sergey303/demo/actions/runs/45209131000)) and repeat on RDC, including persistent seccomp worker and full HTTP→ONNX tests.
 - [x] Add standalone wall-clock enforcement with a killable, reaped Linux subprocess, a socket filter, bounded I/O and deterministic rules fallback. The existing in-process API remains available to current callers.
 - [x] Validate tampered manifest metadata and fields, malformed ONNX protobufs, unsupported operators, external data, model size and tensor schema. SHA-256 checks integrity only.
 - [ ] Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection.

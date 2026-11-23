@@ -133,7 +133,7 @@ handshake. `advisoryPrewarmAttempts` and `advisoryPrewarmFailures` count
 background initialization attempts and unsuccessful outcomes per API process.
 `/health` still reports API liveness and `/ready` still reports quota
 dependency readiness. Native ONNX validation of the background prewarm path
-requires a separate cross-project run.
+**has now passed independent local HTTP→Python→seccomp ONNX E2E**, including a 429 unchanged by model scoring and actual worker reuse. See the [prewarm evidence](../../../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-PREWARM.md). The first HTTP after confirmed readiness took 82.89 ms in one RDC run; a second run took 37.04 ms. These are local samples, not production percentiles.
 
 ## Verification from repo root
 

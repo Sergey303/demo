@@ -48,6 +48,6 @@ Base SHA `dc24f8557192b93be54890cad6fba81624c5ae20`.
 
 - [x] Verify opt-in background startup over real loopback ASP.NET Core HTTP with a synthetic Python fixture. Cover handshake readiness before the first protected request, PID reuse, early rule-only HTTP 200, quota and concurrency rejections, Redis outage, and prewarm disabled by default.
 - [x] Verify bad startup configuration, missing artifacts, malformed or missing handshake, timeout, worker exit, cooldown and on-demand recovery, and process reap during shutdown.
-- [ ] Run cross-project acceptance of background prewarm with the native seccomp/ONNX worker. Observe handshake readiness before the first protected request, confirm the first two admitted scores reuse the warmed process and session, and verify shutdown reaps the worker.
+- [x] Run cross-project acceptance of background prewarm with native seccomp/ONNX: real localhost tests verified readiness before any protected request, 2 admitted CPU scores on the warmed session, HTTP 429 without scoring, and safe shutdown/reap through the separate API regression. Initial local HTTP samples 82.89/4.10 ms; see [prewarm evidence](../../../../../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-PREWARM.md).
 
 The .NET build completed with zero warnings and errors. The local Python suite passed 32 tests and skipped 11 opt-in Docker Redis tests.
