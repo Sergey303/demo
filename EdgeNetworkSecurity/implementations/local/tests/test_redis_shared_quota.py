@@ -138,6 +138,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
         options_a = self.options(namespace="isolated-a-" + uuid4().hex[:8])
         options_b = self.options(namespace="isolated-b-" + uuid4().hex[:8])
         with RunningApi(**options_a) as first, RunningApi(**options_b) as second:
+            self.ensure_window_budget()
             for _ in range(4):
                 self.assertEqual(get(first.base_url + "/api/expensive")[0], 200)
             self.assertEqual(get(first.base_url + "/api/expensive")[0], 429)
