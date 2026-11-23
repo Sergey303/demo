@@ -26,6 +26,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
       - name: Offline BGP, Anycast, anomaly and integration tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -35,3 +38,10 @@ jobs:
           python -B -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/ai-assisted-ddos-defense/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/tests -v
+      - name: Loopback HTTP and safe-generator integration tests
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+        run: |
+          python -B -m unittest discover -s EdgeNetworkSecurity/shared/traffic-generator/tests -v
+          python -B -m unittest discover -s EdgeNetworkSecurity/implementations/local/tests -v
