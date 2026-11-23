@@ -21,8 +21,8 @@ provider evidence. See the [README](README.md) and [task inventory](TASK-INVENTO
 - [x] Build a [React visualization](dashboard/TASK.md) of the offline and local HTTP evidence.
 - [ ] Compare provider configurations and measure actual cloud paths after prerequisites are met.
 
-Fifth wave adds a standalone [persistent Python ONNX worker](ai-assisted-ddos-defense/persistent_worker.py)
-with [strict protocol tests](tests/test_persistent_worker.py). Persistent ASP.NET
-integration remains pending independent verification; the one-shot path is
-unchanged. Base SHA `2b7219deb5739b4cb03041660f04452f83a78fac`.
+Fifth wave adds a [persistent Python ONNX worker](ai-assisted-ddos-defense/persistent_worker.py)
+with [strict protocol tests](tests/test_persistent_worker.py). **Persistent ASP.NET
+integration passed native CPU E2E** on loopback with bounded HTTP 429 preservation,
+process/session reuse and rule-only fallback; one-shot mode remains available. Base SHA `2b7219deb5739b4cb03041660f04452f83a78fac`.
 See [evidence](EVIDENCE-WAVE5-PERSISTENT-PYTHON.md).

@@ -38,7 +38,7 @@ client -----------------------------------> edge site
 - **Отказ Redis:** в Redis-режиме запрос к дорогостоящему API возвращает 503; переключение на независимые локальные лимиты запрещено, чтобы не ослабить общую квоту. `/health` остаётся liveness, не dependency readiness.
 - **Два API:** одинаковые namespace/параметры должны давать общую квоту, поэтому запросы, отправленные разным экземплярам, учитываются в одном атомарном Redis-скрипте по серверному времени.
 - **Simulated outage:** падение виртуального edge в модели Anycast не является доказательством работоспособности настоящей сети провайдера.
-- **ML-advisory:** [EdgeAI](../../EdgeAI/README.md) и [EdgeIntegratedScenarios](../../EdgeIntegratedScenarios/README.md) существуют отдельно. Локальный HTTP API поддерживает [опциональный advisory](../implementations/local/README.md#opt-in-inline-ai-advisory) через Python CLI после проверки квоты. Advisory возвращается только с HTTP 200.
+- **ML-advisory:** [EdgeAI](../../EdgeAI/README.md) и [EdgeIntegratedScenarios](../../EdgeIntegratedScenarios/README.md) существуют отдельно. Локальный HTTP API поддерживает [опциональный advisory](../implementations/local/README.md#opt-in-inline-ai-advisory) через Python CLI после проверки квоты. В новом opt-in persistent mode Linux seccomp ONNX-процесс повторно используется между HTTP 200; остальные HTTP-статусы и решения квоты неизменны. [Реальная локальная приёмка](../../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-PERSISTENT-HTTP.md) фиксирует холодную задержку 3–4.5 с и прогретую 4–13 мс на RDC, не производственный SLA.
 
 ## Проверенные этапы и приёмка следующего
 

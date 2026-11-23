@@ -15,6 +15,8 @@
 | [Yandex Cloud inference](implementations/yandex-cloud/README.md) | План проверки API, исполнения моделей и локализации данных | **TODO**; региональное облако не означает физический edge |
 | [Другие российские варианты](implementations/russian-cloud/README.md) | Критерии выбора провайдера и размещения вычислений | **TODO** |
 
+Опциональная [постоянная ONNX-сессия в Linux](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-PERSISTENT-HTTP.md) теперь проверена на реальном localhost ASP.NET Core API: после медленной первичной загрузки повторные запросы использовали тот же процесс и модель. Это не edge-провайдер и не подтверждение точности обнаружения атак.
+
 Локальные примеры без внешних зависимостей: [image inference](scenarios/image-inference/README.md), [predictive maintenance](scenarios/predictive-maintenance/README.md), [offline inference](scenarios/offline-inference/README.md) и [benchmark на общих входах](benchmarks/README.md#shared-traffic-inputs).
 
 ```bash

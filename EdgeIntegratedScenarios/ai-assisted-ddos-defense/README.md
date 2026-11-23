@@ -37,4 +37,4 @@ CPU session after installing the existing Linux seccomp filter and handles
 serial windows with strict framing and fixed redacted failures. See the
 [launch/parent contract](../README.md#fifth-wave-persistent-onnx-transport-standalone)
 and [local evidence](../EVIDENCE-WAVE5-PERSISTENT-PYTHON.md). The one-shot CLI is
-unchanged. Persistent ASP.NET integration remains pending independent checks.
+unchanged. **Persistent ASP.NET integration is now independently verified** against real local HTTP and native ONNX CPU; see [merged E2E evidence](../EVIDENCE-2026-11-23-PERSISTENT-HTTP.md). Cold startup and production p95/p99 remain open.

@@ -112,7 +112,7 @@ GET `/api/expensive`, по одной секунде отправки на фа�
 
 Реальный `GET /api/expensive` может **после** выполнения защищённого действия вызвать [`inline_advisory.py`](ai-assisted-ddos-defense/inline_advisory.py) через настроенный абсолютный путь к Python. Внешние HTTP-поля в модель не передаются: используются лишь агрегированные per-replica счётчики запросов и статусов в ограниченном временном окне. В режиме Redis запросы 429/503 проходят через прежние правила и **не запускают модель**. Для 200 ответ содержит отдельное поле `advisory`, где разрешены только `allow/observe`; при сбое — `rule-only`. По умолчанию интеграция **выключена**.
 
-[Независимый тест реального HTTP → ONNX](tests/test_inline_end_to_end.py) включает флаг `RUN_EDGE_INLINE_FULL_TESTS=1` и требует .NET 10, Linux, libseccomp и pinned ONNX-зависимости. В нашем локальном эксперименте один ответ занял **2.61 с**, повторный **2.54 с**; ещё один тестовый вызов **2.71 с**. Это измерения только RDC, а не SLA. Требуется P0 на persistent worker/асинхронную очередь и измерение p95/p99 без блокировки ответа.
+[Независимый тест реального HTTP → ONNX](tests/test_inline_end_to_end.py) включает флаг `RUN_EDGE_INLINE_FULL_TESTS=1` и требует .NET 10, Linux, libseccomp и pinned ONNX-зависимости. В нашем локальном эксперименте один ответ занял **2.61 с**, повторный **2.54 с**; ещё один тестовый вызов **2.71 с**. Это измерения только RDC, а не SLA. Persistent worker теперь реализован и локально проверен; P0 остаются предзагрузка модели/асинхронный advisory и измерение p95/p99 под безопасной нагрузкой.
 
 См. [инженерный протокол](EVIDENCE-2026-11-23-INLINE-API.md), [настройки ASP.NET](../EdgeNetworkSecurity/implementations/local/README.md) и TODO в [локальном API](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md).
 
@@ -220,9 +220,9 @@ python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
 
 [`persistent_worker.py`](ai-assisted-ddos-defense/persistent_worker.py) keeps one
 trusted `OnnxWindowScorer` / CPU session alive for serial requests. It does not
-change the one-shot CLI. **Persistent ASP.NET integration and HTTP latency/load
-acceptance are still pending independent verification.** This transport alone
-makes no HTTP or production performance claim.
+change the one-shot CLI. **Persistent ASP.NET integration and two real native HTTP scoring runs
+have now been independently verified**, documented in [merged evidence](EVIDENCE-2026-11-23-PERSISTENT-HTTP.md). The standalone transport tests alone
+do not establish HTTP behavior; production latency/load acceptance remains open.
 
 The C# parent must launch exactly this argument layout (absolute executable,
 script and existing artifact directory; no shell):
@@ -279,3 +279,23 @@ NumPy 2.2.6 / ONNX 1.19.1 / ONNX Runtime 1.23.2 in a venv, and check two request
 with the same PID after moving artifacts away (reloading the session would fail),
 malformed/oversized frames and parent timeout/kill/restart. Stdlib fixtures are
 explicitly separate from actual native inference evidence.
+
+## Persistent HTTP → ONNX acceptance (fifth wave)
+
+The opt-in [ASP.NET Core persistent mode](../EdgeNetworkSecurity/implementations/local/README.md)
+uses a single inherited stdin/stdout pipe to a Linux seccomp-filtered
+[CPU ONNX worker](ai-assisted-ddos-defense/persistent_worker.py) per API process.
+It reuses one validated model session across successful 200 responses, with
+one outstanding scoring request, exact bounded JSON frames, separate startup
+and scoring deadlines, a 750 ms restart cooldown and deterministic
+rules-only fallback. **HTTP quota admissions and 429/503 are unchanged.**
+It is disabled by default, while the earlier opt-in one-shot mode remains.
+
+Two independently repeated genuine HTTP→ONNX runs on RDC measured
+cold/warm **3816.63/4.24 ms** and **2975.05/8.03 ms**. The first
+request still pays native startup. These are **two observations only, not
+p50/p95/p99, throughput or production SLA**. Private process pipes and trusted
+paths are not a replacement for broader service security or authorization.
+
+See [merged E2E evidence](EVIDENCE-2026-11-23-PERSISTENT-HTTP.md)
+and the [opt-in tests](tests/test_inline_end_to_end.py).

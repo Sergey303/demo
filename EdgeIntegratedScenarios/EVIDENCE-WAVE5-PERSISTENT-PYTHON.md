@@ -1,5 +1,7 @@
 # Fifth-wave standalone persistent Python ONNX transport
 
+> **Historical standalone-worker baseline:** this record predates merged ASP.NET acceptance. **Subsequent merged verification** proved repeated native CPU inference and 429 preservation with 4–13 ms warm HTTP samples on RDC. See [persistent HTTP evidence](EVIDENCE-2026-11-23-PERSISTENT-HTTP.md). The pending adapter statements below are historical, not current status.
+
 Date: 2026-11-23. Base SHA: `2b7219deb5739b4cb03041660f04452f83a78fac`.
 Scope: only `EdgeIntegratedScenarios/**`. No dependency installation, model
 download, cloud requests, commit, push or MCP. Existing one-shot implementation

@@ -64,7 +64,7 @@ class RealInlineAdvisoryTests(unittest.TestCase):
             "LOCAL_EDGE_PERMITS": "1",
         }
 
-    def test_native_cpu_advice_and_rate_limit_preservation(self):
+    def test_one_shot_native_or_bounded_fallback_preserves_rate_limit(self):
         with tempfile.TemporaryDirectory(dir=SCRIPT.parent) as temporary:
             artifacts = Path(temporary)
             self.build(artifacts)
@@ -73,8 +73,13 @@ class RealInlineAdvisoryTests(unittest.TestCase):
                 self.assertEqual(status, 200)
                 self.assertEqual(body["status"], "processed")
                 recommendation = body["advisory"]
-                self.assertEqual(recommendation["source"], "onnx-cpu")
-                self.assertEqual(recommendation["fallback"], "none")
+                # Native startup may exceed the deliberate 3s one-shot
+                # deadline under high CI load. Either real CPU inference or
+                # deterministic rule-only timeout is a correct safe outcome;
+                # the persistent native test below MUST execute ONNX.
+                native = recommendation["source"] == "onnx-cpu"
+                self.assertIn(recommendation["source"], ("onnx-cpu", "rule-only"))
+                self.assertEqual(recommendation["fallback"], "none" if native else "timeout")
                 self.assertEqual(recommendation["status"], "simulated")
                 self.assertIn(recommendation["action"], ("allow", "observe"))
                 self.assertTrue(math.isfinite(recommendation["score"]))
@@ -89,9 +94,42 @@ class RealInlineAdvisoryTests(unittest.TestCase):
                 _, metrics, _ = get_json(api.base_url + "/metrics")
                 self.assertEqual(metrics["completed"], 1)
                 self.assertEqual(metrics["rateRejected"], 1)
-                self.assertEqual(metrics["advisoryScored"], 1)
+                self.assertEqual(metrics["advisoryScored"], int(native))
+                self.assertEqual(metrics["advisoryFallback"], int(not native))
+                print(f"INLINE_HTTP_ONE_SHOT_MS={latency:.2f} NATIVE={native}", flush=True)
+
+    def test_native_persistent_model_reused_and_quota_unchanged(self):
+        worker = ROOT / "EdgeIntegratedScenarios" / "ai-assisted-ddos-defense" / "persistent_worker.py"
+        with tempfile.TemporaryDirectory(dir=SCRIPT.parent) as temporary:
+            artifacts = Path(temporary)
+            self.build(artifacts)
+            settings = self.settings(artifacts) | {
+                "LOCAL_EDGE_ADVISORY_MODE": "persistent",
+                "LOCAL_EDGE_ADVISORY_WORKER_SCRIPT": str(worker),
+                "LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS": "10000",
+                "LOCAL_EDGE_PERMITS": "2",
+            }
+            with self.RunningApi(**settings) as api:
+                cold_status, cold_body, cold_ms = get_json(api.base_url + "/api/expensive")
+                warm_status, warm_body, warm_ms = get_json(api.base_url + "/api/expensive")
+                self.assertEqual((cold_status, warm_status), (200, 200))
+                for result in (cold_body, warm_body):
+                    advisory = result["advisory"]
+                    self.assertEqual(advisory["source"], "onnx-cpu")
+                    self.assertEqual(advisory["fallback"], "none")
+                    self.assertIn(advisory["action"], ("allow", "observe"))
+                    self.assertTrue(math.isfinite(advisory["score"]))
+                from urllib.error import HTTPError
+                with self.assertRaises(HTTPError) as throttled:
+                    get_json(api.base_url + "/api/expensive")
+                self.assertEqual(throttled.exception.code, 429)
+                _, metrics, _ = get_json(api.base_url + "/metrics")
+                self.assertEqual(metrics["advisoryWorkerRestarts"], 0)
+                self.assertEqual(metrics["advisoryScored"], 2)
                 self.assertEqual(metrics["advisoryFallback"], 0)
-                print(f"INLINE_HTTP_NATIVE_CPU_MS={latency:.2f}", flush=True)
+                self.assertEqual(metrics["started"], 2)
+                self.assertEqual(metrics["completed"], 2)
+                print(f"PERSISTENT_NATIVE_HTTP_COLD_MS={cold_ms:.2f} WARM_MS={warm_ms:.2f}", flush=True)
 
     def test_missing_model_uses_real_cli_fallback_without_http_failure(self):
         with tempfile.TemporaryDirectory(dir=SCRIPT.parent) as temporary:

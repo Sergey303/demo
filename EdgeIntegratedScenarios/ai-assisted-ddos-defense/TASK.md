@@ -30,7 +30,5 @@ Base SHA: `2b7219deb5739b4cb03041660f04452f83a78fac`.
 See [protocol](../README.md#fifth-wave-persistent-onnx-transport-standalone),
 [tests](../tests/test_persistent_worker.py) and
 [evidence](../EVIDENCE-WAVE5-PERSISTENT-PYTHON.md).
-**Pending:** independent persistent ASP.NET adapter acceptance, bounded parent
-queue/concurrency/restart behavior in actual HTTP, measured p95/p99 and soak.
-The previous one-shot contract remains unchanged. Standalone transport tests
-must not be described as persistent HTTP integration evidence.
+**Verified locally:** persistent ASP.NET adapter and native ONNX CPU E2E with two real HTTP 200 recommendations, process reuse, bounded deadlines, parent cooldown/restart and 429 preservation. See [merged evidence](../EVIDENCE-2026-11-23-PERSISTENT-HTTP.md).
+**Remaining:** p95/p99 under a safe sustained load, CPU/RAM budgets, independent dataset and staging. One-shot mode remains available.

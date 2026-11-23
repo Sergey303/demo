@@ -111,8 +111,12 @@ first launch on each replica, including launches that fail the handshake.
 
 The persistent client is locally tested over real HTTP with a synthetic Python
 fixture. The latency test prints cold and warm HTTP durations from one worker
-PID and inserts a 400 ms synthetic cold delay. Native ONNX/seccomp compatibility
-and model-backed latency remain unverified pending merged cross-project E2E.
+PID and inserts a 400 ms synthetic cold delay. Native ONNX/seccomp
+integration **is now verified** against the merged real HTTP API: two RDC
+cold/warm runs measured **3816.63/4.24 ms** and **2975.05/8.03 ms**.
+These are local samples, **not production p95/p99 or an SLA**. The cold call
+still blocks for model initialization; a safe asynchronous or pre-warmed
+architecture needs separate engineering and acceptance.
 
 ## Verification from repo root
 
