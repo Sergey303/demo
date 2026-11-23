@@ -2,7 +2,7 @@
 
 **Лаборатория архитектурного решения: как использовать рекомендацию ML-модели, не превращая её в ненадёжный механизм блокировки.** Проект связывает идеи [Edge Network Security](../EdgeNetworkSecurity/README.md) и [Edge AI](../EdgeAI/README.md), но сохраняет независимость их кода и отказоустойчивость детерминированной защиты.
 
-**Текущее состояние:** offline replay и policy engine **реализованы и локально проверены** на размеченных синтетических сценариях. Опциональная интеграция с ONNX Runtime **реализована в исходниках**, но её нативный запуск **ещё требует подтверждения**. Подключения к живому ASP.NET Core/Redis API, реальным Cloudflare/EdgeЦентру/Yandex и реальным атакам **нет**.
+**Текущее состояние:** offline replay и policy engine **реализованы и локально проверены** на размеченных синтетических сценариях. Опциональная интеграция с ONNX Runtime **реализована в исходниках**, и её нативный запуск **подтверждён локальными ONNX-тестами**. Подключения к живому ASP.NET Core/Redis API, реальным Cloudflare/EdgeЦентру/Yandex и реальным атакам **нет**.
 
 ## Единый офлайн-запуск
 
@@ -47,8 +47,8 @@ python3 -B EdgeIntegratedScenarios/task_inventory.py --check
 | [Policy engine](ai-assisted-ddos-defense/policy.py) | Различает `allow`, `observe`, `block`; сохраняет приоритет детерминированной блокировки и fallback при ошибке модели | **Локально проверено** |
 | [Replay и оценка](ai-assisted-ddos-defense/replay.py) | Читает 12 размеченных искусственных HTTP-окон, вызывает rules-only эвристику, сравнивает исходные и assisted решения | **Локально проверено**, только синтетические данные |
 | [Audit и quality report](ai-assisted-ddos-defense/README.md) | Для каждого сценария: источник решения, версия политики, действие; суммарно TP/TN/FP/FN, precision/recall/FPR, число fallback и ошибочных блокировок правилами | **Локальная имитация**, не наблюдаемость продакшена |
-| [ONNX-assisted replay](ai-assisted-ddos-defense/onnx_replay.py) | Загружает [сгенерированную модель ONNX](../EdgeAI/implementations/onnx-local/README.md), использует CPU inference в том же policy engine | **Код готов; нативная проверка ожидается** |
-| [Тесты](ai-assisted-ddos-defense/tests/test_replay.py) | Нормальные и аномальные окна, ложные тревоги, timeout/exception, некорректные score, граничные значения и запрет модельной блокировки | **Локально пройдены**; [ONNX-тесты](onnx-tests/test_onnx_replay.py) требуют отдельной проверки |
+| [ONNX-assisted replay](ai-assisted-ddos-defense/onnx_replay.py) | Загружает [сгенерированную модель ONNX](../EdgeAI/implementations/onnx-local/README.md), использует CPU inference в том же policy engine | **CPU inference проверен локально** |
+| [Тесты](ai-assisted-ddos-defense/tests/test_replay.py) | Нормальные и аномальные окна, ложные тревоги, timeout/exception, некорректные score, граничные значения и запрет модельной блокировки | **Локально пройдены**; [ONNX-тесты](onnx-tests/test_onnx_replay.py) (2) пройдены локально |
 
 Это **offline композиция**: отдельный [HTTP API с Redis](../EdgeNetworkSecurity/implementations/local/README.md) существует и протестирован, но в данном сценарии пока не вызывает модель и не получает её рекомендации в реальном времени.
 
@@ -98,7 +98,7 @@ python3 EdgeIntegratedScenarios/ai-assisted-ddos-defense/onnx_replay.py
 python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
 ```
 
-В этом варианте исполняемые операции модели должны выполняться внутри `onnxruntime.InferenceSession`; **нативная проверка текущей версии ожидается** в отдельном CI job `onnx-cpu`. Внутренние расчёты модели могут быть настоящими, но входные сценарии и метки остаются синтетическими. Подробности: [ONNX evidence](EVIDENCE-2026-11-23-ONNX.md).
+В этом варианте исполняемые операции модели должны выполняться внутри `onnxruntime.InferenceSession`; **нативная проверка выполнена локально**; статус GitHub Actions `onnx-cpu` проверяется отдельно. Внутренние расчёты модели могут быть настоящими, но входные сценарии и метки остаются синтетическими. Подробности: [актуальная независимая приёмка ONNX](EVIDENCE-CODEX-2026-11-23.md).
 
 ## Что ещё нужно для полноценного демонстрационного стенда
 

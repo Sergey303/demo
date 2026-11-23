@@ -8,7 +8,7 @@ python3 EdgeAI/implementations/onnx-local/build_model.py
 python3 EdgeAI/implementations/onnx-local/benchmark.py --iterations 50
 ```
 
-**Verification status:** source committed; first native runtime run on `rdc-project` not confirmed. The dedicated CI `onnx-cpu` job has been configured to perform the smoke test and numerical validation.
+**Verification status:** native ONNX CPU run completed locally on `rdc-project` (Python 3.12.14, NumPy 2.2.6, ONNX 1.19.1, ONNX Runtime 1.23.2). Measured on Intel Core i5-12400: session initialization 45.9863 ms; warm p50/p95/p99 0.0059/0.0084/0.0490 ms with 5 warmups and 50 iterations. These are machine-specific samples, not SLA or security detection performance. The dedicated CI `onnx-cpu` job has been configured to perform the smoke test and numerical validation.
 
 These are **local CPU execution timings on synthetic examples**, not real-world security effectiveness, network-edge latency or cloud performance. No actual benchmark numbers should be asserted without a captured run. The synthetic holdout label hash records the test distribution but cannot serve as an independent externally verified dataset.
 

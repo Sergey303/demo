@@ -2,6 +2,8 @@
 
 **Date:** 2026-11-23. **Repository:** Sergey303/demo, branch main.
 
+> **Historical baseline:** this record was created before native ONNX verification. A subsequent parallel Codex run and independent merged-worktree acceptance passed 11 ONNX model/feature tests and 2 integration tests. See [verified evidence](EVIDENCE-CODEX-2026-11-23.md). The original pending status below is preserved as history, not current state.
+
 ## Current status
 
 **SOURCE_COMMITTED / RUNTIME_TEST_PENDING.** The source and a required separate CI job have been created. The connected `rdc-project` became offline before this increment could install Python ONNX packages or run native tests. **Do not describe the ONNX execution as locally verified**. Earlier ENS/Redis evidence remains separate.
