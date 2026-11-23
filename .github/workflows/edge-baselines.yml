@@ -26,5 +26,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Offline edge unit tests
-        run: python -m unittest discover -s EdgeIntegratedScenarios/tests -v
+      - name: Offline BGP, Anycast, anomaly and integration tests
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -B -m unittest discover -s EdgeNetworkSecurity/simulator/bgp/tests -v
+          python -B -m unittest discover -s EdgeNetworkSecurity/simulator/anycast/tests -v
+          python -B -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v
+          python -B -m unittest discover -s EdgeIntegratedScenarios/ai-assisted-ddos-defense/tests -v
+          python -B -m unittest discover -s EdgeIntegratedScenarios/tests -v
