@@ -74,4 +74,4 @@ RUN_EDGE_HTTP_TESTS=1 RUN_EDGE_INLINE_FULL_TESTS=1 RUN_EDGE_INLINE_ONNX_TESTS=1 
 
 [Previous inline one-shot evidence](EVIDENCE-2026-11-23-INLINE-API.md) · [Python worker contract](EVIDENCE-WAVE5-PERSISTENT-PYTHON.md) · [task inventory](TASK-INVENTORY.md).
 
-**Remote CI status** must be separately confirmed on the final published commit; local acceptance does not imply GitHub Actions success.
+**Remote CI confirmed:** [GitHub Actions run 45208521511](https://github.com/Sergey303/demo/actions/runs/45208521511) on commit `ccbb1c3` completed **success**; all four jobs (`offline`, `onnx-cpu`, `provider-contracts`, `evidence-dashboard`) passed. The ONNX job used a dedicated pinned Python virtual environment and executed the strict persistent worker and real ASP.NET→ONNX integration tests. Clean-runner observed HTTP samples: persistent cold **855.94 ms**, persistent warm **7.19 ms**, one-shot **935.64 ms** with successful native ONNX output. These are individual synthetic local measurements, not p95/p99 or production guarantees. Document-only updates after this run do not alter the implementation that was tested.
