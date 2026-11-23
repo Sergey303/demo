@@ -47,3 +47,27 @@ jobs:
           docker version
           python -B -m unittest discover -s EdgeNetworkSecurity/shared/traffic-generator/tests -v
           python -B -m unittest discover -s EdgeNetworkSecurity/implementations/local/tests -v
+
+  onnx-cpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: EdgeAI/implementations/onnx-local/requirements.txt
+      - name: Install pinned CPU ONNX packages
+        run: python -m pip install -r EdgeAI/implementations/onnx-local/requirements.txt
+      - name: Generate model and execute native ONNX CPU runtime
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -B EdgeAI/implementations/onnx-local/build_model.py
+          python -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
+          python -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
+          python -B EdgeAI/implementations/onnx-local/runtime.py --window-json '{"requests":250,"seconds":10,"errors":45,"baseline_rps":3}'
+          python -B EdgeAI/implementations/onnx-local/benchmark.py --iterations 20
+          python -B EdgeIntegratedScenarios/ai-assisted-ddos-defense/onnx_replay.py
