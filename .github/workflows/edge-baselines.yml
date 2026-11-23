@@ -38,10 +38,12 @@ jobs:
           python -B -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/ai-assisted-ddos-defense/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/tests -v
-      - name: Loopback HTTP and safe-generator integration tests
+      - name: Loopback HTTP, safe probe and real disposable Redis 7 tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
           DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          RUN_REDIS_TESTS: '1'
         run: |
+          docker version
           python -B -m unittest discover -s EdgeNetworkSecurity/shared/traffic-generator/tests -v
           python -B -m unittest discover -s EdgeNetworkSecurity/implementations/local/tests -v
