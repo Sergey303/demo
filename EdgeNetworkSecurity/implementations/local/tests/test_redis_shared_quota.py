@@ -55,7 +55,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
             # Ordinary CI runner with a local Docker engine.
             network_args = ["-p", f"127.0.0.1:{cls.redis_port}:6379"]
             server_args = ["redis-server", "--save", "", "--appendonly", "no"]
-        docker("run", "-d", "--rm", "--name", cls.name,
+        docker("run", "--pull", "never", "-d", "--rm", "--name", cls.name,
                *network_args, "--memory", "96m", "--cpus", "0.5",
                "redis:7-alpine", *server_args, timeout=45)
         cls.container_started = True
@@ -93,19 +93,160 @@ class RedisSharedQuotaTests(unittest.TestCase):
             LOCAL_EDGE_CONCURRENCY="20",
         )
 
-    def ensure_window_budget(self, window_seconds=5):
-        """Do not span the Redis fixed-window boundary during an atomicity assertion."""
+    def redis(self, *args):
+        parts = [str(arg).encode() for arg in args]
+        command = f"*{len(parts)}\r\n".encode() + b"".join(
+            f"${len(part)}\r\n".encode() + part + b"\r\n" for part in parts
+        )
         with socket.create_connection(("127.0.0.1", self.redis_port), timeout=2) as conn:
-            conn.sendall(b"*1\r\n$4\r\nTIME\r\n")
-            conn.settimeout(2)
-            raw = b""
-            while raw.count(b"\r\n") < 5:
-                raw += conn.recv(128)
-        fields = raw.split(b"\r\n")
-        now = int(fields[2]) + int(fields[4]) / 1_000_000
-        remaining = window_seconds - (now % window_seconds)
-        if remaining < 2.5:
+            conn.sendall(command)
+            with conn.makefile("rb") as stream:
+                def read_reply():
+                    header = stream.readline()
+                    kind, value = header[:1], header[1:-2]
+                    if kind == b"*":
+                        return [read_reply() for _ in range(int(value))]
+                    if kind == b"$":
+                        length = int(value)
+                        return None if length == -1 else stream.read(length + 2)[:-2]
+                    if kind == b":":
+                        return int(value)
+                    if kind == b"+":
+                        return value
+                    raise AssertionError(f"Unexpected Redis reply: {header!r}")
+
+                return read_reply()
+
+    def redis_time(self):
+        seconds, micros = self.redis("TIME")
+        return int(seconds) + int(micros) / 1_000_000
+
+    def ensure_window_budget(self, window_seconds=5):
+        remaining = window_seconds - (self.redis_time() % window_seconds)
+        if remaining < window_seconds / 2:
             time.sleep(remaining + 0.15)
+
+    @staticmethod
+    def quota_key(options):
+        return "demo:edge:quota:v1:" + options["LOCAL_EDGE_REDIS_NAMESPACE"]
+
+    def test_readiness_does_not_create_or_extend_quota(self):
+        options = self.options()
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            for _ in range(5):
+                self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertIsNone(self.redis("GET", key))
+            self.ensure_window_budget()
+            for _ in range(4):
+                self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+            state, ttl = self.redis("GET", key), self.redis("PTTL", key)
+            time.sleep(0.05)
+            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 429)
+            self.assertEqual(self.redis("GET", key), state)
+            self.assertLess(self.redis("PTTL", key), ttl)
+
+    def test_window_rolls_over_with_old_key_still_present(self):
+        options = self.options()
+        options.update(LOCAL_EDGE_PERMITS="1", LOCAL_EDGE_WINDOW_SECONDS="3")
+        key = self.quota_key(options)
+        with RunningApi(**options) as first, RunningApi(**options) as second:
+            self.assertEqual(get(first.base_url + "/ready")[0], 200)
+            self.assertEqual(get(second.base_url + "/ready")[0], 200)
+            self.ensure_window_budget(3)
+            self.assertEqual(get(first.base_url + "/api/expensive")[0], 200)
+            old_state = self.redis("GET", key)
+            old_bucket = int(old_state.split(b":")[0])
+            status, headers, body = get(second.base_url + "/api/expensive")
+            self.assertEqual((status, body), (429, {"error": "rate_limited"}))
+            self.assertIn(int(headers["Retry-After"]), range(1, 4))
+            boundary = (old_bucket + 1) * 3
+            time.sleep(max(0, boundary - self.redis_time()) + 0.05)
+            self.assertEqual(self.redis("GET", key), old_state)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                codes = list(pool.map(lambda api: get(api.base_url + "/api/expensive")[0],
+                                      (first, second)))
+            self.assertEqual(sorted(codes), [200, 429])
+            self.assertEqual(self.redis("GET", key), f"{old_bucket + 1}:1".encode())
+            self.assertGreater(self.redis("PTTL", key), 0)
+
+    def test_idle_quota_key_expires(self):
+        options = self.options()
+        options["LOCAL_EDGE_WINDOW_SECONDS"] = "1"
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+            ttl = self.redis("PTTL", key)
+            self.assertIn(ttl, range(1, 2001))
+            deadline = time.monotonic() + ttl / 1000 + 1
+            while self.redis("GET", key) is not None:
+                if time.monotonic() >= deadline:
+                    self.fail("idle quota key did not expire")
+                time.sleep(0.1)
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+
+    def test_retained_bad_state_fails_closed_without_overwriting_it(self):
+        options = self.options()
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            future_bucket = int(self.redis_time() // 5) + 2
+            for value in ("bad-state", f"{future_bucket}:1"):
+                with self.subTest(value=value):
+                    self.assertEqual(self.redis("SET", key, value, "PX", 10000), b"OK")
+                    status, _, body = get(api.base_url + "/api/expensive")
+                    self.assertEqual((status, body), (503, {"error": "quota_dependency_unavailable"}))
+                    self.assertEqual(self.redis("GET", key), value.encode())
+            self.assertEqual(get(api.base_url + "/metrics")[2]["started"], 0)
+            self.redis("DEL", key)
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+
+    def wait_for_single_charge(self, key):
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            value = self.redis("GET", key)
+            if value is not None:
+                self.assertTrue(value.endswith(b":1"), value)
+                return
+            time.sleep(0.05)
+        self.fail("Redis did not record the dispatched quota command")
+
+    def test_paused_redis_times_out_without_running_protected_work(self):
+        options = self.options()
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertEqual(self.redis("CLIENT", "PAUSE", 1600, "ALL"), b"OK")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                ready = pool.submit(get, api.base_url + "/ready")
+                quota = pool.submit(get, api.base_url + "/api/expensive")
+                self.assertEqual(ready.result()[0], 503)
+                status, _, body = quota.result()
+                self.assertEqual((status, body), (503, {"error": "quota_dependency_unavailable"}))
+            self.assertEqual(get(api.base_url + "/health")[0], 200)
+            metrics = get(api.base_url + "/metrics")[2]
+            self.assertEqual((metrics["started"], metrics["redisUnavailable"]), (0, 1))
+            # Redis can still execute the dispatched command after the HTTP wait times out.
+            self.wait_for_single_charge(key)
+            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+
+    def test_disconnected_http_client_does_not_run_protected_work(self):
+        options = self.options()
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertEqual(self.redis("CLIENT", "PAUSE", 650, "WRITE"), b"OK")
+            with socket.create_connection(("127.0.0.1", api.port), timeout=2) as client:
+                client.sendall(b"GET /api/expensive HTTP/1.1\r\nHost: localhost\r\n\r\n")
+                time.sleep(0.15)
+                client.shutdown(socket.SHUT_RDWR)
+
+            # Confirm the API dispatched the command even though the caller disconnected.
+            self.wait_for_single_charge(key)
+            metrics = get(api.base_url + "/metrics")[2]
+            self.assertEqual((metrics["started"], metrics["redisUnavailable"]), (0, 0))
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
 
     def test_two_instances_share_exact_atomic_quota(self):
         options = self.options()
@@ -150,14 +291,18 @@ class RedisSharedQuotaTests(unittest.TestCase):
         try:
             with RunningApi(**options) as api:
                 self.assertEqual(get(api.base_url + "/health")[0], 200)
+                status, _, ready = get(api.base_url + "/ready")
+                self.assertEqual((status, ready), (503, {"status": "not_ready",
+                                                        "error": "quota_dependency_unavailable"}))
                 status, _, payload = get(api.base_url + "/api/expensive")
                 self.assertEqual(status, 503)
                 self.assertEqual(payload["error"], "quota_dependency_unavailable")
                 self.start_redis()
                 deadline = time.monotonic() + 10
                 while time.monotonic() < deadline:
-                    status, _, _ = get(api.base_url + "/api/expensive")
+                    status, _, _ = get(api.base_url + "/ready")
                     if status == 200:
+                        self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
                         break
                     time.sleep(0.8)
                 else:
@@ -181,6 +326,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
                         self.fail(f"Redis outage did not close: {status} {body}")
                     time.sleep(0.2)
                 self.assertEqual(body["error"], "quota_dependency_unavailable")
+                self.assertEqual(get(api.base_url + "/ready")[0], 503)
                 self.assertEqual(get(api.base_url + "/health")[0], 200)
                 _, _, counters = get(api.base_url + "/metrics")
                 self.assertGreater(counters["redisUnavailable"], 0)
@@ -188,8 +334,9 @@ class RedisSharedQuotaTests(unittest.TestCase):
                 self.start_redis()
                 deadline = time.monotonic() + 12
                 while time.monotonic() < deadline:
-                    status, _, _ = get(api.base_url + "/api/expensive")
+                    status, _, _ = get(api.base_url + "/ready")
                     if status == 200:
+                        self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
                         break
                     time.sleep(0.8)
                 else:

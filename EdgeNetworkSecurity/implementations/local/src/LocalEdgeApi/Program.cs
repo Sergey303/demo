@@ -19,7 +19,7 @@ var permits = ConfigInt("LOCAL_EDGE_PERMITS", 4, 1, 100);
 var windowSeconds = ConfigInt("LOCAL_EDGE_WINDOW_SECONDS", 2, 1, 60);
 var concurrency = ConfigInt("LOCAL_EDGE_CONCURRENCY", 2, 1, 32);
 var redisPortRaw = Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_PORT");
-var redisQuota = redisPortRaw is null
+await using var redisQuota = redisPortRaw is null
     ? null
     : new RedisQuota(ConfigInt("LOCAL_EDGE_REDIS_PORT", 0, 1024, 65535),
         Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_NAMESPACE") ?? "demo-local",
@@ -32,8 +32,6 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Listen(IPAddress.Loopback, port); // Cannot be switched to 0.0.0.0 by ASPNETCORE_URLS.
 });
 builder.Services.AddSingleton(new DemoCounters(redisQuota is not null));
-if (redisQuota is not null)
-    builder.Services.AddSingleton(redisQuota);
 builder.Services.AddSingleton(new SemaphoreSlim(concurrency, concurrency));
 builder.Services.AddRateLimiter(options =>
 {
@@ -65,6 +63,22 @@ app.UseRouting();
 app.UseRateLimiter();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", loopbackOnly = true }));
+app.MapGet("/ready", async (HttpContext http) =>
+{
+    http.Response.Headers.CacheControl = "no-store";
+    try
+    {
+        if (redisQuota is not null)
+            await redisQuota.ProbeAsync(http.RequestAborted);
+        return Results.Ok(new { status = "ready" });
+    }
+    catch (Exception error) when (RedisQuota.IsDependencyFailure(error))
+    {
+        http.RequestAborted.ThrowIfCancellationRequested();
+        return Results.Json(new { status = "not_ready", error = "quota_dependency_unavailable" },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+});
 app.MapGet("/metrics", (DemoCounters counters) => Results.Ok(counters.Snapshot()));
 
 var expensiveEndpoint = app.MapGet("/api/expensive", async (HttpContext request, DemoCounters counters, SemaphoreSlim slots) =>
@@ -110,30 +124,29 @@ else
     {
         var http = filter.HttpContext;
         var counters = http.RequestServices.GetRequiredService<DemoCounters>();
+        QuotaDecision quota;
         try
         {
-            var quota = await redisQuota.CheckAsync(http.RequestAborted);
-            if (!quota.Allowed)
-            {
-                counters.Rejected();
-                http.Response.Headers.RetryAfter = quota.RetryAfterSeconds
-                    .ToString(CultureInfo.InvariantCulture);
-                return Results.Json(new { error = "rate_limited" },
-                    statusCode: StatusCodes.Status429TooManyRequests);
-            }
-            return await next(filter);
+            quota = await redisQuota.CheckAsync(http.RequestAborted);
         }
-        catch (OperationCanceledException) when (http.RequestAborted.IsCancellationRequested)
+        catch (Exception error) when (RedisQuota.IsDependencyFailure(error))
         {
-            throw;
-        }
-        catch (Exception)
-        {
-            // Do not leak Redis network details or switch to an independent local limit.
+            http.RequestAborted.ThrowIfCancellationRequested();
             counters.RedisUnavailable();
             return Results.Json(new { error = "quota_dependency_unavailable" },
                 statusCode: StatusCodes.Status503ServiceUnavailable);
         }
+
+        http.RequestAborted.ThrowIfCancellationRequested();
+        if (!quota.Allowed)
+        {
+            counters.Rejected();
+            http.Response.Headers.RetryAfter = quota.RetryAfterSeconds
+                .ToString(CultureInfo.InvariantCulture);
+            return Results.Json(new { error = "rate_limited" },
+                statusCode: StatusCodes.Status429TooManyRequests);
+        }
+        return await next(filter);
     });
 }
 

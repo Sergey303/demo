@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using StackExchange.Redis;
@@ -9,28 +8,18 @@ using StackExchange.Redis;
 /// </summary>
 internal sealed class RedisQuota : IAsyncDisposable
 {
-    private const string AtomicScript = """
-        local clock = redis.call('TIME')
-        local nowMs = tonumber(clock[1]) * 1000 + math.floor(tonumber(clock[2]) / 1000)
-        local windowMs = tonumber(ARGV[2])
-        local bucket = math.floor(nowMs / windowMs)
-        local previous = redis.call('GET', KEYS[1])
-        local count = 0
-        if previous then
-            local split = string.find(previous, ':', 1, true)
-            if split then
-                local previousBucket = tonumber(string.sub(previous, 1, split - 1))
-                if previousBucket == bucket then
-                    count = tonumber(string.sub(previous, split + 1)) or 0
-                end
-            end
-        end
-        count = count + 1
-        redis.call('SET', KEYS[1], tostring(bucket) .. ':' .. tostring(count), 'PX', windowMs * 2)
-        return { count, windowMs - (nowMs % windowMs) }
-        """;
+    private static readonly string AtomicScript = LoadScript();
+    private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(1);
 
-    private static readonly Regex ValidNamespace = new("^[a-zA-Z0-9_-]{1,32}$",
+    private static string LoadScript()
+    {
+        using var resource = typeof(RedisQuota).Assembly.GetManifestResourceStream("quota-v1.lua")
+            ?? throw new InvalidOperationException("Missing embedded quota script.");
+        using var reader = new StreamReader(resource);
+        return reader.ReadToEnd();
+    }
+
+    private static readonly Regex ValidNamespace = new("""\A[a-zA-Z0-9_-]{1,32}\z""",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private readonly int _redisPort;
@@ -38,7 +27,7 @@ internal sealed class RedisQuota : IAsyncDisposable
     private readonly int _windowMs;
     private readonly RedisKey _quotaKey;
     private readonly SemaphoreSlim _connectionGate = new(1, 1);
-    private ConnectionMultiplexer? _connection;
+    private volatile ConnectionMultiplexer? _connection;
     private long _retryAfterTick;
 
     public RedisQuota(int port, string quotaNamespace, int permits, int windowSeconds)
@@ -59,35 +48,50 @@ internal sealed class RedisQuota : IAsyncDisposable
 
     public async Task<QuotaDecision> CheckAsync(CancellationToken ct)
     {
-        var connection = await GetConnectionAsync(ct);
-        var raw = await connection.GetDatabase().ScriptEvaluateAsync(
+        var database = await GetDatabaseAsync(ct);
+        var raw = await database.ScriptEvaluateAsync(
             AtomicScript, new[] { _quotaKey },
-            new RedisValue[] { _permits, _windowMs }).WaitAsync(TimeSpan.FromSeconds(1), ct);
+            new RedisValue[] { _permits, _windowMs }).WaitAsync(CommandTimeout, ct);
+        ct.ThrowIfCancellationRequested();
 
-        // EVAL gives two integers from the same atomic operation (server time and increment).
-        var response = (RedisResult[])raw!;
-        if (response.Length != 2)
-            throw new InvalidOperationException("Unexpected Redis quota result.");
-        var count = (long)response[0];
-        var retryMilliseconds = (long)response[1];
-        if (count < 1 || retryMilliseconds is < 1 or > 60000)
-            throw new InvalidOperationException("Invalid Redis quota result.");
-        return new QuotaDecision(count <= _permits, Math.Max(1,
-            (int)Math.Ceiling(retryMilliseconds / 1000.0)));
+        if (raw.Resp2Type != ResultType.Array ||
+            (RedisResult[]?)raw is not [{ Resp2Type: ResultType.Integer } allowed,
+                                        { Resp2Type: ResultType.Integer } remaining] ||
+            (long)allowed is not (0 or 1) || (long)remaining < 1 || (long)remaining > _windowMs)
+            throw new QuotaUnavailableException("Invalid Redis quota result.");
+        return new QuotaDecision((long)allowed == 1, (int)Math.Ceiling((long)remaining / 1000.0));
     }
+
+    public async Task ProbeAsync(CancellationToken ct)
+    {
+        var database = await GetDatabaseAsync(ct);
+        await database.PingAsync().WaitAsync(CommandTimeout, ct);
+        ct.ThrowIfCancellationRequested();
+    }
+
+    private async Task<IDatabase> GetDatabaseAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var connection = await GetConnectionAsync(ct).WaitAsync(TimeSpan.FromSeconds(2), ct);
+        ct.ThrowIfCancellationRequested();
+        return connection.GetDatabase();
+    }
+
+    public static bool IsDependencyFailure(Exception error) =>
+        error is RedisException or TimeoutException or QuotaUnavailableException;
 
     private async Task<ConnectionMultiplexer> GetConnectionAsync(CancellationToken ct)
     {
-        if (_connection is { IsConnected: true } connected)
+        if (_connection is { } connected)
             return connected;
 
         await _connectionGate.WaitAsync(ct);
         try
         {
-            if (_connection is { IsConnected: true } current)
+            if (_connection is { } current)
                 return current;
             if (Environment.TickCount64 < _retryAfterTick)
-                throw new InvalidOperationException("Redis retry cooldown.");
+                throw new QuotaUnavailableException("Redis retry cooldown.");
 
             var config = new ConfigurationOptions
             {
@@ -99,26 +103,26 @@ internal sealed class RedisQuota : IAsyncDisposable
                 ResolveDns = false,
                 ClientName = "edge-demo-local-quota",
                 AllowAdmin = false,
+                BacklogPolicy = BacklogPolicy.FailFast,
             };
             config.EndPoints.Add(IPAddress.Loopback, _redisPort);
-            ConnectionMultiplexer? next = null;
+            ConnectionMultiplexer next;
             try
             {
-                next = await ConnectionMultiplexer.ConnectAsync(config)
-                    .WaitAsync(TimeSpan.FromSeconds(2), ct);
-                var previous = _connection;
-                _connection = next;
-                if (previous is not null)
-                    await previous.DisposeAsync();
-                return next;
+                // Finish acquiring the connection even if the initiating request stops waiting.
+                // The gate stays held until the result has an owner.
+                next = await ConnectionMultiplexer.ConnectAsync(config);
             }
-            catch
+            catch (Exception error) when (IsDependencyFailure(error))
             {
-                if (next is not null)
-                    await next.DisposeAsync();
                 _retryAfterTick = Environment.TickCount64 + 750;
                 throw;
             }
+
+            // The multiplexer reconnects after a warm outage. Reuse it to avoid
+            // disposing connections that another request has already obtained.
+            _connection = next;
+            return next;
         }
         finally
         {
@@ -128,10 +132,19 @@ internal sealed class RedisQuota : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_connection is not null)
-            await _connection.DisposeAsync();
-        _connectionGate.Dispose();
+        await _connectionGate.WaitAsync();
+        try
+        {
+            if (_connection is not null)
+                await _connection.DisposeAsync();
+        }
+        finally
+        {
+            _connectionGate.Dispose();
+        }
     }
 }
 
 internal readonly record struct QuotaDecision(bool Allowed, int RetryAfterSeconds);
+
+internal sealed class QuotaUnavailableException(string message) : Exception(message);

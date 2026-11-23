@@ -13,9 +13,11 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 
 ## Next P0 tasks for Codex
 
-- [ ] Test Redis TCP mid-command disconnects, slow scripts/timeouts and request cancellation; no permit may be silently granted when the dependency is unavailable.
-- [ ] Add **dependency readiness** separate from `/health`, without consuming a quota permit. Test fail/recover transitions.
-- [ ] Move and pin the Lua script/key format into a reviewed versioned artifact. Test boundary expiry; document behavior if Redis server clocks jump backwards or a primary fails over.
+- [x] Add dependency readiness via Redis PING, separate from `/health`. Verify cold/warm loss, recovery and timeout without creating or refreshing quota state.
+- [x] Bound Redis command waits and respect HTTP request cancellation. Test paused Redis and client abort after dispatch. Verify fail-closed 503 for confirmed dependency failures and zero protected work for timed-out or aborted requests.
+- [x] Embed the versioned `quota-v1.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle expiry, and fail-closed behavior for malformed or future-bucket state.
+- [ ] Inject a Redis-side TCP disconnect after dispatch and before reply. Verify a sanitized 503, zero protected work and recovery under the same namespace.
+- [ ] Exercise primary failover and actual clock skew with retained or lost quota state. Verify the behavior and document how much quota can be lost or reopened.
 - [ ] Add a bounded circuit breaker/recovery probe policy and measure 503 latency under Redis outages.
 - [ ] Generate a reproducible 2-instance report: Redis request latency p50/p95, 429/503 counts, session recovery and CLI run parameters.
 
@@ -30,4 +32,4 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 
 ## Acceptance
 
-Use synthetic, bounded localhost traffic only. Ordinary tests must not require Docker. Real Redis tests require `RUN_REDIS_TESTS=1` and a disposable isolated container. Keep clear evidence/status labels: tested locally ≠ provider-verified. No cloud `apply`.
+Use synthetic, bounded localhost traffic only. Ordinary tests must not require Docker. Real Redis tests require `RUN_REDIS_TESTS=1` and a disposable isolated container from a locally cached image. Keep clear evidence/status labels: tested locally ≠ provider-verified. No cloud `apply`.

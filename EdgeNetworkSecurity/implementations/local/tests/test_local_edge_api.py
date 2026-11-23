@@ -94,6 +94,11 @@ class LocalEdgeApiTests(unittest.TestCase):
             self.assertEqual(status, 200)
             self.assertTrue(body["loopbackOnly"])
 
+            for _ in range(5):
+                status, headers, body = get(api.base_url + "/ready")
+                self.assertEqual((status, body), (200, {"status": "ready"}))
+                self.assertEqual(headers["Cache-Control"], "no-store")
+
             observed = [get(api.base_url + "/api/expensive") for _ in range(6)]
             self.assertEqual([s for s, _, _ in observed[:4]], [200] * 4)
             self.assertEqual([s for s, _, _ in observed[4:]], [429] * 2)
