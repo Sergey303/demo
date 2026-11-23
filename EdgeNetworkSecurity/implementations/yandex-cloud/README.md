@@ -1,38 +1,46 @@
-# Yandex Cloud implementation (RU)
+# Yandex Cloud (РФ) — план Edge Network Security
 
-**Status: scaffold / TODO — no resources deployed.** Third independent implementation alongside Cloudflare and EdgeCenter.
+**Статус: только проектная структура и задания Codex CLI.** Ресурсы Yandex Cloud **не создавались**, Terraform не применялся, тестовых доменов/аккаунтов для этой реализации нет. Каталог не должен создавать впечатление готового провайдерского стенда.
 
-## Components
+## Цель варианта
 
-| Folder | Yandex Cloud service | Responsibility |
-|---|---|---|
-| [smart-web-security](smart-web-security/README.md) | Smart Web Security | L7 DDoS / bot mitigation; security profile |
-| [waf](waf/README.md) | Cloud WAF (Smart Web Security) | Application attack rules |
-| [rate-limits](rate-limits/README.md) | Advanced Rate Limiter | Per-window HTTP request limits and 429 |
-| [anti-ddos](anti-ddos/README.md) | Yandex DDoS Protection | L3/L4, provider-side |
-| [cdn](cdn/README.md) | Cloud CDN | Caching and edge delivery, optional dedicated-IP BGP Anycast / GSLB |
-| [terraform](terraform/README.md) | Yandex Cloud Terraform provider | Infrastructure-as-code only after review |
+Показать независимую реализацию задач edge-защиты на российской облачной платформе и сравнивать её с [Cloudflare](../cloudflare/README.md) и [EdgeЦентром](../edgecenter-ru/README.md) **по одинаковым сценариям**, сохраняя различия тарифов, API и областей ответственности.
 
-Infrastructure may use an L7 Application Load Balancer, protected domain, or API Gateway according to currently supported SWS integrations.
+## Компоненты и их статус
 
-## Boundaries
-- BGP Anycast is a **provider network feature**, not a router or BGP daemon running in this demo. CDN dedicated-IP mode must be enabled and verified before claiming BGP Anycast.
-- L3/L4 DDoS protection and L7 protection are distinct. The local test does **not** reproduce provider-wide network mitigation.
-- SWS Smart Protection uses ML internally; it is **not** arbitrary Edge AI inference. See [EdgeAI](../../../EdgeAI/README.md).
-- Do not send test attacks to third-party infrastructure. Staging only; explicitly approved accounts and domains; no automatic Terraform apply.
-- Protect the origin from direct bypass, and configure secret storage, TLS, logging retention, drift and rollback.
+| Каталог | Сервис/область, которую предстоит проверить и подключить | Статус |
+| --- | --- | --- |
+| [smart-web-security](smart-web-security/README.md) | Smart Web Security: Security Profile и L7-защита | **TODO** |
+| [waf](waf/README.md) | WAF-правила, исключения, журнал false positives, rollback | **TODO** |
+| [rate-limits](rate-limits/README.md) | Advanced Rate Limiter: HTTP-квоты, условия 429, доступность по тарифу | **TODO** |
+| [anti-ddos](anti-ddos/README.md) | DDoS Protection: границы провайдерской L3/L4-защиты | **TODO** |
+| [cdn](cdn/README.md) | Cloud CDN: кеширование, origin, TLS, failover, опциональные особенности выделенного IP | **TODO** |
+| [terraform](terraform/README.md) | Закрепить provider, подтвердить схему ресурсов, `validate/plan` без автоматического `apply` | **TODO** |
 
-## Acceptance TODO
-- [ ] Verify current billing, quotas, regions, and service availability on chosen account.
-- [ ] Provision least-privilege staging resources and record a reviewed Terraform plan.
-- [ ] Connect security profile and safe baseline rules in observe/dry-run where supported.
-- [ ] Verify WAF, Smart Protection, ARL 429 behaviour and legitimate-client false positives.
-- [ ] Verify provider L3/L4 protection scope separately.
-- [ ] Measure CDN cache ratio and latency; check dedicated-IP routing only if activated.
-- [ ] Record provider-backed evidence and distinguish it from simulations.
+Код [локального HTTP/Redis](../local/README.md) **не является** Yandex Cloud-адаптером, хотя его тестовые сценарии могут стать основой для будущих сравнений.
 
-## Official documentation
-- https://yandex.cloud/ru/docs/smartwebsecurity/
-- https://yandex.cloud/ru/docs/smartwebsecurity/concepts/rules
-- https://yandex.cloud/ru/docs/cdn/concepts/dedicated-ip-addressing
-- https://yandex.cloud/ru/docs/smartwebsecurity/quickstart
+## Важные технические границы
+
+- **L3/L4 и L7 — разные уровни.** Подключение Smart Web Security или получение HTTP 429 само по себе не подтверждает защиту канала от объёмной сетевой атаки.
+- **Anycast требует доказательства.** Документация Yandex Cloud описывает BGP Anycast/GSLB для отдельных вариантов CDN с выделенными IP; нельзя переносить это свойство на любой CDN/HTTP-трафик. Нужно проверить фактический режим и ограничения.
+- **WAF ML ≠ произвольный Edge AI inference.** Своя модель, ONNX и российское AI-облако находятся в [EdgeAI](../../../EdgeAI/README.md).
+- **Безопасность origin:** понадобится ограничить прямой обход edge, проверить TLS, доверенные заголовки, logging, права сервисного аккаунта, хранение секретов и откат.
+- **Никаких автоматических платных операций или тестовых атак** на реальные публичные ресурсы.
+
+## Критерии приёмки провайдерской реализации
+
+1. [ ] Проверены актуальные сервисы, API, права, регионы, тарифные возможности и ограничения.
+2. [ ] Реализована воспроизводимая конфигурация staging с защищёнными параметрами, проверяемым `plan` и явным ручным `apply`.
+3. [ ] Описаны и измерены разрешённые HTTP-сценарии: обычные запросы, rate limiting/WAF, ложные блокировки, доступ к origin.
+4. [ ] Отдельно подтверждены реальные свойства CDN и L3/L4-защиты; сетевой маршрут не выводится из локального BGP-симулятора.
+5. [ ] Зафиксированы логи, результаты, стоимость, rollback и статус `provider-configured` / `provider-verified` с доказательствами.
+
+**Рабочий backlog:** [TASK.md](TASK.md) рядом с кодом, [общие архитектурные критерии](../../docs/ARCHITECTURE.md).
+
+## Документация для последующей проверки
+
+- [Smart Web Security](https://yandex.cloud/ru/docs/smartwebsecurity/)
+- [Rules and security profile](https://yandex.cloud/ru/docs/smartwebsecurity/concepts/rules)
+- [Cloud CDN: dedicated IP addressing](https://yandex.cloud/ru/docs/cdn/concepts/dedicated-ip-addressing)
+
+Наличие ссылок на документацию **не означает**, что соответствующий сервис сейчас проверен, подключён или доступен в выбранном аккаунте.
