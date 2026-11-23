@@ -25,6 +25,17 @@ complete prompt-injection classifier, or proof of semantic truth.**
 
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
+
+## Edge networking and AI architecture labs (scaffolds)
+
+These are **documented project skeletons with TODOs, not deployed or verified production implementations**:
+
+- [Edge Network Security](EdgeNetworkSecurity/README.md) — BGP/Anycast simulation, anti-DDoS, and **three strictly separated providers**: [Cloudflare](EdgeNetworkSecurity/implementations/cloudflare/README.md), [EdgeCenter (RU)](EdgeNetworkSecurity/implementations/edgecenter-ru/README.md), [Yandex Cloud (RU)](EdgeNetworkSecurity/implementations/yandex-cloud/README.md), plus a local baseline.
+- [Edge AI](EdgeAI/README.md) — independent Cloudflare Workers AI / ONNX local / Russian cloud inference experiments and quality benchmarks.
+- [Edge Integrated Scenarios](EdgeIntegratedScenarios/README.md) — planned rule-only vs AI-assisted defense evaluation with false-positive and latency measurements.
+
+No cloud resources have been provisioned, no BGP announcements made, and no DDoS load tests run. See each README for scope and acceptance TODOs.
+
 ## Working Enterprise AI Platform — one user journey
 
 **Start with the full real-browser AI story:** [**WAV + document → authorized search → local Qwen3 generated answer + citations**](enterprise-demo/EVIDENCE-2026-11-09-QWEN.md) · [**Watch genuine Chromium + Qwen3 MP4**](enterprise-demo/media/enterprise-generated-real.mp4) · [**Screenshot**](enterprise-demo/media/enterprise-generated-real.png). The independent [extractive-only run](enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md) needs no Ollama. **New:** [real Qwen3 → MCP tools → authorized PostgreSQL → human-confirmed note](enterprise-demo/EVIDENCE-2026-11-09-MCP.md), with bounded source-first workflow and negative permission tests.
