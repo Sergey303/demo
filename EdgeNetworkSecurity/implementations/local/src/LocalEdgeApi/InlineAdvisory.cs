@@ -8,7 +8,7 @@ internal sealed record AdvisorySample(int requests, int seconds, int errors, int
 
 internal sealed class InlineAdvisory(
     string? python, string? script, string? artifacts, int timeoutMs, int thresholdPct,
-    int baselineRps, int windowSeconds)
+    int baselineRps, int windowSeconds, PersistentAdvisoryWorker? persistent)
 {
     private const int MaxOutputBytes = 2048;
     private const int MaxWindowRequests = 10_000;
@@ -70,7 +70,9 @@ internal sealed class InlineAdvisory(
             sample = new AdvisorySample(_requests, windowSeconds, _errors, baselineRps);
         }
 
-        var result = await RunAsync(sample, cancellationToken);
+        var result = persistent is null
+            ? await RunAsync(sample, cancellationToken)
+            : await persistent.ScoreAsync(sample, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         if (result.Score is double score)
         {
@@ -108,24 +110,8 @@ internal sealed class InlineAdvisory(
             var token = deadline.Token;
             using var child = new Process
             {
-                StartInfo = new ProcessStartInfo(python)
-                {
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                },
+                StartInfo = StartInfo(python, script, artifacts, thresholdPct, timeoutMs),
             };
-            // No host credentials, proxies or account-related environment may reach
-            // the optional subprocess. Python's -I ignores user site packages.
-            child.StartInfo.Environment.Clear();
-            child.StartInfo.Environment["OMP_NUM_THREADS"] = "1";
-            child.StartInfo.Environment["OPENBLAS_NUM_THREADS"] = "1";
-            foreach (var arg in new[] { "-I", "-B", script, "--artifact-dir", artifacts, "--timeout-ms",
-                         Math.Min(timeoutMs, 2500).ToString(CultureInfo.InvariantCulture), "--threshold",
-                         (thresholdPct / 100.0).ToString("0.##", CultureInfo.InvariantCulture) })
-                child.StartInfo.ArgumentList.Add(arg);
 
             try
             {
@@ -182,6 +168,32 @@ internal sealed class InlineAdvisory(
         }
     }
 
+    internal static ProcessStartInfo StartInfo(
+        string python, string script, string artifacts, int thresholdPct, int? oneShotTimeoutMs = null)
+    {
+        var info = new ProcessStartInfo(python)
+        {
+            UseShellExecute = false,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        info.Environment.Clear();
+        info.Environment["OMP_NUM_THREADS"] = "1";
+        info.Environment["OPENBLAS_NUM_THREADS"] = "1";
+        foreach (var arg in new[] { "-I", "-B", script, "--artifact-dir", artifacts })
+            info.ArgumentList.Add(arg);
+        if (oneShotTimeoutMs is int timeout)
+        {
+            info.ArgumentList.Add("--timeout-ms");
+            info.ArgumentList.Add(Math.Min(timeout, 2500).ToString(CultureInfo.InvariantCulture));
+        }
+        info.ArgumentList.Add("--threshold");
+        info.ArgumentList.Add((thresholdPct / 100.0).ToString("0.##", CultureInfo.InvariantCulture));
+        return info;
+    }
+
     private static async Task<ReadOnlyMemory<byte>> ReadOutputAsync(Stream stream, CancellationToken token)
     {
         var bytes = new byte[MaxOutputBytes];
@@ -200,7 +212,8 @@ internal sealed class InlineAdvisory(
         return bytes;
     }
 
-    private static (double? Score, string Source, string Fallback) Parse(ReadOnlyMemory<byte> output)
+    internal static (double? Score, string Source, string Fallback) Parse(
+        ReadOnlyMemory<byte> output, bool requireOnnx = false)
     {
         using var document = JsonDocument.Parse(output, new JsonDocumentOptions { MaxDepth = 2 });
         var obj = document.RootElement;
@@ -221,6 +234,10 @@ internal sealed class InlineAdvisory(
             obj.GetProperty("status").GetString() != "simulated" ||
             obj.GetProperty("policy_id").GetString() != "demo-policy-v1" ||
             !obj.GetProperty("score").TryGetDouble(out var score) || !double.IsFinite(score) || score < 0 || score > 1)
+            return (null, "rule-only", "unavailable");
+
+        if (requireOnnx && (obj.GetProperty("source").GetString() != "onnx-cpu" ||
+                            obj.GetProperty("fallback").GetString() != "none"))
             return (null, "rule-only", "unavailable");
 
         return obj.GetProperty("fallback").GetString() switch

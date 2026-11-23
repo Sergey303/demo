@@ -61,15 +61,18 @@ Readiness checks Redis with a non-mutating PING. It does not consume permits or 
 
 ### Opt-in inline AI advisory
 
-Set `LOCAL_EDGE_ADVISORY_ENABLED=1` and configure the absolute paths
-`LOCAL_EDGE_ADVISORY_PYTHON`, `LOCAL_EDGE_ADVISORY_SCRIPT` (the existing EIS
-`inline_advisory.py`), and `LOCAL_EDGE_ADVISORY_ARTIFACTS`. Configure these at
-startup with trusted local files. The API adds an advisory only to successful
-`/api/expensive` responses, after quota admission and protected work.
+Advisory is disabled by default. Set `LOCAL_EDGE_ADVISORY_ENABLED=1` and
+configure the absolute paths `LOCAL_EDGE_ADVISORY_PYTHON` and
+`LOCAL_EDGE_ADVISORY_ARTIFACTS` at startup. The default enabled mode,
+`LOCAL_EDGE_ADVISORY_MODE=oneshot`, uses the existing EIS `inline_advisory.py`
+at `LOCAL_EDGE_ADVISORY_SCRIPT`. The API adds an advisory only to successful
+`/api/expensive` responses, after quota admission and protected work. Advisory
+actions are limited to `allow` and `observe`.
 
 | Setting | Range | Default |
 | --- | --- | --- |
 | `LOCAL_EDGE_ADVISORY_TIMEOUT_MS` | 100–3000 | 1500 |
+| `LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS` (persistent only) | 100–12000 | 8000 |
 | `LOCAL_EDGE_ADVISORY_THRESHOLD_PCT` | 1–100 | 80 |
 | `LOCAL_EDGE_ADVISORY_BASELINE_RPS` | 1–100 | 2 |
 
@@ -85,6 +88,31 @@ error fraction, capped at one. Observation and fallback both preserve HTTP 200.
 observe actions). The HTTP fixture tests exercise the subprocess contract with
 simulated scores and failures.
 
+For the opt-in Linux persistent client, set `LOCAL_EDGE_ADVISORY_MODE=persistent`
+and `LOCAL_EDGE_ADVISORY_WORKER_SCRIPT` to a trusted absolute path ending in
+`persistent_worker.py`. The interpreter, script, and artifact directory must
+exist. The API starts one isolated Python process per replica on demand and
+communicates through newline-delimited JSON over standard input and output.
+The API limits each handshake or response to 2048 JSON bytes before the
+newline and rejects unexpected or duplicate fields. It drains and discards
+stderr with bounded memory. The first admitted scoring
+request waits for the ready handshake under a separate startup deadline, then
+gets the normal score deadline. Warm requests reuse the ready worker. The first
+request can pay the full native startup cost, previously about 2.5 seconds for
+the isolated one-shot path.
+
+Concurrent scores skip the occupied worker slot and use the local rules. A
+timeout or invalid worker exchange kills and reaps the process, uses the local
+rules for that request, and allows a fresh start on a later request after a
+750 ms cooldown. A client disconnect during an exchange also discards the
+worker. Host shutdown cancels any exchange and reaps the worker.
+`advisoryWorkerRestarts` counts successful subprocess launches after the
+first launch on each replica, including launches that fail the handshake.
+
+The persistent client is locally tested over real HTTP with a synthetic Python
+fixture. The latency test prints cold and warm HTTP durations from one worker
+PID and inserts a 400 ms synthetic cold delay. Native ONNX/seccomp compatibility
+and model-backed latency remain unverified pending merged cross-project E2E.
 
 ## Verification from repo root
 

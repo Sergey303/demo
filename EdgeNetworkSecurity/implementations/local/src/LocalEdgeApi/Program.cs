@@ -33,16 +33,33 @@ await using var redisQuota = redisPortRaw is null
         Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_NAMESPACE") ?? "demo-local",
         permits, windowSeconds);
 
+var advisoryEnabled = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_ENABLED") == "1";
+var advisoryMode = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_MODE") ?? "oneshot";
+if (advisoryEnabled && advisoryMode is not ("oneshot" or "persistent"))
+    throw new InvalidOperationException("Invalid LOCAL_EDGE_ADVISORY_MODE: expected oneshot or persistent.");
+
+var python = AbsolutePath("LOCAL_EDGE_ADVISORY_PYTHON");
+var artifacts = AbsolutePath("LOCAL_EDGE_ADVISORY_ARTIFACTS");
 var script = AbsolutePath("LOCAL_EDGE_ADVISORY_SCRIPT");
-var advisory = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_ENABLED") == "1"
+var workerScript = AbsolutePath("LOCAL_EDGE_ADVISORY_WORKER_SCRIPT");
+var scoreTimeout = advisoryEnabled ? ConfigInt("LOCAL_EDGE_ADVISORY_TIMEOUT_MS", 1500, 100, 3000) : 1500;
+var threshold = advisoryEnabled ? ConfigInt("LOCAL_EDGE_ADVISORY_THRESHOLD_PCT", 80, 1, 100) : 80;
+await using var persistent = advisoryEnabled && advisoryMode == "persistent"
+    ? new PersistentAdvisoryWorker(
+        File.Exists(python) && Path.GetFileName(workerScript) == "persistent_worker.py" &&
+        File.Exists(workerScript) && Directory.Exists(artifacts)
+            ? InlineAdvisory.StartInfo(python!, workerScript!, artifacts!, threshold)
+            : null,
+        ConfigInt("LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS", 8000, 100, 12000), scoreTimeout)
+    : null;
+
+var advisory = advisoryEnabled
     ? new InlineAdvisory(
-        AbsolutePath("LOCAL_EDGE_ADVISORY_PYTHON"),
+        python,
         Path.GetFileName(script) == "inline_advisory.py" && File.Exists(script) ? script : null,
-        AbsolutePath("LOCAL_EDGE_ADVISORY_ARTIFACTS"),
-        ConfigInt("LOCAL_EDGE_ADVISORY_TIMEOUT_MS", 1500, 100, 3000),
-        ConfigInt("LOCAL_EDGE_ADVISORY_THRESHOLD_PCT", 80, 1, 100),
+        artifacts, scoreTimeout, threshold,
         ConfigInt("LOCAL_EDGE_ADVISORY_BASELINE_RPS", 2, 1, 100),
-        windowSeconds)
+        windowSeconds, persistent)
     : null;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +68,7 @@ builder.WebHost.ConfigureKestrel(options =>
     options.AddServerHeader = false;
     options.Listen(IPAddress.Loopback, port); // Cannot be switched to 0.0.0.0 by ASPNETCORE_URLS.
 });
-builder.Services.AddSingleton(new DemoCounters(redisQuota is not null, advisory));
+builder.Services.AddSingleton(new DemoCounters(redisQuota is not null, advisory, persistent));
 builder.Services.AddSingleton(new SemaphoreSlim(concurrency, concurrency));
 builder.Services.AddRateLimiter(options =>
 {
@@ -140,7 +157,9 @@ var expensiveEndpoint = app.MapGet("/api/expensive", async (HttpContext request,
 
     if (advisory is null)
         return Results.Ok(new { status = "processed" });
-    var result = await advisory.ScoreAsync(request.RequestAborted);
+    using var advisoryCancellation = persistent is null ? null :
+        CancellationTokenSource.CreateLinkedTokenSource(request.RequestAborted, app.Lifetime.ApplicationStopping);
+    var result = await advisory.ScoreAsync(advisoryCancellation?.Token ?? request.RequestAborted);
     return Results.Ok(new { status = "processed", advisory = result });
 }).WithMetadata(new AdvisoryEndpoint());
 
@@ -187,7 +206,7 @@ app.Run();
 
 internal sealed class AdvisoryEndpoint;
 
-internal sealed class DemoCounters(bool redisShared, InlineAdvisory? advisory)
+internal sealed class DemoCounters(bool redisShared, InlineAdvisory? advisory, PersistentAdvisoryWorker? persistent)
 {
     private long _started, _completed, _rejected, _busy, _redisUnavailable;
     public void RedisUnavailable() => Interlocked.Increment(ref _redisUnavailable);
@@ -207,6 +226,7 @@ internal sealed class DemoCounters(bool redisShared, InlineAdvisory? advisory)
         advisoryScored = advisory?.Scored ?? 0,
         advisoryFallback = advisory?.Fallback ?? 0,
         advisoryObserved = advisory?.Observed ?? 0,
+        advisoryWorkerRestarts = persistent?.Restarts ?? 0,
         scope = redisShared ? "redis_shared" : "single_process",
         status = "local-tested",
     };
