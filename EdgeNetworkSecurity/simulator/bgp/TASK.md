@@ -1,6 +1,6 @@
 # ENS-01 — BGP route selection simulator
 
-**Priority P0; status TODO.** Implement here: `model.py`, `tests/test_model.py`; no network sockets or routing daemon.
+**Priority P0; status PARTIAL — model.py exists, CLI and dedicated tests TODO.** Implement here: `model.py`, `tests/test_model.py`; no network sockets or routing daemon.
 
 Input: declarative toy AS graph, prefixes, candidate paths, AS path length, local preference, withdrawal events. Output: stable deterministic selected path and clear no-route state.
 
