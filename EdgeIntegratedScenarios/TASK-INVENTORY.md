@@ -21,7 +21,6 @@ do not create additional entries.
 - Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection. [EdgeAI/implementations/onnx-local/TASK.md:20](../EdgeAI/implementations/onnx-local/TASK.md#L20)
 - Make model architecture/feature versions and test scenario snapshots backward-compatible or explicitly reject upgrades. [EdgeAI/implementations/onnx-local/TASK.md:21](../EdgeAI/implementations/onnx-local/TASK.md#L21)
 - Add .NET 10 inference adapter and real edge-device/WASM execution under an explicit hardware budget. [EdgeAI/implementations/onnx-local/TASK.md:25](../EdgeAI/implementations/onnx-local/TASK.md#L25)
-- Optional HTTP API integration: expose advisory score as `observe` only, with bounded timeout, deterministic fallback and no model-driven hard blocks. [EdgeAI/implementations/onnx-local/TASK.md:26](../EdgeAI/implementations/onnx-local/TASK.md#L26)
 - CPU, RAM, p95 latency, throughput/cold start and network-disabled tests on Windows/Linux; publish measured environment details. [EdgeAI/implementations/onnx-local/TASK.md:27](../EdgeAI/implementations/onnx-local/TASK.md#L27)
 - Provider parity with Cloudflare Workers AI and Yandex Cloud on comparable tasks/models; do not imply regional cloud inference is true edge execution. [EdgeAI/implementations/onnx-local/TASK.md:28](../EdgeAI/implementations/onnx-local/TASK.md#L28)
 
@@ -112,6 +111,8 @@ do not create additional entries.
 - Optional secret-managed Redis TLS/ACL and environment isolation; no arbitrary public Redis endpoint. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:29](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L29)
 - OpenTelemetry/Prometheus instrumentation, low-cardinality labels and distributed tracing. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:30](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L30), [EdgeNetworkSecurity/implementations/local/TASK.md:19](../EdgeNetworkSecurity/implementations/local/TASK.md#L19)
 - Build a container/Compose topology only with explicit security defaults, safe lifecycle controls and documented rollback. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:31](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L31), [EdgeNetworkSecurity/implementations/local/TASK.md:20](../EdgeNetworkSecurity/implementations/local/TASK.md#L20)
+- Replace per-request 2.5–2.7 s isolated ONNX startup with an authenticated local long-lived worker or outbox-backed asynchronous advisory queue. Keep strict resource limits, circuit breaking, PII-free telemetry and latency/p95 acceptance. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:41](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L41)
+- Measure real request latency and failure probability under sustained safe localhost load, including CPU/RAM budgets, cold/warm startup, and multi-replica fairness. No production readiness claim. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:42](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L42)
 
 ## ENS-05 — Cloudflare provider implementation
 

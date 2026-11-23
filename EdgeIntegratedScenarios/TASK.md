@@ -11,7 +11,7 @@ Python and the checked-in fixtures. Base SHA
 **Local HTTP plus offline advice is implemented and opt-in tested.** See
 [runner](run_http.py) and [experiment instructions](README.md#локальный-http-эксперимент).
 The same measured synthetic windows feed both policy modes after the HTTP run.
-ASP.NET inline adapter acceptance is still open. Base SHA
+ASP.NET inline adapter now has real localhost HTTP → EIS CLI → isolated ONNX CPU and deterministic fallback acceptance (opt-in). A persistent bounded worker or async advice queue remains open. Base SHA
 `236046772dc330a3fd6043455faf74661bc813b4`.
 
 Cloudflare, Yandex Cloud and EdgeCenter acceptance remains **BLOCKED** on

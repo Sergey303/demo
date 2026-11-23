@@ -23,7 +23,7 @@
 ## P1 architecture
 
 - [ ] Add .NET 10 inference adapter and real edge-device/WASM execution under an explicit hardware budget.
-- [ ] Optional HTTP API integration: expose advisory score as `observe` only, with bounded timeout, deterministic fallback and no model-driven hard blocks.
+- [x] Optional localhost HTTP API integration: the ASP.NET Core demo launches a bounded isolated ONNX scorer after successful quota admission; advice is only `allow/observe` with deterministic fallback and never hard-blocks. Locally verified, not production-ready.
 - [ ] CPU, RAM, p95 latency, throughput/cold start and network-disabled tests on Windows/Linux; publish measured environment details.
 - [ ] Provider parity with Cloudflare Workers AI and Yandex Cloud on comparable tasks/models; do not imply regional cloud inference is true edge execution.
 

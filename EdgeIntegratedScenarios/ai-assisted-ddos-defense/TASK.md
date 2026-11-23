@@ -18,5 +18,6 @@ fixtures as rule-only fallbacks. The subprocess deadline bounds the whole
 fixture stage. The [local HTTP experiment](../run_http.py) compares offline decisions
 on the same measured HTTP windows and gives optional ONNX scoring a bounded
 subprocess with rule-only fallback. The [one-shot advisory CLI](inline_advisory.py) uses the isolated ONNX scorer
-and returns advisory-only results. ASP.NET integration and HTTP request-time
-behavior remain open. See the [CLI contract and evidence](../README.md#inline-advisory-cli).
+and returns advisory-only results. The opt-in ASP.NET Core adapter is now locally verified
+with actual HTTP 200/429 and native ONNX CPU inference; slow per-request process
+startup remains a P0 latency/architecture limitation. See the [CLI contract and evidence](../README.md#inline-advisory-cli).

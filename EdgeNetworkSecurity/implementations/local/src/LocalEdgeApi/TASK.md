@@ -33,3 +33,10 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 ## Acceptance
 
 Use synthetic, bounded localhost traffic only. Ordinary tests must not require Docker. Real Redis tests require `RUN_REDIS_TESTS=1` and a disposable isolated container from a locally cached image. Keep clear evidence/status labels: tested locally ≠ provider-verified. No cloud `apply`.
+
+## P0 advisory integration (verified in the fourth parallel development wave)
+
+- [x] Optional localhost ASP.NET Core `/api/expensive` invokes a bounded Python advisory process after quota admission and protected work; returns only `allow/observe`, with deterministic EdgeAI rule fallback on malformed output, missing model, timeout or process failure. 429/503 do not trigger inference.
+- [x] Real HTTP tests cover nonblocking concurrency slot release, worker kill/reap, cancellation, invalid outputs, source validation, per-replica aggregate-only input, and matching the EdgeAI fallback score.
+- [ ] Replace per-request 2.5–2.7 s isolated ONNX startup with an authenticated local long-lived worker or outbox-backed asynchronous advisory queue. Keep strict resource limits, circuit breaking, PII-free telemetry and latency/p95 acceptance.
+- [ ] Measure real request latency and failure probability under sustained safe localhost load, including CPU/RAM budgets, cold/warm startup, and multi-replica fairness. No production readiness claim.
