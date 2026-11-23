@@ -299,3 +299,37 @@ paths are not a replacement for broader service security or authorization.
 
 See [merged E2E evidence](EVIDENCE-2026-11-23-PERSISTENT-HTTP.md)
 and the [opt-in tests](tests/test_inline_end_to_end.py).
+
+### Opt-in API prewarm acceptance
+
+**Pending an independent E2E run after the API change merges.** The suite
+starts the real Linux seccomp worker with `LOCAL_EDGE_ADVISORY_ENABLED=1`,
+`LOCAL_EDGE_ADVISORY_MODE=persistent`, and `LOCAL_EDGE_ADVISORY_PREWARM=1`.
+It polls `/metrics` for up to 15 seconds after API health, before sending
+any `/api/expensive` requests. It checks `advisoryWorkerReady`,
+`advisoryPrewarmAttempts`, and `advisoryPrewarmFailures` alongside the
+request and scorer counters. Two HTTP 200 ONNX responses after moving
+the artifacts aside establish reuse of the initialized session. A third
+request must return HTTP 429 without scoring. The suite logs both warm
+HTTP latencies and allows up to 1000 ms per request as a local smoke bound.
+It also covers lazy startup with the flag unset and missing-model prewarm
+with rule-only fallback and healthy `/ready`.
+
+After merge, run from the repository root with Linux, libseccomp, the .NET 10
+SDK, the API's NuGet dependencies already in the local package cache, and a
+venv with the pinned [ONNX dependencies](../EdgeAI/implementations/onnx-local/requirements.txt).
+The test build uses an empty local package source and writes its artifacts
+to a temporary directory under EIS.
+
+```bash
+RUN_EDGE_INLINE_FULL_TESTS=1 /ABS/PINNED_VENV/bin/python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_end_to_end.py -v
+```
+
+For a separate local measurement, point the stdlib sampler at an already
+running disposable API on IPv4 loopback. It reports nearest-rank p50/p95/p99
+time to response headers for HTTP 200, separate non-200 and transport failure
+counts, and a status breakdown. It accepts 1–10 RPS and 1–60 seconds.
+
+```bash
+python3 -B EdgeIntegratedScenarios/sample_latency.py --port 5088 --rps 2 --seconds 10
+```

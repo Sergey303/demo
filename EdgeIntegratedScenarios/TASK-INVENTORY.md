@@ -61,6 +61,7 @@ do not create additional entries.
 [EdgeIntegratedScenarios/TASK.md:1](TASK.md#L1)
 
 - Compare provider configurations and measure actual cloud paths after prerequisites are met. [EdgeIntegratedScenarios/TASK.md:22](TASK.md#L22)
+- Independently run and record the real Linux / .NET 10 / pinned ONNX prewarm E2E after the API change merges. [EdgeIntegratedScenarios/TASK.md:35](TASK.md#L35)
 
 ## EIS-00-UI — bundled evidence dashboard
 

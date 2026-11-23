@@ -26,3 +26,10 @@ with [strict protocol tests](tests/test_persistent_worker.py). **Persistent ASP.
 integration passed native CPU E2E** on loopback with bounded HTTP 429 preservation,
 process/session reuse and rule-only fallback; one-shot mode remains available. Base SHA `2b7219deb5739b4cb03041660f04452f83a78fac`.
 See [evidence](EVIDENCE-WAVE5-PERSISTENT-PYTHON.md).
+
+**API prewarm acceptance pending.** The [opt-in suite](tests/test_inline_end_to_end.py)
+covers readiness before HTTP traffic, single-attempt prewarm, native session reuse,
+quota preservation, lazy default, and missing-model fallback. Base SHA
+`dc24f8557192b93be54890cad6fba81624c5ae20`.
+
+- [ ] Independently run and record the real Linux / .NET 10 / pinned ONNX prewarm E2E after the API change merges.
