@@ -1,6 +1,6 @@
 # EAI-02 — Codex CLI: local ONNX inference
 
-**Status: LOCAL CPU VERIFIED (2026-11-23).** Ran the generator, scorer, 11 tests and 50-iteration benchmark in an isolated venv on Linux x86-64. See the [exact run results](README.md#verified-cpu-run-2026-11-23). Worktree base SHA was `9275849a9fa3028ef867b5f30608ca50eccb4a1a`.
+**Status: STANDALONE HARDENING LOCALLY VERIFIED (2026-11-23).** The pinned CPU suite passed 20 tests on Linux x86-64. Hardening base SHA was `c2969b38c8a4c762eccab931a747701a4ea54881`. See the [hardening evidence](README.md#standalone-hardening-verification) and [initial CPU run](README.md#verified-cpu-run-2026-11-23).
 
 ## Implemented
 
@@ -15,8 +15,8 @@
 
 - [x] Run the standalone README commands with pinned dependencies and native `CPUExecutionProvider`. Local evidence covers generation, scoring, integrity and shape regressions, and warm inference timing.
 - [ ] Confirm the `onnx-cpu` GitHub Actions job and repeat on the RDC machine when available.
-- [ ] Add hard wall-clock timeouts/isolation (killable subprocess or dedicated restricted worker). An ONNX Runtime session API call itself cannot currently be bounded by our request timeout.
-- [ ] Validate tampering of manifest itself, graph op allowlist, model size/metadata and failure modes of malformed ONNX protobufs.
+- [x] Add standalone wall-clock enforcement with a killable, reaped Linux subprocess, a socket filter, bounded I/O and deterministic rules fallback. The existing in-process API remains available to current callers.
+- [x] Validate tampered manifest metadata and fields, malformed ONNX protobufs, unsupported operators, external data, model size and tensor schema. SHA-256 checks integrity only.
 - [ ] Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection.
 - [ ] Make model architecture/feature versions and test scenario snapshots backward-compatible or explicitly reject upgrades.
 

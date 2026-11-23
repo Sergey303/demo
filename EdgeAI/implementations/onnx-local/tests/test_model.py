@@ -86,6 +86,42 @@ class TestRealOnnxInference(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "manifest/version"):
                 OnnxWindowScorer(directory)
 
+    def test_rejects_tampered_manifest_metadata_and_duplicate_keys(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            (directory / "model.onnx").write_bytes((self.out / "model.onnx").read_bytes())
+            manifest = directory / "manifest.json"
+            for change in ({"training_rows": 1}, {"opset": 13.0},
+                           {"builder_sources_sha256": "0" * 64}, {"extra": True}):
+                with self.subTest(change=change):
+                    manifest.write_text(json.dumps(dict(self.manifest, **change)))
+                    with self.assertRaisesRegex(ValueError, "manifest"):
+                        OnnxWindowScorer(directory)
+            manifest.write_text('{"id":"wrong",' + json.dumps(self.manifest)[1:])
+            with self.assertRaisesRegex(ValueError, "duplicate"):
+                OnnxWindowScorer(directory)
+
+    def test_rejects_invalid_model_even_with_matching_hash(self):
+        model = create_graph(*train())
+        model.graph.node[-1].op_type = "Relu"
+        external = create_graph(*train())
+        external.graph.initializer[0].data_location = 1
+        external.graph.initializer[0].external_data.add(key="location", value="other")
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            for payload, reason in (
+                (b"\xff", "malformed ONNX"),
+                (model.SerializeToString(), "operator"),
+                (external.SerializeToString(), "graph"),
+                (b"X" * 1_000_001, "model size"),
+            ):
+                with self.subTest(reason=reason):
+                    (directory / "model.onnx").write_bytes(payload)
+                    meta = dict(self.manifest, model_sha256=sha256(payload).hexdigest())
+                    (directory / "manifest.json").write_text(json.dumps(meta))
+                    with self.assertRaisesRegex(ValueError, reason):
+                        OnnxWindowScorer(directory)
+
     def test_batch_bounds_bad_values_and_pii(self):
         example = {"requests": 2, "seconds": 5, "errors": 0, "baseline_rps": 1}
         scores = self.scorer.score_many([example] * 32)
