@@ -1,0 +1,12 @@
+{"id":"normal-1","label":0,"window":{"requests":50,"seconds":60,"errors":0,"baseline_rps":2}}
+{"id":"normal-2","label":0,"window":{"requests":100,"seconds":60,"errors":5,"baseline_rps":2}}
+{"id":"normal-3","label":0,"window":{"requests":120,"seconds":60,"errors":20,"baseline_rps":2}}
+{"id":"normal-4","label":0,"window":{"requests":40,"seconds":60,"errors":10,"baseline_rps":1}}
+{"id":"legitimate-burst-1","label":0,"window":{"requests":1500,"seconds":10,"errors":15,"baseline_rps":3}}
+{"id":"legitimate-burst-2","label":0,"window":{"requests":250,"seconds":10,"errors":60,"baseline_rps":3}}
+{"id":"suspected-bot-1","label":1,"window":{"requests":1200,"seconds":10,"errors":300,"baseline_rps":3}}
+{"id":"suspected-bot-2","label":1,"window":{"requests":5000,"seconds":10,"errors":500,"baseline_rps":5}}
+{"id":"suspected-bot-3","label":1,"window":{"requests":400,"seconds":10,"errors":300,"baseline_rps":3}}
+{"id":"suspected-bot-4","label":1,"window":{"requests":200,"seconds":10,"errors":40,"baseline_rps":5}}
+{"id":"slow-abuse-1","label":1,"window":{"requests":180,"seconds":60,"errors":1,"baseline_rps":3}}
+{"id":"slow-abuse-2","label":1,"window":{"requests":60,"seconds":60,"errors":0,"baseline_rps":2}}

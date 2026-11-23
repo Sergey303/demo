@@ -26,9 +26,9 @@ complete prompt-injection classifier, or proof of semantic truth.**
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
 
-## Edge networking and AI architecture labs (scaffolds)
+## Edge networking and AI architecture labs (offline simulations + provider TODOs)
 
-These are **documented project skeletons with TODOs, not deployed or verified production implementations**:
+The BGP/Anycast simulators and synthetic anomaly/policy evaluators now contain **runnable offline code and unit tests**. Cloudflare, EdgeCenter and Yandex deployments remain **TODO**, not verified production integrations:
 
 - [Edge Network Security](EdgeNetworkSecurity/README.md) — BGP/Anycast simulation, anti-DDoS, and **three strictly separated providers**: [Cloudflare](EdgeNetworkSecurity/implementations/cloudflare/README.md), [EdgeCenter (RU)](EdgeNetworkSecurity/implementations/edgecenter-ru/README.md), [Yandex Cloud (RU)](EdgeNetworkSecurity/implementations/yandex-cloud/README.md), plus a local baseline.
 - [Edge AI](EdgeAI/README.md) — independent Cloudflare Workers AI / ONNX local / Russian cloud inference experiments and quality benchmarks.

@@ -1,8 +1,8 @@
 # ENS-01 — BGP route selection simulator
 
-**Priority P0; status PARTIAL — model.py exists, CLI and dedicated tests TODO.** Implement here: `model.py`, `tests/test_model.py`; no network sockets or routing daemon.
+**Priority P0; core DONE (local simulation) — `model.py`, `replay.py`, `withdraw-recovery.json`, `tests/test_replay.py`.** No network sockets or routing daemon. Run `python3 -m unittest discover -s EdgeNetworkSecurity/simulator/bgp/tests -v`.
 
-Input: declarative toy AS graph, prefixes, candidate paths, AS path length, local preference, withdrawal events. Output: stable deterministic selected path and clear no-route state.
+Implemented input: single canonical CIDR prefix with announce/withdraw events, candidate AS paths and local preference. Output: stable deterministic selected path and explicit no-route state. **TODO**: general AS graph/transit topology and multi-prefix scenarios.
 
 Acceptance:
 - local-preference dominates AS_PATH length; tie-break deterministic and documented (no claim to emulate all BGP policy).

@@ -1,0 +1,12 @@
+{"id":"normal-1","label":0,"rule_action":"allow","window":{"requests":60,"seconds":60,"errors":0,"baseline_rps":3},"model_failure":false}
+{"id":"normal-2","label":0,"rule_action":"allow","window":{"requests":100,"seconds":60,"errors":5,"baseline_rps":3},"model_failure":false}
+{"id":"normal-3","label":0,"rule_action":"allow","window":{"requests":80,"seconds":60,"errors":20,"baseline_rps":3},"model_failure":false}
+{"id":"legit-sale-spike","label":0,"rule_action":"allow","window":{"requests":1200,"seconds":10,"errors":10,"baseline_rps":3},"model_failure":false}
+{"id":"legit-service-event","label":0,"rule_action":"observe","window":{"requests":250,"seconds":10,"errors":5,"baseline_rps":3},"model_failure":false}
+{"id":"abuse-large-burst","label":1,"rule_action":"allow","window":{"requests":1200,"seconds":10,"errors":120,"baseline_rps":2},"model_failure":false}
+{"id":"abuse-large-errors","label":1,"rule_action":"allow","window":{"requests":500,"seconds":10,"errors":300,"baseline_rps":3},"model_failure":false}
+{"id":"abuse-blocked-rule","label":1,"rule_action":"block","window":{"requests":2000,"seconds":10,"errors":1200,"baseline_rps":5},"model_failure":false}
+{"id":"abuse-low-rate","label":1,"rule_action":"allow","window":{"requests":100,"seconds":60,"errors":0,"baseline_rps":2},"model_failure":false}
+{"id":"abuse-model-offline","label":1,"rule_action":"allow","window":{"requests":900,"seconds":10,"errors":600,"baseline_rps":2},"model_failure":true}
+{"id":"normal-model-offline","label":0,"rule_action":"allow","window":{"requests":60,"seconds":60,"errors":0,"baseline_rps":3},"model_failure":true}
+{"id":"legit-rule-block","label":0,"rule_action":"block","window":{"requests":10,"seconds":10,"errors":1,"baseline_rps":2},"model_failure":false}

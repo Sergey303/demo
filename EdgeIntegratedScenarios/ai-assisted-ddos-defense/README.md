@@ -1,11 +1,20 @@
-# AI-assisted DDoS defense
+# AI-assisted DDoS defense — offline synthetic replay
 
-TODO (не готовая реализация):
-1. Локально размеченные запросы: обычные, всплеск легитимной нагрузки, синтетические боты.
-2. Baseline: детерминированные rate limits/WAF.
-3. ML: оценка аномалий из EdgeAI, с versioned policy.
-4. Decision: allow / observe / challenge / block, с audit trail и TTL; default не должен бесконтрольно блокировать при сбоях модели.
-5. Проверки: precision/recall, false positive rate, p95 latency, load, отказ AI, смена модели, перезапуск edge.
-6. Провайдерские ветки в EdgeNetworkSecurity; симуляция не выдаётся за действующую anti-DDoS защиту.
+**Implemented (local and rules-only):** `policy.py` permits an anomaly signal to upgrade `allow` to `observe`, never to autonomous `block`; deterministic `block` remains authoritative. `replay.py` loads the explicit EdgeAI baseline and compares the same **synthetic labelled** rows with and without advisory scoring. When inference fails, the deterministic rule takes over.
 
-Перед реализацией определить интерфейс передачи сигналов и лимиты доверия к модели.
+## Reproduce
+
+From the repository root:
+
+```bash
+python3 EdgeIntegratedScenarios/ai-assisted-ddos-defense/replay.py
+python3 -m unittest discover -s EdgeIntegratedScenarios/ai-assisted-ddos-defense/tests -v
+```
+
+Reports include independent confusion matrices for **flagging** (`observe` OR `block`), not actual security blocks. `hard_blocked_benign` counts deterministic rule blocks separately. The synthetic fixture intentionally demonstrates both higher detection and more false positives when AI advice enables observation. `status=simulated` is always present. No HTTP requests are made.
+
+## Limits / TODO
+
+- No WAF/CDN/provider SDK, no real model, no live traffic, no replay of recorded user data.
+- TODO: versioned transport contracts, explicit simulated model latency/timeout/retries, immutable policy audit, negative tests for signed updates, real holdout corpus with provenance, per-provider staged integration and measured observability.
+- See [TASK.md](TASK.md) and [global execution plan](../EXECUTION_PLAN.md).

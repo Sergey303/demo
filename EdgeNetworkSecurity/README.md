@@ -1,6 +1,6 @@
 # Edge Network Security — BGP, Anycast, anti-DDoS
 
-**Статус: scaffold / TODO.** Отдельный демонстрационный проект: Cloudflare, EdgeЦентр (РФ), Yandex Cloud (РФ) и воспроизводимый локальный стенд. Сценарии и метрики общие, реализации физически разделены. Никакие провайдерские защиты не заявляются действующими до настройки и проверки.
+**Статус: локальные симуляторы BGP/Anycast работают; облачные реализации и HTTP-защита — TODO.** Отдельный демонстрационный проект: Cloudflare, EdgeЦентр (РФ), Yandex Cloud (РФ) и воспроизводимый локальный стенд. Сценарии и метрики общие, реализации физически разделены. Никакие провайдерские защиты не заявляются действующими до настройки и проверки.
 
 ## Каталог
 - [Архитектура и критерии приёмки](docs/ARCHITECTURE.md)
@@ -22,4 +22,4 @@ Edge AI — отдельный соседний проект [EdgeAI](../EdgeAI/
 
 ## Первый исполняемый срез (симуляция)
 
-[Модель BGP](simulator/bgp/model.py) реализует выбор пути по local preference / AS_PATH и withdrawal. Это **упрощённая детерминированная модель**, не реальный BGP. Проверки в [общем offline-тесте](../EdgeIntegratedScenarios/tests/test_edge_baselines.py). Запуск из корня репозитория: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v`. Реальные provider-ветки, Anycast и HTTP-стенд пока TODO; задания находятся в [TASK.md провайдеров](implementations/cloudflare/TASK.md), [локальном стенде](implementations/local/TASK.md), [BGP](simulator/bgp/TASK.md) и [Anycast](simulator/anycast/TASK.md).
+[Модель BGP](simulator/bgp/model.py) реализует выбор пути по local preference / AS_PATH и withdrawal. Это **упрощённая детерминированная модель**, не реальный BGP. Проверки в [общем offline-тесте](../EdgeIntegratedScenarios/tests/test_edge_baselines.py). Запуск из корня репозитория: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v`. Реальные provider-ветки, настоящий сетевой Anycast и HTTP-стенд пока TODO; задания находятся в [TASK.md провайдеров](implementations/cloudflare/TASK.md), [локальном стенде](implementations/local/TASK.md), [BGP](simulator/bgp/TASK.md) и [Anycast](simulator/anycast/TASK.md).

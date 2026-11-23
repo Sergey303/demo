@@ -1,6 +1,6 @@
 # Edge AI — независимые сценарии inference
 
-**Статус: scaffold / TODO.** Самостоятельный проект, не подмодуль anti-DDoS.
+**Статус: детерминированный baseline и синтетическая оценка работают; реальные ML-модели и провайдерские адаптеры — TODO.** Самостоятельный проект, не подмодуль anti-DDoS.
 
 ## Реализации
 - [Cloudflare Workers AI](implementations/cloudflare-workers-ai/README.md) — серверлесс edge inference.
@@ -19,4 +19,4 @@
 
 ## Первый исполняемый срез (без ML)
 
-[baseline.py](scenarios/traffic-anomaly-detection/baseline.py) считает ограниченный детерминированный heuristic score для синтетических окон трафика. **Это не обученная модель и не калиброванная вероятность атаки.** Offline unit-тесты: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v`. Дальнейшая работа: [TASK для детектора](scenarios/traffic-anomaly-detection/TASK.md), [ONNX](implementations/onnx-local/TASK.md) и [бенчмарков](benchmarks/TASK.md).
+[baseline.py](scenarios/traffic-anomaly-detection/baseline.py) считает ограниченный детерминированный heuristic score для синтетических окон трафика. **Это не обученная модель и не калиброванная вероятность атаки.** [Синтетическая оценка](scenarios/traffic-anomaly-detection/README.md) вычисляет precision/recall и FPR/FNR на 12 авторских сценариях; тесты: `python -m unittest discover -s EdgeAI/scenarios/traffic-anomaly-detection/tests -v`. Это не измерение реального DDoS. Дальнейшая работа: [TASK для детектора](scenarios/traffic-anomaly-detection/TASK.md), [ONNX](implementations/onnx-local/TASK.md) и [бенчмарков](benchmarks/TASK.md).

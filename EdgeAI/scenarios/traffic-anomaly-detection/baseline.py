@@ -17,7 +17,7 @@ class Window:
             raise ValueError("invalid seconds")
         if type(self.errors) is not int or not 0 <= self.errors <= self.requests:
             raise ValueError("invalid errors")
-        if not isinstance(self.baseline_rps, (int, float)) or not isfinite(self.baseline_rps) or not 0 <= self.baseline_rps <= 10**7:
+        if type(self.baseline_rps) not in (int, float) or not isfinite(self.baseline_rps) or not 0 <= self.baseline_rps <= 10**7:
             raise ValueError("invalid baseline")
 
 

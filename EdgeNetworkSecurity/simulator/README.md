@@ -1,7 +1,8 @@
-# Симуляторы BGP / Anycast
+# BGP and Anycast offline simulator labs
 
-- `bgp/`: TODO — граф AS, route preference, AS_PATH, withdrawals и convergence; модель не воспроизводит все политики операторов.
-- `anycast/`: TODO — один виртуальный IP, несколько площадок, отказы, неравномерность маршрутов, потеря долгих сессий.
-- `failures/`: TODO — сбой edge, origin, связи и рассинхронизация конфигураций.
+The first two local labs are now executable:
+- [BGP best-path selection](bgp/README.md) — stable tie-break, announcement/withdrawal, no-route state.
+- [Anycast routing](anycast/README.md) — network-cost selection, edge overload, failover and broken sessions.
+- [Failures](failures/README.md) — further TODO: control-plane delay, origin outage, stale policy and recovery.
 
-Все результаты маркировать `simulated`; никакой реальной BGP-анонсации.
+These are mathematical/synthetic abstractions, **not** a BGP implementation, provider-backed Anycast service or L3/L4 protection. All generated reports are marked `status=simulated`. They use Python standard library, run without cloud credentials and make no network requests.

@@ -3,18 +3,18 @@
 All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project's AGENTS.md and the TASK.md next to the code it describes.
 
 ## Current verified scope
-- Implemented: toy BGP best-path selection (`../EdgeNetworkSecurity/simulator/bgp/model.py`), heuristic anomaly baseline (`../EdgeAI/scenarios/traffic-anomaly-detection/baseline.py`), safety-first decision policy (`ai-assisted-ddos-defense/policy.py`).
-- Offline tests: `python -m unittest discover -s EdgeIntegratedScenarios/tests -v` (8 tests run locally when authored).
-- Not implemented: real Anycast, ML inference, CDN/WAF/IaC deployment, metrics/replay, full L7 API, real provider tests.
+- Implemented: [BGP replay](../EdgeNetworkSecurity/simulator/bgp/README.md), [Anycast failover simulation](../EdgeNetworkSecurity/simulator/anycast/README.md), [synthetic quality evaluation](../EdgeAI/scenarios/traffic-anomaly-detection/README.md), [policy + decision replay](ai-assisted-ddos-defense/README.md).
+- Offline tests: 37 passing at this increment (8 original + 6 BGP + 6 Anycast + 7 anomaly + 10 integrated); see `.github/workflows/edge-baselines.yml` and test commands in each README.
+- Not implemented: live provider-backed Anycast/BGP, trained ML inference, CDN/WAF/IaC deployment, actual L7 API/rate limiting, real traffic latency/availability/cost benchmarks. Local simulators are **not** a real provider.
 
 ## Dependency-oriented work order
 
 | Order | Scope | Task | Deliverable / gate |
 | --- | --- | --- | --- |
-| 1 | ENS | [ENS-01](../EdgeNetworkSecurity/simulator/bgp/TASK.md) | input schema + deterministic JSON replay, negative tests |
-| 2 | ENS | [ENS-02](../EdgeNetworkSecurity/simulator/anycast/TASK.md) | site outage/routing and session failure simulation |
-| 3 | EAI | [EAI-01](../EdgeAI/scenarios/traffic-anomaly-detection/TASK.md) | labelled synthetic fixtures, calibrated vs uncalibrated distinction |
-| 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | offline replay, policy audit and false-positive/negative evaluation |
+| 1 | ENS | [ENS-01](../EdgeNetworkSecurity/simulator/bgp/TASK.md) | **DONE (offline)**: bounded JSON replay + negative tests; AS graph is further TODO |
+| 2 | ENS | [ENS-02](../EdgeNetworkSecurity/simulator/anycast/TASK.md) | **DONE (offline)**: site outage/routing, overload and interrupted sessions |
+| 3 | EAI | [EAI-01](../EdgeAI/scenarios/traffic-anomaly-detection/TASK.md) | **PARTIAL**: labelled synthetic quality evaluation; trained scorer TODO |
+| 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | **PARTIAL**: offline replay, bounded synthetic audit and FPR/FNR; provider integration TODO |
 | 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | localhost-only actual HTTP 429 and recovery |
 | 6 | ENS | [ENS-03](../EdgeNetworkSecurity/shared/traffic-generator/TASK.md) | bounded loopback generator |
 | 7 | EAI | [EAI-02](../EdgeAI/implementations/onnx-local/TASK.md) | actual offline ONNX smoke with permitted model |

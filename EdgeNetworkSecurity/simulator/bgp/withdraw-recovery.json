@@ -1,0 +1,40 @@
+{
+  "id": "withdraw-recovery",
+  "prefix": "203.0.113.0/24",
+  "events": [
+    {
+      "type": "announce",
+      "next_hop": "edge-a",
+      "as_path": [
+        64501,
+        64502,
+        64503
+      ],
+      "local_pref": 200
+    },
+    {
+      "type": "announce",
+      "next_hop": "edge-b",
+      "as_path": [
+        64504
+      ],
+      "local_pref": 100
+    },
+    {
+      "type": "withdraw",
+      "next_hop": "edge-a"
+    },
+    {
+      "type": "withdraw",
+      "next_hop": "edge-b"
+    },
+    {
+      "type": "announce",
+      "next_hop": "edge-c",
+      "as_path": [
+        64505
+      ],
+      "local_pref": 100
+    }
+  ]
+}

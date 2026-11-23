@@ -1,0 +1,64 @@
+{
+  "id": "two-sites-failover",
+  "sites": [
+    {
+      "id": "edge-a",
+      "capacity_rps": 150,
+      "healthy": true
+    },
+    {
+      "id": "edge-b",
+      "capacity_rps": 200,
+      "healthy": true
+    }
+  ],
+  "clients": [
+    {
+      "id": "client-1",
+      "demand_rps": 110,
+      "costs": {
+        "edge-a": 10,
+        "edge-b": 30
+      }
+    },
+    {
+      "id": "client-2",
+      "demand_rps": 100,
+      "costs": {
+        "edge-a": 12,
+        "edge-b": 32
+      }
+    },
+    {
+      "id": "client-3",
+      "demand_rps": 50,
+      "costs": {
+        "edge-a": 50,
+        "edge-b": 5
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "normal",
+      "disabled": []
+    },
+    {
+      "id": "edge-a-outage",
+      "disabled": [
+        "edge-a"
+      ]
+    },
+    {
+      "id": "recovered",
+      "disabled": []
+    },
+    {
+      "id": "all-down",
+      "disabled": [
+        "edge-a",
+        "edge-b"
+      ]
+    }
+  ]
+}
