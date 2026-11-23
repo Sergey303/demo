@@ -2,7 +2,7 @@
 
 **Инженерная лаборатория сетевой устойчивости и защиты HTTP-сервисов.** Проект показывает, как соотносятся маршрутизация между автономными системами, распределение трафика через Anycast, ограничение нагрузки на приложение и провайдерская защита. Это четыре **разных уровня архитектуры**, а не четыре названия одного механизма.
 
-**Текущее состояние:** BGP/Anycast — исполняемые **симуляции**; ASP.NET Core и Redis — **реальная локальная реализация с HTTP-тестами**; Cloudflare, EdgeЦентр и Yandex Cloud — **спецификации и задания, без развертывания**.
+**Текущее состояние:** BGP/Anycast — исполняемые **симуляции**; ASP.NET Core и Redis — **реальная локальная реализация с HTTP-тестами**; Cloudflare — **локально протестированный Worker**; EdgeЦентр и Yandex Cloud — **локально проверяемые контракты staging**, но все три провайдера **без развертывания**.
 
 ## Что можно изучить в коде
 
@@ -13,7 +13,7 @@
 | [ASP.NET Core API](implementations/local/README.md) | .NET 10, `/health`, `/api/expensive`, `/metrics`; fixed-window **429**, локальный предел одновременных операций **503**, восстановление | **Локально проверено:** L7, без публичного ingress |
 | [Общая квота Redis](implementations/local/src/LocalEdgeApi/RedisQuota.cs) | Атомарный Lua fixed-window по Redis `TIME`, один ключ на namespace для нескольких API, **503 при недоступном Redis**, переподключение | **Локально проверено:** два экземпляра; не Redis Cluster и не распределённый семафор |
 | [Безопасный HTTP-пробник](shared/traffic-generator/README.md) | Реальные ответы 200/429/503, p50/p95, счётчики ошибок, SHA-256 сценария | Только **loopback**, не более **10 запросов/с**, **60 с**, 600 обращений; без переходов по редиректам |
-| [Провайдерские реализации](#облачные-реализации) | Разделённые каталоги, границы возможностей, TODO и критерии приёмки | **Пока документация:** сервисы не подключены, IaC не применялся |
+| [Провайдерские реализации](#облачные-реализации) | Разделённые каталоги, границы возможностей, TODO и критерии приёмки | **Есть локальный Worker и офлайн-контракты:** сервисы не подключены, IaC не применялся |
 
 Разделение принципиально: **локальный rate limiter не останавливает объёмную атаку L3/L4**, Anycast не гарантирует равномерную загрузку, а HTTP 429 не означает наличия глобальной anti-DDoS-сети.
 
@@ -69,9 +69,9 @@ RUN_REDIS_TESTS=1 python3 -B -m unittest discover -s EdgeNetworkSecurity/impleme
 
 | Вариант | Что планируется показать | Что реально есть сейчас |
 | --- | --- | --- |
-| [Cloudflare](implementations/cloudflare/README.md) | Worker, WAF, L7 rate limits, origin protection, Terraform; провайдерский Anycast отдельно от Worker | README, структура каталогов и [TASK.md](implementations/cloudflare/TASK.md); **нет развернутой конфигурации** |
-| [EdgeЦентр (РФ)](implementations/edgecenter-ru/README.md) | CDN, anti-DDoS, WAF, DNS, проверка доступных API/IaC и условий тарифа | README, структура и [TASK.md](implementations/edgecenter-ru/TASK.md); **возможности конкретного тарифа не подтверждены** |
-| [Yandex Cloud (РФ)](implementations/yandex-cloud/README.md) | Smart Web Security, WAF, Advanced Rate Limiter, DDoS Protection, Cloud CDN, Terraform | План по компонентам и [TASK.md](implementations/yandex-cloud/TASK.md); **ресурсы не создавались** |
+| [Cloudflare](implementations/cloudflare/README.md) | Worker, WAF, L7 rate limits, origin protection, Terraform; провайдерский Anycast отдельно от Worker | [Worker с тестами](implementations/cloudflare/workers/request-guard/README.md) и [TASK.md](implementations/cloudflare/TASK.md); **нет развернутой конфигурации** |
+| [EdgeЦентр (РФ)](implementations/edgecenter-ru/README.md) | CDN, anti-DDoS, WAF, DNS, проверка доступных API/IaC и условий тарифа | [Офлайн-контракт](implementations/edgecenter-ru/contract/README.md) с тестами и [TASK.md](implementations/edgecenter-ru/TASK.md); **тариф не подтверждён** |
+| [Yandex Cloud (РФ)](implementations/yandex-cloud/README.md) | Smart Web Security, WAF, Advanced Rate Limiter, DDoS Protection, Cloud CDN, Terraform | [Офлайн-контракт](implementations/yandex-cloud/contract/README.md) с тестами и [TASK.md](implementations/yandex-cloud/TASK.md); **ресурсы не создавались** |
 
 Наличие Anycast DNS не доказывает Anycast для HTTP-трафика. ML-функции WAF нельзя автоматически считать возможностью запуска собственных моделей Edge AI.
 

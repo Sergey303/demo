@@ -47,25 +47,17 @@ do not create additional entries.
 
 [EdgeAI/scenarios/image-inference/TASK.md:1](../EdgeAI/scenarios/image-inference/TASK.md#L1)
 
-- provider parity and real image benchmark with labelled holdout. [EdgeAI/scenarios/image-inference/TASK.md:3](../EdgeAI/scenarios/image-inference/TASK.md#L3)
-
 ## EAI-06 — predictive maintenance demo
 
 [EdgeAI/scenarios/predictive-maintenance/TASK.md:1](../EdgeAI/scenarios/predictive-maintenance/TASK.md#L1)
-
-- independently sourced licensed dataset and inference deployment. [EdgeAI/scenarios/predictive-maintenance/TASK.md:3](../EdgeAI/scenarios/predictive-maintenance/TASK.md#L3)
 
 ## EAI-07 — no-network inference test
 
 [EdgeAI/scenarios/offline-inference/TASK.md:1](../EdgeAI/scenarios/offline-inference/TASK.md#L1)
 
-- platform-specific instrumentation (Windows/Linux). [EdgeAI/scenarios/offline-inference/TASK.md:3](../EdgeAI/scenarios/offline-inference/TASK.md#L3)
-
 ## EAI-08 — repeatable inference evaluation
 
 [EdgeAI/benchmarks/TASK.md:1](../EdgeAI/benchmarks/TASK.md#L1)
-
-- shared input corpus and model-scored holdout results; separate runtime cold-start from network latency; report environment metadata and compare rule-only heuristic and ONNX scores on identical synthetic fixtures; CPU and RSS peaks; compare only when same task/input/version. Never invent benchmark numbers or costs. [EdgeAI/benchmarks/TASK.md:6](../EdgeAI/benchmarks/TASK.md#L6)
 
 ## EIS-00 — orchestrated end-to-end demo
 
@@ -126,13 +118,17 @@ do not create additional entries.
 
 **Blocked in EIS** pending external provider prerequisites.
 
-## ENS-06 — EdgeCenter (RU) provider implementation
+- Confirm staging zone entitlements and pin supported IaC and runtime versions. [EdgeNetworkSecurity/implementations/cloudflare/TASK.md:5](../EdgeNetworkSecurity/implementations/cloudflare/TASK.md#L5)
+- Define staged WAF/rate limit policies and rollback. Acceptance requires an [EdgeNetworkSecurity/implementations/cloudflare/TASK.md:7](../EdgeNetworkSecurity/implementations/cloudflare/TASK.md#L7)
+
+## ENS-06 — EdgeCenter provider implementation
 
 [EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md:1](../EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md#L1)
 
 **Blocked in EIS** pending external provider prerequisites.
 
-- authenticated adapter only after account/capability confirmed, declarative schemas, mocked contract tests, cost and regional constraints. [EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md:7](../EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md#L7)
+- Confirm account, product plan, costs, region, API/IaC schemas and feature [EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md:6](../EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md#L6)
+- In approved staging, prove origin TLS and direct-access policy. Use a [EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md:8](../EdgeNetworkSecurity/implementations/edgecenter-ru/TASK.md#L8)
 
 ## ENS-07 — Yandex Cloud provider implementation
 
@@ -140,4 +136,5 @@ do not create additional entries.
 
 **Blocked in EIS** pending external provider prerequisites.
 
-- eligible Yandex account, test domain, provider acceptance and evidence. No inference code in this project. [EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md:13](../EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md#L13)
+- Confirm account, rights, regions, pricing and supported IaC schemas. [EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md:7](../EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md#L7)
+- In approved staging, verify benign traffic, SWS observation logs, WAF false [EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md:9](../EdgeNetworkSecurity/implementations/yandex-cloud/TASK.md#L9)
