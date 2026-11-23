@@ -14,9 +14,11 @@ ONNX_DIR = ROOT / "EdgeAI" / "implementations" / "onnx-local"
 INTEGRATED = ROOT / "EdgeIntegratedScenarios" / "ai-assisted-ddos-defense"
 sys.path.insert(0, str(ONNX_DIR))
 sys.path.insert(0, str(INTEGRATED))
+sys.path.insert(0, str(INTEGRATED.parent))
 
 from build_model import build
 from onnx_replay import evaluate_onnx
+from run_http import onnx_score
 
 
 class RealOnnxPolicyTests(unittest.TestCase):
@@ -43,6 +45,15 @@ class RealOnnxPolicyTests(unittest.TestCase):
             event["rule_action"] == "block" or event["assisted_action"] != "block"
             for event in report["audit"]
         ))
+
+    def test_http_window_scores_in_cpu_subprocess(self):
+        score, metadata = onnx_score(
+            {"requests": 10, "seconds": 1, "errors": 6, "baseline_rps": 1},
+            self.artifact_dir,
+        )
+        self.assertEqual(metadata["status"], "scored")
+        self.assertEqual(metadata["kind"], "onnx_cpu")
+        self.assertTrue(0 <= score <= 1)
 
     def test_missing_model_fails_before_replay(self):
         with tempfile.TemporaryDirectory() as missing:

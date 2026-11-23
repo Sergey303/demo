@@ -71,8 +71,8 @@ do not create additional entries.
 
 [EdgeIntegratedScenarios/TASK.md:1](TASK.md#L1)
 
-- Build a React visualization of the offline evidence. [EdgeIntegratedScenarios/TASK.md:15](TASK.md#L15)
-- Compare provider configurations and measure actual cloud paths after prerequisites are met. [EdgeIntegratedScenarios/TASK.md:16](TASK.md#L16)
+- Build a React visualization of the offline evidence. [EdgeIntegratedScenarios/TASK.md:21](TASK.md#L21)
+- Compare provider configurations and measure actual cloud paths after prerequisites are met. [EdgeIntegratedScenarios/TASK.md:22](TASK.md#L22)
 
 ## EIS-01 — rule-only vs AI-assisted decision pipeline
 
