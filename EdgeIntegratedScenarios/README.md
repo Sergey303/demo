@@ -215,3 +215,67 @@ python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
 [Полная локальная приёмка третьей волны: 127 тестов](EVIDENCE-CODEX-WAVE3-2026-11-23.md).
 
 **Назначение проекта — показать проверяемые инженерные компромиссы и безопасные границы интеграции ML, а не заявить о готовой промышленной anti-DDoS-системе.**
+
+## Fifth-wave persistent ONNX transport (standalone)
+
+[`persistent_worker.py`](ai-assisted-ddos-defense/persistent_worker.py) keeps one
+trusted `OnnxWindowScorer` / CPU session alive for serial requests. It does not
+change the one-shot CLI. **Persistent ASP.NET integration and HTTP latency/load
+acceptance are still pending independent verification.** This transport alone
+makes no HTTP or production performance claim.
+
+The C# parent must launch exactly this argument layout (absolute executable,
+script and existing artifact directory; no shell):
+
+```text
+python -I -B <ABS path EdgeIntegratedScenarios/ai-assisted-ddos-defense/persistent_worker.py> --artifact-dir <ABS existing dir> [--threshold 0.8]
+```
+
+Use the Python executable from the pinned ONNX venv. No model or dependency is
+downloaded. Threshold defaults to 0.8 and must be finite in [0,1]. Linux and the
+existing libseccomp filter are mandatory: the filter is installed before ONNX
+imports or graph loading; failure exits closed. Native stdout/stderr diagnostics
+are suppressed to prevent model/path details entering the protocol.
+
+Successful initialization emits and flushes exactly one UTF-8 NDJSON line:
+
+```json
+{"schema_version":1,"kind":"ready","model":"onnx-cpu"}
+```
+
+Send one JSON window per line, with a terminating LF and at most **4096 UTF-8
+bytes including LF**. Required fields and integer bounds match the one-shot CLI:
+`requests` and `baseline_rps` 0–10,000,000, `seconds` 1–3600, `errors`
+0–`requests`. Duplicate/unknown fields, nesting, booleans, floats, nonfinite
+constants, malformed UTF-8/JSON and unterminated frames are rejected. Empty EOF
+exits successfully. Each valid window receives one immediately flushed line of
+at most 2048 bytes, with exactly these seven fields:
+
+```json
+{"schema_version":1,"action":"allow","source":"onnx-cpu","score":0.2,"fallback":"none","status":"simulated","policy_id":"demo-policy-v1"}
+```
+
+Scores at/above the threshold produce `observe`; the worker never returns
+`block` or invents a fallback score. Startup failure emits no ready/response;
+a bad frame or inference error emits no response for that request. Failures
+exit nonzero with only `persistent worker failed\n` on stderr. Earlier successful
+responses remain valid. No input contents are echoed.
+
+The parent must wait for ready under a startup deadline, allow **one outstanding
+request maximum**, enforce request deadlines and response byte/schema limits,
+and kill/reap/restart on timeout, EOF, nonzero exit or invalid response. An idle
+worker intentionally waits for input; it has no internal request timer. Apply
+deterministic rule-only fallback in the parent. Model inference runs serially.
+This is a synthetic advisory model, not validated DDoS protection.
+
+```bash
+python3 -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_persistent_worker.py -v
+# Explicit opt-in; run using an existing venv with the exact EdgeAI requirements:
+RUN_EDGE_PERSISTENT_ONNX_TESTS=1 /ABS/PINNED_VENV/bin/python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_persistent_worker.py -v
+```
+
+Native tests build only local synthetic artifacts inside this subtree, require
+NumPy 2.2.6 / ONNX 1.19.1 / ONNX Runtime 1.23.2 in a venv, and check two requests
+with the same PID after moving artifacts away (reloading the session would fail),
+malformed/oversized frames and parent timeout/kill/restart. Stdlib fixtures are
+explicitly separate from actual native inference evidence.

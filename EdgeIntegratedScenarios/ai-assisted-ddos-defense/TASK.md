@@ -21,3 +21,16 @@ subprocess with rule-only fallback. The [one-shot advisory CLI](inline_advisory.
 and returns advisory-only results. The opt-in ASP.NET Core adapter is now locally verified
 with actual HTTP 200/429 and native ONNX CPU inference; slow per-request process
 startup remains a P0 latency/architecture limitation. See the [CLI contract and evidence](../README.md#inline-advisory-cli).
+
+### Fifth wave: persistent Python transport
+
+Implemented standalone `persistent_worker.py`: one filtered CPU session,
+ready handshake, bounded strict serial NDJSON, no request echo, fixed failures.
+Base SHA: `2b7219deb5739b4cb03041660f04452f83a78fac`.
+See [protocol](../README.md#fifth-wave-persistent-onnx-transport-standalone),
+[tests](../tests/test_persistent_worker.py) and
+[evidence](../EVIDENCE-WAVE5-PERSISTENT-PYTHON.md).
+**Pending:** independent persistent ASP.NET adapter acceptance, bounded parent
+queue/concurrency/restart behavior in actual HTTP, measured p95/p99 and soak.
+The previous one-shot contract remains unchanged. Standalone transport tests
+must not be described as persistent HTTP integration evidence.

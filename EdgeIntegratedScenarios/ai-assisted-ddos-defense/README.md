@@ -29,3 +29,12 @@ python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
 ```
 
 This CLI calls the genuine ONNX Runtime CPU session while keeping the same **12 labelled synthetic windows** and policy. Model score may add `observe` but never an automatic `block`; existing deterministic rule blocks remain authoritative. Outputs are marked `simulated` because the traffic and policy evaluation are artificial. The dedicated `onnx-cpu` CI job must pass before the ONNX path can be called runtime-verified.
+
+## Fifth-wave persistent worker
+
+The standalone [persistent NDJSON transport](persistent_worker.py) creates one
+CPU session after installing the existing Linux seccomp filter and handles
+serial windows with strict framing and fixed redacted failures. See the
+[launch/parent contract](../README.md#fifth-wave-persistent-onnx-transport-standalone)
+and [local evidence](../EVIDENCE-WAVE5-PERSISTENT-PYTHON.md). The one-shot CLI is
+unchanged. Persistent ASP.NET integration remains pending independent checks.
