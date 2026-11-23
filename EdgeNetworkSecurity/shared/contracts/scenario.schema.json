@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Edge security scenario",
+  "type": "object",
+  "required": [
+    "id",
+    "target",
+    "durationSeconds",
+    "maxRequestsPerSecond"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "local"
+      ]
+    },
+    "durationSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60
+    },
+    "maxRequestsPerSecond": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "trafficProfile": {
+      "type": "string",
+      "enum": [
+        "baseline",
+        "burst",
+        "distributed-simulated"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
