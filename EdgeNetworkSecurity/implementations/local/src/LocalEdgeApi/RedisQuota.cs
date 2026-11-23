@@ -10,6 +10,7 @@ internal sealed class RedisQuota : IAsyncDisposable
 {
     private static readonly string AtomicScript = LoadScript();
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(1);
+    private const int RetryCooldownMs = 750;
 
     private static string LoadScript()
     {
@@ -28,7 +29,12 @@ internal sealed class RedisQuota : IAsyncDisposable
     private readonly RedisKey _quotaKey;
     private readonly SemaphoreSlim _connectionGate = new(1, 1);
     private volatile ConnectionMultiplexer? _connection;
+    private readonly object _circuitLock = new();
+    private bool _open = true;
+    private bool _probing;
+    private long _epoch;
     private long _retryAfterTick;
+    private Task? _recovery;
 
     public RedisQuota(int port, string quotaNamespace, int permits, int windowSeconds)
     {
@@ -48,33 +54,140 @@ internal sealed class RedisQuota : IAsyncDisposable
 
     public async Task<QuotaDecision> CheckAsync(CancellationToken ct)
     {
-        var database = await GetDatabaseAsync(ct);
-        var raw = await database.ScriptEvaluateAsync(
-            AtomicScript, new[] { _quotaKey },
-            new RedisValue[] { _permits, _windowMs }).WaitAsync(CommandTimeout, ct);
-        ct.ThrowIfCancellationRequested();
+        var (epoch, _) = await EnterAsync(ct);
+        try
+        {
+            var raw = await Dispatch(epoch, ct, database => database.ScriptEvaluateAsync(
+                AtomicScript, new[] { _quotaKey },
+                new RedisValue[] { _permits, _windowMs })).WaitAsync(CommandTimeout, ct);
 
-        if (raw.Resp2Type != ResultType.Array ||
-            (RedisResult[]?)raw is not [{ Resp2Type: ResultType.Integer } allowed,
-                                        { Resp2Type: ResultType.Integer } remaining] ||
-            (long)allowed is not (0 or 1) || (long)remaining < 1 || (long)remaining > _windowMs)
-            throw new QuotaUnavailableException("Invalid Redis quota result.");
-        return new QuotaDecision((long)allowed == 1, (int)Math.Ceiling((long)remaining / 1000.0));
+            if (raw.Resp2Type != ResultType.Array ||
+                (RedisResult[]?)raw is not [{ Resp2Type: ResultType.Integer } allowed,
+                                            { Resp2Type: ResultType.Integer } remaining] ||
+                (long)allowed is not (0 or 1) || (long)remaining < 1 || (long)remaining > _windowMs)
+                throw new QuotaUnavailableException("Invalid Redis quota result.");
+            ConfirmEpoch(epoch, ct);
+            return new QuotaDecision((long)allowed == 1, (int)Math.Ceiling((long)remaining / 1000.0));
+        }
+        catch (Exception error) when (IsDependencyFailure(error))
+        {
+            OpenCircuit(epoch);
+            throw;
+        }
     }
 
     public async Task ProbeAsync(CancellationToken ct)
     {
-        var database = await GetDatabaseAsync(ct);
-        await database.PingAsync().WaitAsync(CommandTimeout, ct);
-        ct.ThrowIfCancellationRequested();
+        var (epoch, recovered) = await EnterAsync(ct);
+        try
+        {
+            if (!recovered)
+                await Dispatch(epoch, ct, static database => database.PingAsync())
+                    .WaitAsync(CommandTimeout, ct);
+            ConfirmEpoch(epoch, ct);
+        }
+        catch (Exception error) when (IsDependencyFailure(error))
+        {
+            OpenCircuit(epoch);
+            throw;
+        }
     }
 
-    private async Task<IDatabase> GetDatabaseAsync(CancellationToken ct)
+    private async Task<(long Epoch, bool Recovered)> EnterAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        var connection = await GetConnectionAsync(ct).WaitAsync(TimeSpan.FromSeconds(2), ct);
+        Task<long> recovery;
+        lock (_circuitLock)
+        {
+            if (!_open)
+                return (_epoch, false);
+            if (_probing || Environment.TickCount64 < _retryAfterTick)
+                throw new QuotaUnavailableException("Redis circuit open.");
+
+            _probing = true;
+            recovery = RecoverAsync();
+            _recovery = recovery;
+            ObserveFailure(recovery);
+        }
+
+        // Cancellation only stops this caller from waiting. The read-only probe keeps
+        // its slot until it finishes, and it cannot dispatch a quota command.
+        return (await recovery.WaitAsync(ct), true);
+    }
+
+    private async Task<long> RecoverAsync()
+    {
+        try
+        {
+            using var connectDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            var connectionTask = GetConnectionAsync(connectDeadline.Token);
+            ObserveFailure(connectionTask);
+            ConnectionMultiplexer connection;
+            try
+            {
+                connection = await connectionTask.WaitAsync(connectDeadline.Token);
+            }
+            catch (OperationCanceledException) when (connectDeadline.IsCancellationRequested)
+            {
+                throw new TimeoutException("Redis connection deadline exceeded.");
+            }
+            await connection.GetDatabase().PingAsync().WaitAsync(CommandTimeout);
+            lock (_circuitLock)
+            {
+                _open = false;
+                _probing = false;
+                return _epoch;
+            }
+        }
+        catch
+        {
+            lock (_circuitLock)
+            {
+                _retryAfterTick = Environment.TickCount64 + RetryCooldownMs;
+                _probing = false;
+            }
+            throw;
+        }
+    }
+
+    private static void ObserveFailure(Task task) =>
+        _ = task.ContinueWith(static failed => _ = failed.Exception,
+            CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted |
+            TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+    private void OpenCircuit(long epoch)
+    {
+        lock (_circuitLock)
+        {
+            if (_epoch != epoch || _open)
+                return;
+            _open = true;
+            _epoch++;
+            _retryAfterTick = Environment.TickCount64 + RetryCooldownMs;
+        }
+    }
+
+    private Task<T> Dispatch<T>(long epoch, CancellationToken ct, Func<IDatabase, Task<T>> send)
+    {
+        lock (_circuitLock)
+        {
+            EnsureCurrentEpoch(epoch, ct);
+            return send(_connection!.GetDatabase());
+        }
+    }
+
+    private void ConfirmEpoch(long epoch, CancellationToken ct)
+    {
+        lock (_circuitLock)
+            EnsureCurrentEpoch(epoch, ct);
+    }
+
+    // Both dispatch and result validation use the same lock as circuit transitions.
+    private void EnsureCurrentEpoch(long epoch, CancellationToken ct)
+    {
         ct.ThrowIfCancellationRequested();
-        return connection.GetDatabase();
+        if (_open || _epoch != epoch)
+            throw new QuotaUnavailableException("Redis circuit changed during request.");
     }
 
     public static bool IsDependencyFailure(Exception error) =>
@@ -90,9 +203,6 @@ internal sealed class RedisQuota : IAsyncDisposable
         {
             if (_connection is { } current)
                 return current;
-            if (Environment.TickCount64 < _retryAfterTick)
-                throw new QuotaUnavailableException("Redis retry cooldown.");
-
             var config = new ConfigurationOptions
             {
                 AbortOnConnectFail = true,
@@ -106,18 +216,9 @@ internal sealed class RedisQuota : IAsyncDisposable
                 BacklogPolicy = BacklogPolicy.FailFast,
             };
             config.EndPoints.Add(IPAddress.Loopback, _redisPort);
-            ConnectionMultiplexer next;
-            try
-            {
-                // Finish acquiring the connection even if the initiating request stops waiting.
-                // The gate stays held until the result has an owner.
-                next = await ConnectionMultiplexer.ConnectAsync(config);
-            }
-            catch (Exception error) when (IsDependencyFailure(error))
-            {
-                _retryAfterTick = Environment.TickCount64 + 750;
-                throw;
-            }
+            // Keep ownership until a connection attempt finishes, even if the probe
+            // times out while waiting for it.
+            var next = await ConnectionMultiplexer.ConnectAsync(config);
 
             // The multiplexer reconnects after a warm outage. Reuse it to avoid
             // disposing connections that another request has already obtained.
@@ -132,6 +233,18 @@ internal sealed class RedisQuota : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_recovery is { } recovery)
+        {
+            try
+            {
+                await recovery;
+            }
+            catch (Exception error) when (IsDependencyFailure(error))
+            {
+                // Failed probes have already updated the circuit.
+            }
+        }
+
         await _connectionGate.WaitAsync();
         try
         {

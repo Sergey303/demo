@@ -1,17 +1,18 @@
 # ENS-04 — Local ASP.NET Core L7 protection (Codex task)
 
-**Priority P0; status PARTIAL.** Implemented and locally verified: single-process fixed-window HTTP 429/503, real ASP.NET Core integration, **Redis-backed shared quota across two replicas**, fail-closed behavior when Redis is unavailable, reconnection, and namespace isolation. See [README.md](README.md) and [Redis-specific code tasks](src/LocalEdgeApi/TASK.md).
+**Priority P0; status PARTIAL.** Implemented and locally verified: single-process fixed-window HTTP 429/503, real ASP.NET Core integration, **Redis-backed shared quota across two replicas**, fail-closed behavior when Redis is unavailable, reconnection, namespace isolation, and bounded recovery probes. See [README.md](README.md) and [Redis-specific code tasks](src/LocalEdgeApi/TASK.md).
 
 ## Implemented
 - `src/LocalEdgeApi/Program.cs`: loopback-only Kestrel; `/health`, `/ready`, `/metrics`, `/api/expensive`; controlled 429/503, sanitized counters, no trust in request-supplied X-Forwarded-For.
-- `src/LocalEdgeApi/RedisQuota.cs`: atomic Lua fixed-window quota based on Redis server time, shared namespace, timeouts and reconnect cooldowns.
+- `src/LocalEdgeApi/RedisQuota.cs`: atomic Lua fixed-window quota based on Redis server time, shared namespace, timeouts and a per-replica circuit breaker.
 - `tests/test_local_edge_api.py`: real HTTP rate rejection, concurrency exhaustion, recovery, bounded payload, generator roundtrip.
 - `tests/test_redis_shared_quota.py`: opt-in disposable Redis 7, two-replica concurrence, namespace isolation, cold/warm outages and recovery.
 - Local fixed-window behavior is retained when `LOCAL_EDGE_REDIS_PORT` is unset.
 
 ## Next P0/P1
 - [x] Verify dependency readiness without quota use, bounded waits and request cancellation, atomic window rollover, and idle key expiry on disposable Redis 7.
-- [ ] [Detailed Redis tasks](src/LocalEdgeApi/TASK.md) cover Redis-side mid-command TCP loss, failover, a circuit breaker, and measured p95.
+- [x] Verify quota-reply TCP reset, circuit breaker, and recovery, with p50/p95 and status counts in the [two-replica report](REDIS-OUTAGE-REPORT.md).
+- [ ] Verify primary failover and live clock skew on an isolated topology with retained and lost quota state. See [detailed Redis tasks](src/LocalEdgeApi/TASK.md).
 - [ ] Sliding-window/token bucket comparison with measured impact on legitimate bursts.
 - [ ] Trusted reverse proxy, known-proxy allowlist and origin-only ingress; consider authenticated identity partitions only with a validated security boundary.
 - [ ] Distributed concurrency control separate from current per-process semaphore.

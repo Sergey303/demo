@@ -16,10 +16,10 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 - [x] Add dependency readiness via Redis PING, separate from `/health`. Verify cold/warm loss, recovery and timeout without creating or refreshing quota state.
 - [x] Bound Redis command waits and respect HTTP request cancellation. Test paused Redis and client abort after dispatch. Verify fail-closed 503 for confirmed dependency failures and zero protected work for timed-out or aborted requests.
 - [x] Embed the versioned `quota-v1.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle expiry, and fail-closed behavior for malformed or future-bucket state.
-- [ ] Inject a Redis-side TCP disconnect after dispatch and before reply. Verify a sanitized 503, zero protected work and recovery under the same namespace.
+- [x] Inject a TCP reset on the Redis connection after quota dispatch and before the reply reaches the API. The loopback relay test verified a sanitized 503, zero protected work and a retained charge after recovery under the same namespace.
 - [ ] Exercise primary failover and actual clock skew with retained or lost quota state. Verify the behavior and document how much quota can be lost or reopened.
-- [ ] Add a bounded circuit breaker/recovery probe policy and measure 503 latency under Redis outages.
-- [ ] Generate a reproducible 2-instance report: Redis request latency p50/p95, 429/503 counts, session recovery and CLI run parameters.
+- [x] Add a bounded circuit breaker and one read-only recovery probe per replica. Verify cold and warm 503, zero outage work, and a client abort during recovery.
+- [x] Record latency p50/p95, 429/503 counts, readiness recovery and CLI parameters in the [single-run two-replica report](../../REDIS-OUTAGE-REPORT.md).
 
 ## P1 architecture and security
 

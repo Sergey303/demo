@@ -3,12 +3,18 @@
 RUN_REDIS_TESTS=1 python3 -B -m unittest discover -s EdgeNetworkSecurity/implementations/local/tests -v
 """
 import concurrent.futures
+import json
+import math
 import os
 from pathlib import Path
 import shutil
+import select
 import socket
+import socketserver
+import struct
 import subprocess
 import sys
+import threading
 import time
 import unittest
 from uuid import uuid4
@@ -22,6 +28,62 @@ def docker(*args, timeout=30):
     if result.returncode:
         raise RuntimeError(f"docker {' '.join(args[:2])} failed: {result.stderr[-500:]}")
     return result.stdout.strip()
+
+
+class ReplyResetRelay(socketserver.ThreadingTCPServer):
+    """Loopback Redis relay that resets one connection after an EVAL reply arrives."""
+
+    daemon_threads = True
+
+    def __init__(self, redis_port):
+        self.redis_port = redis_port
+        self.armed = threading.Event()
+        self.reset = threading.Event()
+        super().__init__(("127.0.0.1", 0), self.Handler)
+
+    class Handler(socketserver.BaseRequestHandler):
+        def handle(self):
+            try:
+                with socket.create_connection(("127.0.0.1", self.server.redis_port),
+                                              timeout=2) as upstream:
+                    self.forward(upstream)
+            except OSError:
+                # Connection shutdown can race the relay or an API process exiting.
+                return
+
+        def forward(self, upstream):
+            discard_reply = False
+            tail = b""
+            while readable := select.select([self.request, upstream], [], [], 30)[0]:
+                for source in readable:
+                    data = source.recv(65536)
+                    if not data:
+                        return
+                    if source is self.request:
+                        command = (tail + data).upper()
+                        if self.server.armed.is_set() and b"\r\nEVAL\r\n" in command:
+                            discard_reply = True
+                            self.server.armed.clear()
+                        tail = command[-7:]
+                        upstream.sendall(data)
+                    elif discard_reply:
+                        self.request.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+                                                struct.pack("ii", 1, 0))
+                        self.request.close()
+                        self.server.reset.set()
+                        return
+                    else:
+                        self.request.sendall(data)
+
+    def __enter__(self):
+        self.thread = threading.Thread(target=self.serve_forever, daemon=True)
+        self.thread.start()
+        return self
+
+    def __exit__(self, *_):
+        self.shutdown()
+        self.server_close()
+        self.thread.join()
 
 
 @unittest.skipUnless(os.getenv("RUN_REDIS_TESTS") == "1",
@@ -199,6 +261,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
                     self.assertEqual(self.redis("GET", key), value.encode())
             self.assertEqual(get(api.base_url + "/metrics")[2]["started"], 0)
             self.redis("DEL", key)
+            self.wait_ready(api)
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
 
     def wait_for_single_charge(self, key):
@@ -228,7 +291,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertEqual((metrics["started"], metrics["redisUnavailable"]), (0, 1))
             # Redis can still execute the dispatched command after the HTTP wait times out.
             self.wait_for_single_charge(key)
-            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.wait_ready(api)
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
 
     def test_disconnected_http_client_does_not_run_protected_work(self):
@@ -252,7 +315,9 @@ class RedisSharedQuotaTests(unittest.TestCase):
         options = self.options()
         self.ensure_window_budget()
         with RunningApi(**options) as first, RunningApi(**options) as second:
-            # Starting processes might cross a window; align again before issuing traffic.
+            # Each cold replica must finish its initial read-only probe before the burst.
+            for api in (first, second):
+                self.wait_ready(api)
             self.ensure_window_budget()
             destinations = [first, second] * 6
             with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
@@ -285,65 +350,142 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertEqual(get(first.base_url + "/api/expensive")[0], 429)
             self.assertEqual(get(second.base_url + "/api/expensive")[0], 200)
 
-    def test_cold_start_without_redis_fails_closed_then_recovers(self):
+    def assert_dependency_unavailable(self, api):
+        status, _, body = get(api.base_url + "/api/expensive")
+        self.assertEqual((status, body), (503, {"error": "quota_dependency_unavailable"}))
+
+    def wait_ready(self, api):
+        deadline = time.monotonic() + 12
+        while time.monotonic() < deadline:
+            status, _, body = get(api.base_url + "/ready")
+            if status == 200:
+                return
+            self.assertEqual((status, body), (503, {"status": "not_ready",
+                                                   "error": "quota_dependency_unavailable"}))
+            time.sleep(0.1)
+        self.fail("Redis quota did not recover")
+
+    def test_redis_reply_lost_after_quota_dispatch(self):
         options = self.options()
+        options.update(LOCAL_EDGE_PERMITS="1", LOCAL_EDGE_WINDOW_SECONDS="20")
+        key = self.quota_key(options)
+        with ReplyResetRelay(self.redis_port) as relay:
+            options["LOCAL_EDGE_REDIS_PORT"] = str(relay.server_address[1])
+            with RunningApi(**options) as api:
+                self.wait_ready(api)
+                self.ensure_window_budget(20)
+                relay.armed.set()
+                self.assert_dependency_unavailable(api)
+                self.assertTrue(relay.reset.wait(1), "relay did not drop the EVAL reply")
+                self.wait_for_single_charge(key)
+                self.assertEqual(get(api.base_url + "/metrics")[2]["started"], 0)
+                self.wait_ready(api)
+                self.assertEqual(get(api.base_url + "/api/expensive")[0], 429)
+                self.assertEqual(get(api.base_url + "/metrics")[2]["started"], 0)
+
+    def test_client_abort_during_recovery_keeps_probe_slot(self):
+        options = self.options()
+        key = self.quota_key(options)
+        with RunningApi(**options) as api:
+            self.wait_ready(api)
+            self.assertEqual(self.redis("SET", key, "bad-state"), b"OK")
+            self.assert_dependency_unavailable(api)
+            self.redis("DEL", key)
+            time.sleep(0.8)
+            self.assertEqual(self.redis("CLIENT", "PAUSE", 1500, "ALL"), b"OK")
+            with socket.create_connection(("127.0.0.1", api.port), timeout=2) as client:
+                client.sendall(b"GET /api/expensive HTTP/1.1\r\nHost: localhost\r\n\r\n")
+                time.sleep(0.2)
+                client.shutdown(socket.SHUT_RDWR)
+
+            start = time.monotonic()
+            self.assert_dependency_unavailable(api)
+            self.assertLess(time.monotonic() - start, 0.5)
+            self.wait_ready(api)
+            self.assertIsNone(self.redis("GET", key))
+            metrics = get(api.base_url + "/metrics")[2]
+            self.assertEqual((metrics["started"], metrics["redisUnavailable"]), (0, 2))
+            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+
+    def test_two_replica_outage_report(self):
+        options = self.options()
+        options.update(LOCAL_EDGE_WINDOW_SECONDS="20")
+        key = self.quota_key(options)
+        report = {}
+
+        def request(api):
+            start = time.perf_counter()
+            status, _, body = get(api.base_url + "/api/expensive")
+            if status == 503:
+                self.assertEqual(body, {"error": "quota_dependency_unavailable"})
+            return status, (time.perf_counter() - start) * 1000
+
+        def sample(phase, destinations, expected):
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+                results = list(pool.map(request, destinations))
+            codes, latencies = zip(*results)
+            self.assertEqual(sorted(codes), sorted(expected))
+            ordered = sorted(latencies)
+            if phase in ("cold_open", "warm_open"):
+                self.assertLess(ordered[-1], 500, (phase, ordered))
+            if phase == "warm_half_open":
+                self.assertLessEqual(sum(ms >= 500 for ms in ordered), 2, ordered)
+            report[phase] = {
+                "n": len(codes), **{str(code): codes.count(code) for code in (200, 429, 503)},
+                **{f"p{p}_ms": round(ordered[math.ceil(p / 100 * len(codes)) - 1], 2)
+                   for p in (50, 95)},
+            }
+
+        def assert_outage(apis, started, unavailable):
+            for api in apis:
+                self.assertEqual(get(api.base_url + "/health")[0], 200)
+                self.assertEqual(get(api.base_url + "/ready")[0], 503)
+            metrics = [get(api.base_url + "/metrics")[2] for api in apis]
+            self.assertEqual(sum(m["started"] for m in metrics), started)
+            self.assertEqual(sum(m["redisUnavailable"] for m in metrics), unavailable)
+
         self.stop_redis()
         try:
-            with RunningApi(**options) as api:
-                self.assertEqual(get(api.base_url + "/health")[0], 200)
-                status, _, ready = get(api.base_url + "/ready")
-                self.assertEqual((status, ready), (503, {"status": "not_ready",
-                                                        "error": "quota_dependency_unavailable"}))
-                status, _, payload = get(api.base_url + "/api/expensive")
-                self.assertEqual(status, 503)
-                self.assertEqual(payload["error"], "quota_dependency_unavailable")
+            with RunningApi(**options) as first, RunningApi(**options) as second:
+                apis = (first, second)
+                sample("cold_initial", apis, [503] * 2)
+                sample("cold_open", apis * 6, [503] * 12)
+                assert_outage(apis, started=0, unavailable=14)
                 self.start_redis()
-                deadline = time.monotonic() + 10
-                while time.monotonic() < deadline:
-                    status, _, _ = get(api.base_url + "/ready")
-                    if status == 200:
-                        self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
-                        break
-                    time.sleep(0.8)
-                else:
-                    self.fail("cold-start Redis reconnection failed")
+                redis_available = time.perf_counter()
+                for api in apis:
+                    self.wait_ready(api)
+                report["cold_redis_ping_to_both_ready_ms"] = round(
+                    (time.perf_counter() - redis_available) * 1000, 2)
+                self.assertIsNone(self.redis("GET", key))
+                self.ensure_window_budget(20)
+                sample("cold_recovered", apis * 6, [200] * 4 + [429] * 8)
+
+                # Stall established TCP connections; Redis retains the exhausted quota.
+                state = self.redis("GET", key)
+                self.assertEqual(self.redis("CLIENT", "PAUSE", 3500, "ALL"), b"OK")
+                pause_started = time.perf_counter()
+                sample("warm_initial", apis, [503] * 2)
+                sample("warm_open", apis * 6, [503] * 12)
+                assert_outage(apis, started=4, unavailable=28)
+
+                # A retry cooldown has passed, but Redis is still paused. Parallel
+                # callers fail closed while one read-only recovery probe owns each slot.
+                time.sleep(0.8)
+                sample("warm_half_open", apis * 6, [503] * 12)
+                assert_outage(apis, started=4, unavailable=40)
+                for api in apis:
+                    self.wait_ready(api)
+                report["warm_pause_to_both_ready_ms"] = round(
+                    (time.perf_counter() - pause_started) * 1000, 2)
+                self.assertEqual(self.redis("GET", key), state)
+                sample("warm_recovered", apis * 6, [429] * 12)
+                self.assertEqual(sum(get(api.base_url + "/metrics")[2]["started"]
+                                     for api in apis), 4)
+                print("REDIS_OUTAGE_REPORT " + json.dumps(report), flush=True)
         finally:
             if not self.container_started:
                 self.start_redis()
-
-    def test_unavailable_redis_fails_closed_then_recovers(self):
-        options = self.options()
-        with RunningApi(**options) as api:
-            self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
-            self.stop_redis()
-            try:
-                deadline = time.monotonic() + 6
-                while True:
-                    status, _, body = get(api.base_url + "/api/expensive")
-                    if status == 503:
-                        break
-                    if time.monotonic() >= deadline:
-                        self.fail(f"Redis outage did not close: {status} {body}")
-                    time.sleep(0.2)
-                self.assertEqual(body["error"], "quota_dependency_unavailable")
-                self.assertEqual(get(api.base_url + "/ready")[0], 503)
-                self.assertEqual(get(api.base_url + "/health")[0], 200)
-                _, _, counters = get(api.base_url + "/metrics")
-                self.assertGreater(counters["redisUnavailable"], 0)
-
-                self.start_redis()
-                deadline = time.monotonic() + 12
-                while time.monotonic() < deadline:
-                    status, _, _ = get(api.base_url + "/ready")
-                    if status == 200:
-                        self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
-                        break
-                    time.sleep(0.8)
-                else:
-                    self.fail("redis quota did not recover")
-            finally:
-                if not self.container_started:
-                    self.start_redis()
 
 
 if __name__ == "__main__":

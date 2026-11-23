@@ -21,7 +21,7 @@ Default: 4 requests / 2 seconds, no queue. The ASP.NET Core fixed-window limiter
 On a regular Docker host start a **disposable, loopback-only Redis**:
 
 ```bash
-docker run --rm --name edge-demo-only-redis -p 127.0.0.1:16379:6379 \
+docker run --pull never --rm --name edge-demo-only-redis -p 127.0.0.1:16379:6379 \
   redis:7-alpine redis-server --save '' --appendonly no
 ```
 
@@ -39,7 +39,9 @@ Calls to either `http://127.0.0.1:5088/api/expensive` or port 5089 consume **one
 
 The embedded [quota-v1.lua](src/LocalEdgeApi/quota-v1.lua) script uses Redis `TIME` and an atomic evaluation of one key. A 429 includes `Retry-After`, rounded up from the remaining window time. Rejections leave the counter and TTL unchanged. A successful admission stores the current bucket and count with a TTL of two windows. The next window starts a fresh count even while the previous bucket's key exists.
 
-A Redis connection error, timeout or script failure returns **503 `quota_dependency_unavailable`** for `/api/expensive`. Protected work requires a confirmed Redis admission. Initial connection failures have a short retry cooldown. After a warm outage the shared multiplexer reconnects, and disconnected commands fail fast. Once connected, the API waits at most one second per command, and a client abort cancels the API's wait. Redis can still execute a dispatched command and charge the quota after a timeout or cancellation. The API neither refunds nor retries an ambiguous admission.
+A Redis connection error, timeout or script failure returns **503 `quota_dependency_unavailable`** for `/api/expensive`. Protected work requires a confirmed Redis admission. Each replica opens its circuit on the first confirmed dependency failure and rejects requests immediately during a 750 ms cooldown. At startup or after cooldown, one caller per replica can trigger a read-only recovery PING. Other callers receive 503 while it runs, including during a healthy cold start. A successful PING closes the circuit. Every protected request still needs its own confirmed Lua result, and a reply from before the latest circuit opening cannot authorize work.
+
+A cold probe waits up to two seconds for connection acquisition and one second for PING. A warm probe reuses the multiplexer, which handles reconnection. The API waits up to one second for each Redis command and cancels the HTTP wait on a client abort. An in-progress recovery probe retains its slot after an HTTP abort until the probe succeeds or reaches its deadline. Redis can still execute a dispatched Lua command and charge a permit after a timeout, disconnect or cancellation. Ambiguous admissions receive no retry or refund.
 
 A retained bucket ahead of Redis time causes a 503 until the clock catches up, the state expires, or the state is repaired. Malformed retained state also produces a 503. If failover loses quota state, the new primary can admit a fresh quota. Primary failover and live clock changes remain open for testing. The lab supports loopback Redis without TLS or authentication.
 
@@ -69,6 +71,19 @@ RUN_REDIS_TESTS=1 python3 -B -m unittest discover -s EdgeNetworkSecurity/impleme
 
 Inside nested `rdc-project`, Docker publishes ports in a different network namespace. Use `EDGE_REDIS_NETWORK_CONTAINER=rdc-project RUN_REDIS_TESTS=1` for tests there. The ephemeral Redis sidecar shares the RDC namespace, binds **only** to `127.0.0.1`, and is stopped afterward. It never touches existing Redis containers.
 
-Loopback verification passed 14 tests with .NET 10 and a disposable Redis 7 container. Tests cover single-process limits, shared quotas and namespace isolation, readiness without quota use, cold/warm outage and recovery, atomic rollover, idle expiry, malformed and future-bucket state, Redis command timeout, and HTTP client abort after dispatch.
+For an offline run with the dependencies already cached, point restore to the local package directory. The focused test prints one JSON report containing the status counts and p50/p95 for both replicas.
+
+```bash
+local_tests=EdgeNetworkSecurity/implementations/local/tests
+local_api=EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/LocalEdgeApi.csproj
+export RestoreSources="${NUGET_PACKAGES:-$HOME/.nuget/packages}"
+export NuGetAudit=false
+dotnet build "$local_api" --nologo -v:q
+# In rdc-project, also export EDGE_REDIS_NETWORK_CONTAINER=rdc-project
+RUN_REDIS_TESTS=1 PYTHONPATH="$local_tests" python3 -B -m unittest -v \
+  test_redis_shared_quota.RedisSharedQuotaTests.test_two_replica_outage_report
+```
+
+See the [two-replica Redis outage report](REDIS-OUTAGE-REPORT.md) for measured results and the loopback TCP reset test, which drops a real Redis reply after the quota charge.
 
 **Not covered:** L3/L4 anti-DDoS, CDN/WAF/BGP/Anycast, authenticated ingress, trusted reverse proxy, Redis Cluster/ACL/TLS, shared concurrency semaphore, cloud failover, production authentication, or production-level performance. Remaining tasks: [TASK.md](TASK.md) and [code-local Codex TASK](src/LocalEdgeApi/TASK.md).
