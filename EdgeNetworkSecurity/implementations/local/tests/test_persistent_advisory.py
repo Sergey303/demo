@@ -2,8 +2,10 @@
 
 from concurrent.futures import ThreadPoolExecutor
 import json
+import os
 from pathlib import Path
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -11,7 +13,7 @@ import tempfile
 import time
 import unittest
 
-from test_local_edge_api import PROJECT, RunningApi, get
+from test_local_edge_api import DLL, PROJECT, ROOT, RunningApi, get
 
 
 FIXTURE = r"""
@@ -36,6 +38,11 @@ with (root / "starts").open("a") as log:
 ready = '{"schema_version":1,"kind":"ready","model":"onnx-cpu"}'
 if mode() == "bad-ready":
     ready = ready[:-1] + ',"kind":"ready"}'
+if mode() == "missing-ready":
+    sys.exit(2)
+if mode() == "gated-ready":
+    while not (root / "release").exists():
+        time.sleep(0.01)
 if mode() == "slow-ready":
     time.sleep(10)
 if mode() == "cold":
@@ -134,10 +141,135 @@ class PersistentAdvisoryTests(unittest.TestCase):
             time.sleep(0.01)
         self.fail("Timed out waiting for test condition")
 
+    def test_prewarm_reuses_pid_without_scoring_or_charging_quota(self):
+        with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1", LOCAL_EDGE_PERMITS="3",
+                      LOCAL_EDGE_CONCURRENCY="1") as api:
+            self.wait_until(lambda: self.metrics(api).get("advisoryWorkerReady"))
+            metrics = self.metrics(api)
+            self.assertEqual(metrics["advisoryPrewarmAttempts"], 1)
+            self.assertEqual(metrics["advisoryPrewarmFailures"], 0)
+            self.assertEqual(metrics["started"], 0)
+            self.assertEqual(self.lines("calls"), [])
+            pid, = self.lines("starts")
+            self.assertEqual(self.score(api)["source"], "onnx-cpu")
+            url = api.base_url + "/api/expensive"
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                first = pool.submit(get, url + "?holdMs=500")
+                self.wait_until(lambda: self.metrics(api)["started"] == 2)
+                self.assertEqual(get(url)[::2], (503, {"error": "concurrency_exhausted"}))
+                self.assertEqual(get(url)[::2], (429, {"error": "rate_limited"}))
+                status, _, body = first.result(timeout=2)
+                self.assertEqual(status, 200)
+                self.assertEqual(body["advisory"]["source"], "onnx-cpu")
+            calls = [json.loads(call) for call in self.lines("calls")]
+            self.assertEqual([call["pid"] for call in calls], [int(pid)] * 2)
+            self.assertEqual(calls[0]["sample"]["requests"], 1)
+            self.assertEqual(self.lines("starts"), [pid])
+            self.assertEqual(self.metrics(api)["advisoryPrewarmAttempts"], 1)
+        self.assertEqual(api.process.returncode, 0)
+        self.assertFalse(Path("/proc", pid).exists())
+
+    def test_in_progress_prewarm_does_not_delay_http(self):
+        self.mode("gated-ready")
+        with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1",
+                      LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS="10000") as api:
+            self.wait_until(lambda: self.lines("starts"))
+            self.assertFalse(self.metrics(api)["advisoryWorkerReady"])
+            self.assertEqual(get(api.base_url + "/ready")[0], 200)
+            self.assertEqual(self.score(api), {
+                "action": "allow", "source": "rule-only", "status": "simulated",
+                "fallback": "unavailable", "score": 0.0})
+            self.assertEqual(self.lines("calls"), [])
+            (self.root / "release").touch()
+            self.wait_until(lambda: self.metrics(api)["advisoryWorkerReady"])
+            self.assertEqual(self.score(api)["source"], "onnx-cpu")
+            self.assertEqual(len(self.lines("starts")), 1)
+
+    def test_prewarm_failures_cool_down_and_allow_on_demand_recovery(self):
+        for mode in ("bad-ready", "missing-ready", "slow-ready"):
+            with self.subTest(mode=mode):
+                self.mode(mode)
+                starts = len(self.lines("starts"))
+                calls = len(self.lines("calls"))
+                with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1",
+                              LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS="400") as api:
+                    self.wait_until(lambda: self.metrics(api)["advisoryPrewarmFailures"] == 1)
+                    self.assertFalse(self.metrics(api)["advisoryWorkerReady"])
+                    self.assertEqual(self.score(api)["fallback"], "unavailable")
+                    self.assertEqual(len(self.lines("starts")), starts + 1)
+                    self.assertEqual(len(self.lines("calls")), calls)
+                    self.assertFalse(Path("/proc", self.lines("starts")[-1]).exists())
+                    self.mode("ready")
+                    time.sleep(0.8)
+                    self.assertEqual(self.score(api)["source"], "onnx-cpu")
+                    self.assertTrue(self.metrics(api)["advisoryWorkerReady"])
+                    self.assertEqual(self.metrics(api)["advisoryPrewarmAttempts"], 1)
+
+    def test_ready_tracks_worker_exit_and_recovers_on_demand(self):
+        with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1") as api:
+            self.wait_until(lambda: self.metrics(api)["advisoryWorkerReady"])
+            os.kill(int(self.lines("starts")[0]), signal.SIGKILL)
+            self.wait_until(lambda: not self.metrics(api)["advisoryWorkerReady"])
+            self.assertEqual(self.score(api)["fallback"], "unavailable")
+            self.assertEqual(self.lines("calls"), [])
+            time.sleep(0.8)
+            self.assertEqual(self.score(api)["source"], "onnx-cpu")
+            self.assertEqual(len(self.lines("starts")), 2)
+            self.assertEqual(self.metrics(api)["advisoryPrewarmAttempts"], 1)
+
+    def test_prewarm_does_not_bypass_redis_outage(self):
+        with socket.socket() as unavailable:
+            unavailable.bind(("127.0.0.1", 0))
+            with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1",
+                          LOCAL_EDGE_REDIS_PORT=str(unavailable.getsockname()[1])) as api:
+                self.wait_until(lambda: self.metrics(api)["advisoryWorkerReady"])
+                self.assertEqual(get(api.base_url + "/ready")[0], 503)
+                self.assertEqual(get(api.base_url + "/api/expensive")[::2],
+                                 (503, {"error": "quota_dependency_unavailable"}))
+                self.assertEqual(self.metrics(api)["started"], 0)
+                self.assertEqual(self.lines("calls"), [])
+                self.assertEqual(len(self.lines("starts")), 1)
+
+    def test_prewarm_missing_artifact_directory(self):
+        with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1",
+                      LOCAL_EDGE_ADVISORY_ARTIFACTS=str(self.root / "missing")) as api:
+            self.wait_until(lambda: self.metrics(api)["advisoryPrewarmFailures"] == 1)
+            self.assertFalse(self.metrics(api)["advisoryWorkerReady"])
+            self.assertEqual(self.score(api)["fallback"], "unavailable")
+            self.assertEqual(self.lines("starts"), [])
+
+    def test_shutdown_cancels_prewarm_and_reaps_worker(self):
+        self.mode("gated-ready")
+        with self.api(LOCAL_EDGE_ADVISORY_PREWARM="1",
+                      LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS="12000") as api:
+            self.wait_until(lambda: self.lines("starts"))
+            pid, = self.lines("starts")
+            api.close()
+            self.assertEqual(api.process.returncode, 0)
+            self.assertFalse(Path("/proc", pid).exists())
+            self.assertEqual(self.lines("calls"), [])
+
+    def test_rejects_invalid_prewarm_configuration(self):
+        for enabled, mode, prewarm in (("0", "persistent", "1"), ("1", "oneshot", "1"),
+                                       ("1", "persistent", "yes")):
+            with self.subTest(enabled=enabled, mode=mode, prewarm=prewarm):
+                env = os.environ | self.settings | dict(
+                    LOCAL_EDGE_ADVISORY_ENABLED=enabled, LOCAL_EDGE_ADVISORY_MODE=mode,
+                    LOCAL_EDGE_ADVISORY_PREWARM=prewarm, COMPlus_DbgEnableMiniDump="0")
+                result = subprocess.run(["dotnet", str(DLL)], cwd=ROOT, env=env,
+                                        capture_output=True, text=True, timeout=3)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Invalid LOCAL_EDGE_ADVISORY_PREWARM", result.stderr)
+        self.assertEqual(self.lines("starts"), [])
+
     def test_reuses_pid_after_idle_and_reaps_at_shutdown(self):
         self.mode("cold")
         with self.api() as api:
             self.assertEqual(self.lines("starts"), [])
+            metrics = self.metrics(api)
+            self.assertFalse(metrics["advisoryWorkerReady"])
+            self.assertEqual(metrics["advisoryPrewarmAttempts"], 0)
+            self.assertEqual(metrics["advisoryPrewarmFailures"], 0)
             elapsed = []
             for _ in range(2):
                 start = time.monotonic()

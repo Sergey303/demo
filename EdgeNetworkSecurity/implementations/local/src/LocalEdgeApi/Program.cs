@@ -35,6 +35,13 @@ await using var redisQuota = redisPortRaw is null
 
 var advisoryEnabled = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_ENABLED") == "1";
 var advisoryMode = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_MODE") ?? "oneshot";
+var prewarmSetting = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_PREWARM");
+if (prewarmSetting is not (null or "0" or "1"))
+    throw new InvalidOperationException("Invalid LOCAL_EDGE_ADVISORY_PREWARM: expected 0 or 1.");
+var prewarmEnabled = prewarmSetting == "1";
+if (prewarmEnabled && (!advisoryEnabled || advisoryMode != "persistent"))
+    throw new InvalidOperationException(
+        "Invalid LOCAL_EDGE_ADVISORY_PREWARM: 1 requires LOCAL_EDGE_ADVISORY_ENABLED=1 and LOCAL_EDGE_ADVISORY_MODE=persistent.");
 if (advisoryEnabled && advisoryMode is not ("oneshot" or "persistent"))
     throw new InvalidOperationException("Invalid LOCAL_EDGE_ADVISORY_MODE: expected oneshot or persistent.");
 
@@ -202,7 +209,32 @@ else
     });
 }
 
-app.Run();
+Task prewarm = Task.CompletedTask;
+var prewarmRegistration = prewarmEnabled
+    ? app.Lifetime.ApplicationStarted.Register(() => prewarm = Task.Run(async () =>
+    {
+        try
+        {
+            using var stopping = CancellationTokenSource.CreateLinkedTokenSource(app.Lifetime.ApplicationStopping);
+            await persistent!.PrewarmAsync(stopping.Token);
+        }
+        catch (Exception)
+        {
+            app.Logger.LogWarning("Background advisory prewarm failed.");
+        }
+    }))
+    : default;
+
+try
+{
+    await app.RunAsync();
+}
+finally
+{
+    // Join the startup callback before reading its task, then join the task before worker disposal.
+    await prewarmRegistration.DisposeAsync();
+    await prewarm;
+}
 
 internal sealed class AdvisoryEndpoint;
 
@@ -227,6 +259,9 @@ internal sealed class DemoCounters(bool redisShared, InlineAdvisory? advisory, P
         advisoryFallback = advisory?.Fallback ?? 0,
         advisoryObserved = advisory?.Observed ?? 0,
         advisoryWorkerRestarts = persistent?.Restarts ?? 0,
+        advisoryWorkerReady = persistent?.IsReady ?? false,
+        advisoryPrewarmAttempts = persistent?.PrewarmAttempts ?? 0,
+        advisoryPrewarmFailures = persistent?.PrewarmFailures ?? 0,
         scope = redisShared ? "redis_shared" : "single_process",
         status = "local-tested",
     };

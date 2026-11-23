@@ -10,14 +10,78 @@ internal sealed class PersistentAdvisoryWorker(ProcessStartInfo? startInfo, int 
     private static readonly byte[] Newline = [(byte)'\n'];
     private readonly SemaphoreSlim _slot = new(1, 1);
     private readonly byte[] _response = new byte[MaxLineBytes + 1];
+    private readonly object _readinessLock = new();
+    private Process? _readyProcess;
     private Process? _process;
     private CancellationTokenSource? _stderrStop;
     private Task? _stderrDrain;
     private long? _lastFailure;
     private long _starts;
+    private long _prewarmAttempts;
+    private long _prewarmFailures;
     private volatile bool _stopping;
 
     public long Restarts => Math.Max(0, Interlocked.Read(ref _starts) - 1);
+
+    public long PrewarmAttempts => Interlocked.Read(ref _prewarmAttempts);
+    public long PrewarmFailures => Interlocked.Read(ref _prewarmFailures);
+    public bool IsReady
+    {
+        get
+        {
+            lock (_readinessLock)
+                return !_stopping && _readyProcess is { HasExited: false };
+        }
+    }
+
+    private bool InCooldown =>
+        _lastFailure is long failure && Stopwatch.GetElapsedTime(failure) < Cooldown;
+
+    public async Task<bool> PrewarmAsync(CancellationToken cancellationToken)
+    {
+        if (_stopping || cancellationToken.IsCancellationRequested || !_slot.Wait(0))
+            return false;
+
+        var ready = false;
+        try
+        {
+            if (_stopping || cancellationToken.IsCancellationRequested)
+                return false;
+            if (_process is not null || PrewarmAttempts != 0 || InCooldown)
+                return IsReady;
+
+            Interlocked.Increment(ref _prewarmAttempts);
+            try
+            {
+                if (startInfo is null)
+                    return false;
+                await StartAsync(startInfo, cancellationToken);
+                ready = true;
+                return true;
+            }
+            catch (Exception error) when (error is OperationCanceledException or Win32Exception or IOException
+                                          or JsonException or InvalidOperationException or ArgumentException)
+            {
+                await FailAsync();
+                return false;
+            }
+            finally
+            {
+                if (!ready)
+                    Interlocked.Increment(ref _prewarmFailures);
+            }
+        }
+        finally
+        {
+            // Publish readiness only when HTTP scoring can acquire the slot.
+            lock (_readinessLock)
+            {
+                if (ready)
+                    _readyProcess = _process;
+                _slot.Release();
+            }
+        }
+    }
 
     public async Task<(double? Score, string Source, string Fallback)> ScoreAsync(
         AdvisorySample sample, CancellationToken cancellationToken)
@@ -28,11 +92,15 @@ internal sealed class PersistentAdvisoryWorker(ProcessStartInfo? startInfo, int 
 
         try
         {
-            if (_stopping || (_lastFailure is long failure && Stopwatch.GetElapsedTime(failure) < Cooldown))
+            if (_stopping || InCooldown)
                 return (null, "rule-only", "unavailable");
 
             if (_process is null)
+            {
                 await StartAsync(startInfo, cancellationToken);
+                lock (_readinessLock)
+                    _readyProcess = _process;
+            }
             var process = _process!;
             if (process.HasExited)
                 throw new IOException("Advisory worker exited.");
@@ -93,6 +161,8 @@ internal sealed class PersistentAdvisoryWorker(ProcessStartInfo? startInfo, int 
             !ready.TryGetProperty("model", out var model) || model.GetString() != "onnx-cpu")
             throw new IOException("Invalid advisory worker handshake.");
         token.ThrowIfCancellationRequested();
+        if (_process.HasExited)
+            throw new IOException("Advisory worker exited during startup.");
     }
 
     private async Task<ReadOnlyMemory<byte>> ReadLineAsync(Stream pipe, CancellationToken token)
@@ -123,6 +193,9 @@ internal sealed class PersistentAdvisoryWorker(ProcessStartInfo? startInfo, int 
     {
         if (_process is not { } process)
             return;
+
+        lock (_readinessLock)
+            _readyProcess = null;
 
         try
         {

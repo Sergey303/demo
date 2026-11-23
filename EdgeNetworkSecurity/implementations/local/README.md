@@ -72,6 +72,7 @@ actions are limited to `allow` and `observe`.
 | Setting | Range | Default |
 | --- | --- | --- |
 | `LOCAL_EDGE_ADVISORY_TIMEOUT_MS` | 100–3000 | 1500 |
+| `LOCAL_EDGE_ADVISORY_PREWARM` | `0` or `1` (requires enabled persistent mode for `1`) | `0` |
 | `LOCAL_EDGE_ADVISORY_STARTUP_TIMEOUT_MS` (persistent only) | 100–12000 | 8000 |
 | `LOCAL_EDGE_ADVISORY_THRESHOLD_PCT` | 1–100 | 80 |
 | `LOCAL_EDGE_ADVISORY_BASELINE_RPS` | 1–100 | 2 |
@@ -91,7 +92,7 @@ simulated scores and failures.
 For the opt-in Linux persistent client, set `LOCAL_EDGE_ADVISORY_MODE=persistent`
 and `LOCAL_EDGE_ADVISORY_WORKER_SCRIPT` to a trusted absolute path ending in
 `persistent_worker.py`. The interpreter, script, and artifact directory must
-exist. The API starts one isolated Python process per replica on demand and
+exist. By default the API starts one isolated Python process per replica on demand and
 communicates through newline-delimited JSON over standard input and output.
 The API limits each handshake or response to 2048 JSON bytes before the
 newline and rejects unexpected or duplicate fields. It drains and discards
@@ -114,9 +115,25 @@ fixture. The latency test prints cold and warm HTTP durations from one worker
 PID and inserts a 400 ms synthetic cold delay. Native ONNX/seccomp
 integration **is now verified** against the merged real HTTP API: two RDC
 cold/warm runs measured **3816.63/4.24 ms** and **2975.05/8.03 ms**.
-These are local samples, **not production p95/p99 or an SLA**. The cold call
-still blocks for model initialization; a safe asynchronous or pre-warmed
-architecture needs separate engineering and acceptance.
+These historical on-demand measurements are local samples.
+
+Set `LOCAL_EDGE_ADVISORY_PREWARM=1` with `LOCAL_EDGE_ADVISORY_ENABLED=1` and
+`LOCAL_EDGE_ADVISORY_MODE=persistent` to initialize the same worker once in
+the background after ASP.NET reports application startup. Prewarm sends no
+scoring sample and consumes no quota. An admitted request that reaches scoring
+while prewarm holds the worker slot returns HTTP 200 with deterministic
+rule-only advice. HTTP 429 and 503 responses skip scoring. Startup and scoring
+retain their separate deadlines, and shutdown cancels prewarm and reaps the
+worker. After a failed initialization, a later admitted request can start a
+replacement after the existing cooldown.
+
+For a bounded operator wait, poll localhost `/metrics` up to your deadline.
+`advisoryWorkerReady` reports a live persistent process that completed the
+handshake. `advisoryPrewarmAttempts` and `advisoryPrewarmFailures` count
+background initialization attempts and unsuccessful outcomes per API process.
+`/health` still reports API liveness and `/ready` still reports quota
+dependency readiness. Native ONNX validation of the background prewarm path
+requires a separate cross-project run.
 
 ## Verification from repo root
 

@@ -41,3 +41,13 @@ Use synthetic, bounded localhost traffic only. Ordinary tests must not require D
 - [x] Implement and verify the opt-in persistent ASP.NET Core client with real loopback HTTP and a synthetic Python fixture. Verify PID reuse, separate startup/scoring deadlines, quota bypass prevention, strict protocol validation, cooldown, cancellation, and process reap.
 - [x] Run merged real ASP.NET Core → persistent seccomp Python → ONNX CPU E2E: two HTTP 200 scores use the same process/session, third request stays 429; measured 3817/4.24 ms and 2975/8.03 ms cold/warm on RDC. This is local evidence, not production latency/SLA.
 - [ ] Measure real request latency and failure probability under sustained safe localhost load, including CPU/RAM budgets, cold/warm startup, and multi-replica fairness. No production readiness claim.
+
+## P0 background prewarm
+
+Base SHA `dc24f8557192b93be54890cad6fba81624c5ae20`.
+
+- [x] Verify opt-in background startup over real loopback ASP.NET Core HTTP with a synthetic Python fixture. Cover handshake readiness before the first protected request, PID reuse, early rule-only HTTP 200, quota and concurrency rejections, Redis outage, and prewarm disabled by default.
+- [x] Verify bad startup configuration, missing artifacts, malformed or missing handshake, timeout, worker exit, cooldown and on-demand recovery, and process reap during shutdown.
+- [ ] Run cross-project acceptance of background prewarm with the native seccomp/ONNX worker. Observe handshake readiness before the first protected request, confirm the first two admitted scores reuse the warmed process and session, and verify shutdown reaps the worker.
+
+The .NET build completed with zero warnings and errors. The local Python suite passed 32 tests and skipped 11 opt-in Docker Redis tests.
