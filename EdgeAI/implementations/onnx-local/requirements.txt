@@ -1,0 +1,4 @@
+# Explicit installation required; model generation and runtime do not download dependencies.
+numpy==2.2.6
+onnx==1.19.1
+onnxruntime==1.23.2
