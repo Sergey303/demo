@@ -165,4 +165,6 @@ python3 -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
 
 Рабочие задания Codex находятся [рядом с policy/replay](ai-assisted-ddos-defense/TASK.md), в [общем плане](EXECUTION_PLAN.md) и в [правилах агентов](AGENTS.md). Отдельные протоколы: [HTTP](EVIDENCE-2026-11-23-HTTP.md), [Redis](EVIDENCE-2026-11-23-REDIS.md), [ONNX](EVIDENCE-2026-11-23-ONNX.md).
 
+[Полная локальная приёмка третьей волны: 127 тестов](EVIDENCE-CODEX-WAVE3-2026-11-23.md).
+
 **Назначение проекта — показать проверяемые инженерные компромиссы и безопасные границы интеграции ML, а не заявить о готовой промышленной anti-DDoS-системе.**

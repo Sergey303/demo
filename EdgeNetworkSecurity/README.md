@@ -11,7 +11,7 @@
 | [BGP best-path](simulator/bgp/README.md) | Выбор альтернативного пути по Local Preference, длине AS_PATH и стабильному tie-break; announce/withdraw, JSON replay и негативные тесты | **Симуляция:** нет BGP-сессий, настоящих AS-политик и измерения convergence |
 | [Anycast routing](simulator/anycast/README.md) | Выбор виртуальной площадки по стоимости маршрута, перегрузка, отказ/возврат узла, смена пути и потеря состояния сессии | **Симуляция:** нет реальных префиксов, ECMP или географического роутинга |
 | [ASP.NET Core API](implementations/local/README.md) | .NET 10, `/health`, `/api/expensive`, `/metrics`; fixed-window **429**, локальный предел одновременных операций **503**, восстановление | **Локально проверено:** L7, без публичного ingress |
-| [Общая квота Redis](implementations/local/src/LocalEdgeApi/RedisQuota.cs) | Атомарный Lua fixed-window по Redis `TIME`, один ключ на namespace для нескольких API, **503 при недоступном Redis**, переподключение | **Локально проверено:** два экземпляра; не Redis Cluster и не распределённый семафор |
+| [Общая квота Redis](implementations/local/src/LocalEdgeApi/RedisQuota.cs) | Атомарный Lua fixed-window по Redis `TIME`, один ключ на namespace для нескольких API, **503 при недоступном Redis**, circuit breaker и ограниченная recovery-probe | **Локально проверено:** два экземпляра; не Redis Cluster и не распределённый семафор |
 | [Безопасный HTTP-пробник](shared/traffic-generator/README.md) | Реальные ответы 200/429/503, p50/p95, счётчики ошибок, SHA-256 сценария | Только **loopback**, не более **10 запросов/с**, **60 с**, 600 обращений; без переходов по редиректам |
 | [Провайдерские реализации](#облачные-реализации) | Разделённые каталоги, границы возможностей, TODO и критерии приёмки | **Есть локальный Worker и офлайн-контракты:** сервисы не подключены, IaC не применялся |
 
@@ -77,7 +77,7 @@ RUN_REDIS_TESTS=1 python3 -B -m unittest discover -s EdgeNetworkSecurity/impleme
 
 ## Доказательства, ограничения и продолжение
 
-Реальные локальные проверки зафиксированы в [HTTP-отчёте](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-HTTP.md) и [Redis-отчёте](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-REDIS.md): для двух API с одной квотой зафиксированы 4 разрешённых запроса и 8 ответов 429; отдельно проверены потеря Redis и восстановление. Это не подтверждение внешнего SLA или cloud CI; изменения тестовых границ после прогона требуют повторной проверки.
+Реальные локальные проверки зафиксированы в [HTTP-отчёте](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-HTTP.md), [Redis-отчёте](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-REDIS.md) и [новом отчёте двух экземпляров](implementations/local/REDIS-OUTAGE-REPORT.md): для двух API с одной квотой зафиксированы 4 разрешённых запроса и 8 ответов 429; отдельно проверены потеря Redis и восстановление. Это не подтверждение внешнего SLA или cloud CI; изменения тестовых границ после прогона требуют повторной проверки.
 
 **Что остаётся:** распределённое ограничение одновременных операций, Redis failover/ACL/TLS, trusted reverse proxy, реальные провайдерские конфигурации, тесты latency/SLO на изолированном стенде. Задачи Codex лежат [у кода локального API](implementations/local/src/LocalEdgeApi/TASK.md), [в симуляторах](simulator/README.md), [у провайдеров](implementations/yandex-cloud/TASK.md) и в [общем плане](../EdgeIntegratedScenarios/EXECUTION_PLAN.md). См. также [архитектурные критерии](docs/ARCHITECTURE.md) и [правила работы агентов](AGENTS.md).
 

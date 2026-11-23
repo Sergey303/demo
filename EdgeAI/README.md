@@ -9,7 +9,7 @@
 | Направление | Реальные файлы и содержание | Статус |
 | --- | --- | --- |
 | [Обнаружение аномалий трафика](scenarios/traffic-anomaly-detection/README.md) | `baseline.py` — воспроизводимый rules-only score; `fixtures.jsonl` — 12 размеченных искусственных окон; `evaluate.py` — матрица ошибок, precision, recall, FPR/FNR и SHA-256 данных | **Локально проверено**; это эвристика без обучения |
-| [ONNX на CPU](implementations/onnx-local/README.md) | `features.py` — четыре ограниченных признака; `build_model.py` — обучение маленькой логистической модели на сгенерированных данных и экспорт `MatMul → Add → Sigmoid`; `runtime.py` — проверка модели и вызов ONNX Runtime | **Нативное CPU-выполнение проверено локально** |
+| [ONNX на CPU](implementations/onnx-local/README.md) | `features.py` — четыре ограниченных признака; `build_model.py` — обучение маленькой логистической модели на сгенерированных данных и экспорт `MatMul → Add → Sigmoid`; `runtime.py` — строгая проверка ONNX-графа/manifest и CPU Runtime; `isolated.py` — ограниченный временем отдельный процесс и rule-only fallback | **Нативное CPU-выполнение и отдельный Linux worker проверены локально** |
 | [Benchmark](benchmarks/README.md) | `benchmark.py` — замер создания CPU-сессии и warm inference p50/p95/p99; метаданные модели и синтетического набора | **Локально измерено (Intel Core i5-12400); не SLA** |
 | [Cloudflare Workers AI](implementations/cloudflare-workers-ai/README.md) | План выбора модели, binding, API, лимитов и измерения latency | **TODO**; Worker не развёрнут |
 | [Yandex Cloud inference](implementations/yandex-cloud/README.md) | План проверки API, исполнения моделей и локализации данных | **TODO**; региональное облако не означает физический edge |
@@ -67,7 +67,7 @@ python3 EdgeAI/implementations/onnx-local/benchmark.py --iterations 50
 python3 -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
 ```
 
-Генератор не скачивает модель: `model.onnx` и `manifest.json` создаются локально в исключённом из Git `artifacts/`. Runner проверяет ID, типы/формы тензоров, SHA-256 и использует только `CPUExecutionProvider`; одна операция принимает **1–32 окна**. SHA-256 контролирует целостность, но **не заменяет подпись издателя**. Нативные тесты (11) и два сквозных ONNX/policy теста прошли локально. Подтверждение GitHub Actions `onnx-cpu` остаётся отдельным критерием.
+Генератор не скачивает модель: `model.onnx` и `manifest.json` создаются локально в исключённом из Git `artifacts/`. Runner проверяет ID, типы/формы тензоров, SHA-256 и использует только `CPUExecutionProvider`; одна операция принимает **1–32 окна**. SHA-256 контролирует целостность, но **не заменяет подпись издателя**. Нативный ONNX-набор теперь содержит **20 прошедших локально тестов** (в том числе kill/reap тайм-аутов и seccomp), а три сквозных ONNX/policy теста также прошли. Подтверждение GitHub Actions `onnx-cpu` остаётся отдельным критерием.
 
 ## Архитектурные решения и безопасность
 
@@ -79,6 +79,6 @@ python3 -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
 
 ## Доказательства и следующие этапы
 
-[Протокол приёмки после Codex](../EdgeIntegratedScenarios/EVIDENCE-CODEX-2026-11-23.md) фиксирует подтверждённый запуск CPU и совместные тесты; [предыдущая запись](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-ONNX.md) сохраняет историю первоначальной непроверенности. Конкретные [задачи Codex рядом с ONNX-кодом](implementations/onnx-local/TASK.md), [задачи бенчмарка](benchmarks/TASK.md) и [правила агентов](AGENTS.md) охватывают изоляцию/тайм-аут inference, реальную независимую выборку, калибровку, GPU/WASM/.NET, сравнение сред исполнения и облачные адаптеры.
+[Протокол 3-й волны Codex](../EdgeIntegratedScenarios/EVIDENCE-CODEX-WAVE3-2026-11-23.md) фиксирует подтверждённый запуск CPU и совместные тесты; [предыдущая запись](../EdgeIntegratedScenarios/EVIDENCE-2026-11-23-ONNX.md) сохраняет историю первоначальной непроверенности. Конкретные [задачи Codex рядом с ONNX-кодом](implementations/onnx-local/TASK.md), [задачи бенчмарка](benchmarks/TASK.md) и [правила агентов](AGENTS.md) охватывают изоляцию/тайм-аут inference, реальную независимую выборку, калибровку, GPU/WASM/.NET, сравнение сред исполнения и облачные адаптеры.
 
 **Связанные проекты:** [EdgeNetworkSecurity](../EdgeNetworkSecurity/README.md) — реальный локальный HTTP/Redis и симуляторы маршрутизации; [EdgeIntegratedScenarios](../EdgeIntegratedScenarios/README.md) — offline сравнение решений с эвристикой или опциональным ONNX. **Подключения модели к работающему HTTP API пока нет.**

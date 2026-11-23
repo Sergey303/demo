@@ -18,8 +18,6 @@ do not create additional entries.
 [EdgeAI/implementations/onnx-local/TASK.md:1](../EdgeAI/implementations/onnx-local/TASK.md#L1)
 
 - Confirm the `onnx-cpu` GitHub Actions job and repeat on the RDC machine when available. [EdgeAI/implementations/onnx-local/TASK.md:17](../EdgeAI/implementations/onnx-local/TASK.md#L17)
-- Add hard wall-clock timeouts/isolation (killable subprocess or dedicated restricted worker). An ONNX Runtime session API call itself cannot currently be bounded by our request timeout. [EdgeAI/implementations/onnx-local/TASK.md:18](../EdgeAI/implementations/onnx-local/TASK.md#L18)
-- Validate tampering of manifest itself, graph op allowlist, model size/metadata and failure modes of malformed ONNX protobufs. [EdgeAI/implementations/onnx-local/TASK.md:19](../EdgeAI/implementations/onnx-local/TASK.md#L19)
 - Add an independently sourced/licensed dataset, trained/held-out split, calibration error, false-positive analysis for legitimate bursts and drift detection. [EdgeAI/implementations/onnx-local/TASK.md:20](../EdgeAI/implementations/onnx-local/TASK.md#L20)
 - Make model architecture/feature versions and test scenario snapshots backward-compatible or explicitly reject upgrades. [EdgeAI/implementations/onnx-local/TASK.md:21](../EdgeAI/implementations/onnx-local/TASK.md#L21)
 - Add .NET 10 inference adapter and real edge-device/WASM execution under an explicit hardware budget. [EdgeAI/implementations/onnx-local/TASK.md:25](../EdgeAI/implementations/onnx-local/TASK.md#L25)
@@ -101,22 +99,19 @@ do not create additional entries.
 
 [EdgeNetworkSecurity/implementations/local/TASK.md:1](../EdgeNetworkSecurity/implementations/local/TASK.md#L1)
 
-- Provider staging comparison Cloudflare, EdgeCenter and Yandex Cloud. Never confuse app L7 quota with network L3/L4 DDoS protection. [EdgeNetworkSecurity/implementations/local/TASK.md:20](../EdgeNetworkSecurity/implementations/local/TASK.md#L20)
+- Provider staging comparison Cloudflare, EdgeCenter and Yandex Cloud. Never confuse app L7 quota with network L3/L4 DDoS protection. [EdgeNetworkSecurity/implementations/local/TASK.md:21](../EdgeNetworkSecurity/implementations/local/TASK.md#L21)
 
 ## ENS-04-R — Codex CLI: Redis follow-up tasks (in the code folder)
 
 [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:1](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L1)
 
-- Inject a Redis-side TCP disconnect after dispatch and before reply. Verify a sanitized 503, zero protected work and recovery under the same namespace. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:19](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L19)
 - Exercise primary failover and actual clock skew with retained or lost quota state. Verify the behavior and document how much quota can be lost or reopened. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:20](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L20)
-- Add a bounded circuit breaker/recovery probe policy and measure 503 latency under Redis outages. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:21](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L21)
-- Generate a reproducible 2-instance report: Redis request latency p50/p95, 429/503 counts, session recovery and CLI run parameters. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:22](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L22)
-- Evaluate sliding-window/token-bucket alternatives, compare legitimate burst overblocking and Redis cost. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:26](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L26), [EdgeNetworkSecurity/implementations/local/TASK.md:15](../EdgeNetworkSecurity/implementations/local/TASK.md#L15)
-- Trusted reverse proxy and origin-only ingress; never trust caller-supplied IP headers or credentials. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:27](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L27), [EdgeNetworkSecurity/implementations/local/TASK.md:16](../EdgeNetworkSecurity/implementations/local/TASK.md#L16)
-- True distributed concurrency limiter with expiring leases and fencing, separately from this shared rate quota. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:28](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L28), [EdgeNetworkSecurity/implementations/local/TASK.md:17](../EdgeNetworkSecurity/implementations/local/TASK.md#L17)
+- Evaluate sliding-window/token-bucket alternatives, compare legitimate burst overblocking and Redis cost. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:26](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L26), [EdgeNetworkSecurity/implementations/local/TASK.md:16](../EdgeNetworkSecurity/implementations/local/TASK.md#L16)
+- Trusted reverse proxy and origin-only ingress; never trust caller-supplied IP headers or credentials. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:27](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L27), [EdgeNetworkSecurity/implementations/local/TASK.md:17](../EdgeNetworkSecurity/implementations/local/TASK.md#L17)
+- True distributed concurrency limiter with expiring leases and fencing, separately from this shared rate quota. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:28](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L28), [EdgeNetworkSecurity/implementations/local/TASK.md:18](../EdgeNetworkSecurity/implementations/local/TASK.md#L18)
 - Optional secret-managed Redis TLS/ACL and environment isolation; no arbitrary public Redis endpoint. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:29](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L29)
-- OpenTelemetry/Prometheus instrumentation, low-cardinality labels and distributed tracing. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:30](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L30), [EdgeNetworkSecurity/implementations/local/TASK.md:18](../EdgeNetworkSecurity/implementations/local/TASK.md#L18)
-- Build a container/Compose topology only with explicit security defaults, safe lifecycle controls and documented rollback. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:31](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L31), [EdgeNetworkSecurity/implementations/local/TASK.md:19](../EdgeNetworkSecurity/implementations/local/TASK.md#L19)
+- OpenTelemetry/Prometheus instrumentation, low-cardinality labels and distributed tracing. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:30](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L30), [EdgeNetworkSecurity/implementations/local/TASK.md:19](../EdgeNetworkSecurity/implementations/local/TASK.md#L19)
+- Build a container/Compose topology only with explicit security defaults, safe lifecycle controls and documented rollback. [EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md:31](../EdgeNetworkSecurity/implementations/local/src/LocalEdgeApi/TASK.md#L31), [EdgeNetworkSecurity/implementations/local/TASK.md:20](../EdgeNetworkSecurity/implementations/local/TASK.md#L20)
 
 ## ENS-05 — Cloudflare provider implementation
 
