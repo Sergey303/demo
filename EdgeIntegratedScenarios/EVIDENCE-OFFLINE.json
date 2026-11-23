@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "scenario": "offline-edge-fixtures",
+  "status": "ok",
+  "stage_timeout_seconds": 5,
+  "stages": {
+    "bgp": {
+      "entrypoint": "EdgeNetworkSecurity/simulator/bgp/replay.py",
+      "fixture": "EdgeNetworkSecurity/simulator/bgp/withdraw-recovery.json",
+      "source_status": "simulated",
+      "dataset_sha256": "59ae26268a4d5d5074d75c0fb712e48f3a1bcb68292c0b6f2475bf2a748fd741",
+      "counters": {
+        "steps": 5,
+        "no_route_steps": 1
+      },
+      "failure_cases": {
+        "no_route_steps": [
+          3
+        ],
+        "recovered_steps": [
+          4
+        ]
+      }
+    },
+    "anycast": {
+      "entrypoint": "EdgeNetworkSecurity/simulator/anycast/replay.py",
+      "fixture": "EdgeNetworkSecurity/simulator/anycast/two-sites-failover.json",
+      "source_status": "simulated",
+      "dataset_sha256": "a3fe78e2adca96c84def73564cfe57ed96c48a8eb7a0e4cdd2e1a49c8719c9d4",
+      "counters": {
+        "stages": 4,
+        "overload_events": 3,
+        "unassigned_client_events": 3,
+        "interrupted_session_events": 7
+      },
+      "failure_cases": {
+        "overloaded_stages": [
+          "normal",
+          "edge-a-outage",
+          "recovered"
+        ],
+        "unassigned_stages": [
+          "all-down"
+        ],
+        "interrupted_stages": [
+          "edge-a-outage",
+          "recovered",
+          "all-down"
+        ]
+      }
+    },
+    "anomaly": {
+      "entrypoint": "EdgeAI/scenarios/traffic-anomaly-detection/evaluate.py",
+      "fixture": "EdgeAI/scenarios/traffic-anomaly-detection/fixtures.jsonl",
+      "source_status": "simulated",
+      "dataset_sha256": "dce0ea46837b267f8169825abd3f96b0639311f0cbc7fe3f0d9b058b3072ccbd",
+      "counters": {
+        "records": 12,
+        "tp": 3,
+        "tn": 4,
+        "fp": 2,
+        "fn": 3
+      },
+      "failure_cases": {}
+    },
+    "policy": {
+      "entrypoint": "EdgeIntegratedScenarios/ai-assisted-ddos-defense/replay.py",
+      "fixture": "EdgeIntegratedScenarios/ai-assisted-ddos-defense/fixtures.jsonl",
+      "source_status": "simulated",
+      "dataset_sha256": "77856f3c83d49cc6c4e364108c8b7eb19ad7322a6f7a3337d3785c35354ed73d",
+      "counters": {
+        "records": 12,
+        "new_observations": 3,
+        "model_fallbacks": 2,
+        "hard_blocked_benign": 1,
+        "rule_only_tp": 1,
+        "rule_only_tn": 5,
+        "rule_only_fp": 2,
+        "rule_only_fn": 4,
+        "assisted_tp": 3,
+        "assisted_tn": 4,
+        "assisted_fp": 3,
+        "assisted_fn": 2
+      },
+      "failure_cases": {
+        "fallback_ids": [
+          "abuse-model-offline",
+          "normal-model-offline"
+        ],
+        "advisory_ids": [
+          "legit-sale-spike",
+          "abuse-large-burst",
+          "abuse-large-errors"
+        ]
+      }
+    }
+  },
+  "providers": {
+    "Cloudflare": {
+      "source_status": "blocked",
+      "prerequisite": "Verify Worker/API capabilities, zone entitlements and approved staging."
+    },
+    "Yandex Cloud": {
+      "source_status": "blocked",
+      "prerequisite": "Verify SWS/CDN and inference entitlements, test domain and approved staging."
+    },
+    "EdgeCenter": {
+      "source_status": "blocked",
+      "prerequisite": "Verify available CDN/WAF/anti-DDoS APIs, service plan and approved staging."
+    }
+  }
+}

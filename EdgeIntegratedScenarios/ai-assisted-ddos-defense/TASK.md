@@ -12,3 +12,7 @@ Hard invariants:
 - all decisions include versioned policy ID, source and simulated status.
 
 Acceptance tests: normal, legitimate burst (false positive), bot-like burst, missing model, NaN/out-of-range score, conflicting policy, threshold boundary and deterministic replay. Benchmark false positive/negative, latency and load without fake claims. TODO: provider adapters, distribution across sites, challenge response and signed policy updates.
+
+EIS-00 runs this replay in a bounded subprocess and records model-outage
+fixtures as rule-only fallbacks. The subprocess deadline bounds the whole
+fixture stage. Per-request inference isolation remains open.
