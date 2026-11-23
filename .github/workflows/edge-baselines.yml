@@ -121,6 +121,7 @@ jobs:
           python -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
           python -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
           RUN_EDGE_INLINE_ONNX_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_advisory.py -v
+          RUN_EDGE_PERSISTENT_ONNX_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_persistent_worker.py -v
           RUN_EDGE_INLINE_FULL_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_end_to_end.py -v
           python -B EdgeAI/implementations/onnx-local/runtime.py --window-json '{"requests":250,"seconds":10,"errors":45,"baseline_rps":3}'
           python -B EdgeAI/implementations/onnx-local/benchmark.py --iterations 20
