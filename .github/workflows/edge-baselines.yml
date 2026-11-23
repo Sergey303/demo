@@ -110,19 +110,22 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Install pinned CPU ONNX packages
-        run: python -m pip install -r EdgeAI/implementations/onnx-local/requirements.txt
+      - name: Install pinned CPU ONNX packages in a dedicated virtual environment
+        run: |
+          python -m venv .edge-onnx-venv
+          .edge-onnx-venv/bin/python -m pip install -r EdgeAI/implementations/onnx-local/requirements.txt
       - name: Generate model and execute native ONNX CPU runtime
         env:
           PYTHONDONTWRITEBYTECODE: '1'
           OMP_NUM_THREADS: '1'
         run: |
-          python -B EdgeAI/implementations/onnx-local/build_model.py
-          python -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
-          python -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
-          RUN_EDGE_INLINE_ONNX_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_advisory.py -v
-          RUN_EDGE_PERSISTENT_ONNX_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_persistent_worker.py -v
-          RUN_EDGE_INLINE_FULL_TESTS=1 python -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_end_to_end.py -v
-          python -B EdgeAI/implementations/onnx-local/runtime.py --window-json '{"requests":250,"seconds":10,"errors":45,"baseline_rps":3}'
-          python -B EdgeAI/implementations/onnx-local/benchmark.py --iterations 20
-          python -B EdgeIntegratedScenarios/ai-assisted-ddos-defense/onnx_replay.py
+          PY=.edge-onnx-venv/bin/python
+          "$PY" -B EdgeAI/implementations/onnx-local/build_model.py
+          "$PY" -B -m unittest discover -s EdgeAI/implementations/onnx-local/tests -v
+          "$PY" -B -m unittest discover -s EdgeIntegratedScenarios/onnx-tests -v
+          RUN_EDGE_INLINE_ONNX_TESTS=1 "$PY" -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_advisory.py -v
+          RUN_EDGE_PERSISTENT_ONNX_TESTS=1 "$PY" -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_persistent_worker.py -v
+          RUN_EDGE_INLINE_FULL_TESTS=1 "$PY" -B -m unittest discover -s EdgeIntegratedScenarios/tests -p test_inline_end_to_end.py -v
+          "$PY" -B EdgeAI/implementations/onnx-local/runtime.py --window-json '{"requests":250,"seconds":10,"errors":45,"baseline_rps":3}'
+          "$PY" -B EdgeAI/implementations/onnx-local/benchmark.py --iterations 20
+          "$PY" -B EdgeIntegratedScenarios/ai-assisted-ddos-defense/onnx_replay.py
