@@ -1,0 +1,3 @@
+# Codex CLI — EdgeAI
+
+Read README.md and the closest TASK.md. Implement narrow runnable slices, keep model/provider adapters separate from domain tasks. Compare identical inputs and model versions where feasible; do not market regional-cloud inference as physical edge inference. Model weights or datasets require explicit provenance/license and SHA256, with no unexplained downloads. Run tests that need no network by default, distinguish mocked inference from model-backed verification. No hardcoded secrets or production provider access. Report exact source/test/evidence and limitations. Respect concurrent edits and existing public portfolio examples.
