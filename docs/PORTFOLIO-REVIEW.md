@@ -6,9 +6,9 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 
 | Priority | Scope | Acceptance |
 | --- | --- | --- |
-| P0-01 | Public CI and generated task inventory | Regenerate inventory; local --check passes; verify subsequent public Edge CI separately. Historical failed run [45320393497](https://github.com/Sergey303/demo/actions/runs/45320393497). |
-| P0-02 | Review entrypoints | Reconcile EP-10/11 main status, EP-12 branch boundary, Redis v2 and inline ONNX; pass review-link check. |
-| P0-03 | AppForge authentication | Reproduce concurrent refresh on disposable PostgreSQL; exactly one refresh succeeds; atomic old-session consumption and new-session issuance; propagate correction to generator upstream rather than silently diverge generated code. |
+| P0-01 | Public CI and generated task inventory | **PASS**: inventory and four [Edge CI jobs](https://github.com/Sergey303/demo/actions/runs/45348790448) on f43d0a2; historical failed run [45320393497](https://github.com/Sergey303/demo/actions/runs/45320393497). |
+| P0-02 | Review entrypoints | **PASS** on f43d0a2: reconciled EP-10/11, EP-12 boundary, Redis v2 and inline ONNX; review-link check passed. |
+| P0-03 | AppForge authentication | **PASS**: reproduced two successful rotations; fixed to one winner, replay denial and rollback/retry on PostgreSQL. [Evidence](../appforge-admin/REFRESH-ROTATION.md); upstream AppForge b159c2fa published. |
 | P0-04 | AI quality | Freeze a separate evaluation set; independently annotate sufficient/insufficient evidence, negation and refusal; report failures without tuning on holdout. Do not claim independent human review if unavailable. |
 | P1-01 | Tool Agent / Alice | Bound file/pipe reading before allocation; verify negative resource-limit cases and child process cleanup. |
 | P1-02 | Audio Search / frontend | Empty hits are a miss; standard median; validate finite ordered audio ranges and integral document offsets with negative tests. |
@@ -27,7 +27,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | [Hiring Demo](../hiring-demo/README.md) | Real HTTP/DB demonstration; launcher cleanup is a candidate verification task. |
 | [Bootstrap dashboard](../bootstrap5/README.md) | React/browser contracts; strengthen range validation. |
 | [GosVet](../GosVet/README.md) | Portable clinical workflow prototype; storage compatibility and end-to-end business cases. |
-| [AppForge sample](../appforge-admin/README.md) | Generated EF/React and Customer CRUD evidence; refresh-race hypothesis from AuthTokenService.RefreshAsync, needs integration reproduction. |
+| [AppForge sample](../appforge-admin/README.md) | Generated EF/React and Customer CRUD evidence; refresh race reproduced and fixed; [real PostgreSQL regression](../appforge-admin/REFRESH-ROTATION.md). |
 | [Alice](../alice-voice-gpt/README.md) | Local webhook/CLI prototype; stdout/stderr read-to-end is a resource-bound weakness, real voice acceptance separate. |
 | [Audio Search](../python-ai/audio-search/README.md) | Small authored reranking evaluation; evaluate_holdout.check assumes nonempty hits and uses upper middle sample as median. |
 | [RAG](../python-ai/rag-docs/README.md) | Provenance and abstention; independent semantic labels absent. |

@@ -132,3 +132,7 @@ software-supply-chain risks.
 The raw AppForge package manifest and generated runbook include build-machine
 absolute paths for traceability; always use these repository-relative paths
 rather than assuming another developer has the same workspace.
+
+## Authentication correctness regression
+
+[Concurrent refresh-token rotation](REFRESH-ROTATION.md): two successful rotations of one token were reproduced on real PostgreSQL and corrected with a conditional update and atomic successor issuance. A bounded EF Core service-level integration test verifies one winner, replay denial and rollback/retry. The reusable AppForge generator template was corrected upstream; existing generated packages require regeneration or the equivalent update.

@@ -60,7 +60,7 @@ public sealed class AuthTokenService
     public async Task<AuthResponse?> RefreshAsync(string refreshToken, CancellationToken ct)
     {
         var hash = AuthCodeDigest.Create(_configuration, AuthCodeDigest.RefreshPurpose, refreshToken);
-        var session = await _db.AppUserSessions.SingleOrDefaultAsync(x => x.RefreshTokenHash == hash, ct);
+        var session = await _db.AppUserSessions.AsNoTracking().SingleOrDefaultAsync(x => x.RefreshTokenHash == hash, ct);
         if (session is null || session.RevokedAtUtc is not null || session.RefreshTokenExpiresAtUtc <= DateTime.UtcNow)
         {
             return null;
@@ -70,8 +70,22 @@ public sealed class AuthTokenService
         {
             return null;
         }
-        session.RevokedAtUtc = DateTime.UtcNow;
-        return await CreateResponseAsync(user, ct);
+
+        // A read alone cannot reserve a refresh token. Consume it with a conditional
+        // UPDATE and issue its successor in the same database transaction.
+        await using var transaction = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);
+        var now = DateTime.UtcNow;
+        var consumed = await _db.AppUserSessions
+            .Where(x => x.Id == session.Id && x.RefreshTokenHash == hash &&
+                x.RevokedAtUtc == null && x.RefreshTokenExpiresAtUtc > now)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.RevokedAtUtc, (DateTime?)now), ct);
+        if (consumed != 1)
+        {
+            return null;
+        }
+        var response = await CreateResponseAsync(user, ct);
+        await transaction.CommitAsync(ct);
+        return response;
     }
 
     public async Task RevokeAccessTokenAsync(string token, CancellationToken ct)
