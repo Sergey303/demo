@@ -14,7 +14,7 @@ import unittest
 from uuid import uuid4
 
 from test_local_edge_api import RunningApi, choose_port, get
-from test_redis_shared_quota import docker
+from test_redis_shared_quota import docker, manifest
 
 
 class Endpoint(socketserver.ThreadingTCPServer):
@@ -115,9 +115,9 @@ class RedisPromotionTests(unittest.TestCase):
                     return next(line.split(":", 1)[1] for line in cli(name, "INFO", "server").splitlines()
                                 if line.startswith("run_id:"))
                 # Fresh isolated namespace; initial pin has no predecessor.
-                gate.write_text(f"{self.WINDOW * 1000}:{run_id(primary)}\n")
+                gate.write_text(manifest(self.WINDOW, run_id(primary)))
                 namespace = "promotion-" + uuid4().hex[:20]
-                key = "demo:edge:quota:v1:" + namespace
+                key = "demo:edge:quota:v2:" + namespace
                 options = dict(LOCAL_EDGE_REDIS_PORT=str(endpoint.server_address[1]),
                                LOCAL_EDGE_REDIS_NAMESPACE=namespace,
                                LOCAL_EDGE_PERMITS="4", LOCAL_EDGE_WINDOW_SECONDS=str(self.WINDOW),
@@ -126,12 +126,12 @@ class RedisPromotionTests(unittest.TestCase):
                     apis = (first, second)
                     for api in apis:
                         self.poll(lambda: get(api.base_url + "/ready")[0], lambda s: s == 200)
-                    # All assertions must hold within one Redis-time bucket.
-                    now = lambda name: int(cli(name, "TIME").splitlines()[0])
+                    # All assertions must hold within one monotonic bucket.
+                    now = lambda name: time.monotonic()
                     remaining = self.WINDOW - now(primary) % self.WINDOW
                     if remaining < 15:
                         time.sleep(remaining + .2)
-                    bucket = now(primary) // self.WINDOW
+                    bucket = int(now(primary) // self.WINDOW)
                     def request(api):
                         return get(api.base_url + "/api/expensive")[0]
                     # Replicate exactly the chosen number of permits, then sever replication.

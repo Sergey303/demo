@@ -4,17 +4,18 @@
 
 ## Implemented
 - `src/LocalEdgeApi/Program.cs`: loopback-only Kestrel; `/health`, `/ready`, `/metrics`, `/api/expensive`; controlled 429/503, sanitized counters, no trust in request-supplied X-Forwarded-For.
-- `src/LocalEdgeApi/RedisQuota.cs`: atomic Lua fixed-window quota based on Redis server time, shared namespace, timeouts and a per-replica circuit breaker.
+- `src/LocalEdgeApi/RedisQuota.cs`: atomic Lua fixed-window quota based on a shared Linux monotonic clock, shared namespace, timeouts and a per-replica circuit breaker.
 - `tests/test_local_edge_api.py`: real HTTP rate rejection, concurrency exhaustion, recovery, bounded payload, generator roundtrip.
 - `tests/test_redis_shared_quota.py`: opt-in disposable Redis 7, two-replica concurrence, namespace isolation, cold/warm outages and recovery.
 - Local fixed-window behavior is retained when `LOCAL_EDGE_REDIS_PORT` is unset.
 
 ## Next P0/P1
-- [x] Verify dependency readiness without quota use, bounded waits and request cancellation, atomic window rollover, and idle key expiry on disposable Redis 7.
+- [x] Verify dependency readiness without quota use, bounded waits and request cancellation, atomic window rollover, and durable idle watermark on disposable Redis 7.
 - [x] Verify quota-reply TCP reset, circuit breaker, and recovery, with p50/p95 and status counts in the [two-replica report](REDIS-OUTAGE-REPORT.md).
 - [x] Verify manual primary promotion with retained and lost state: [three real Redis tests](REDIS-PROMOTION-REPORT.md).
 - [x] Preserve admission safety during manually fenced single-host promotion via a shared primary admission gate. See [gate protocol](REDIS-PRIMARY-GATE.md).
-- [ ] Validate live cross-node clock skew and automatic fencing for broader deployment. See [detailed Redis tasks](src/LocalEdgeApi/TASK.md).
+- [x] Verify actual Redis calendar-clock jumps in both directions, restart, persistent watermark and stale command rejection; bind gate to a shared Linux monotonic clock domain. See [clock safety](REDIS-CLOCK-SAFETY.md).
+- [ ] Design cross-host API clock coordination and automatic fencing for broader deployment. See [detailed Redis tasks](src/LocalEdgeApi/TASK.md).
 - [ ] Sliding-window/token bucket comparison with measured impact on legitimate bursts.
 - [ ] Trusted reverse proxy, known-proxy allowlist and origin-only ingress; consider authenticated identity partitions only with a validated security boundary.
 - [ ] Distributed concurrency control separate from current per-process semaphore.

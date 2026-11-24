@@ -14,7 +14,7 @@ gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
 
 
-@unittest.skipUnless(os.name == "posix", "Requires a Unix local filesystem")
+@unittest.skipUnless(sys.platform == "linux", "Requires a Unix local filesystem")
 class PrimaryGateControllerTests(unittest.TestCase):
     def test_requires_fencing_and_waits_full_window(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -25,14 +25,14 @@ class PrimaryGateControllerTests(unittest.TestCase):
             start = time.monotonic()
             gate.control(path, "a" * 40, window=1, max_clock_delta_ms=50, fenced=True)
             self.assertGreaterEqual(time.monotonic() - start, 1.05)
-            self.assertEqual(path.read_text(), "1000:" + "a" * 40 + "\n")
+            self.assertEqual(path.read_text(), gate.manifest(1, "a" * 40))
             gate.control(path)
             self.assertEqual(path.read_text(), "closed\n")
 
     def test_controller_death_keeps_gate_closed_and_restart_waits_again(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "primary"
-            gate.publish(path, "1000:" + "a" * 40 + "\n")
+            gate.publish(path, gate.manifest(1, "a" * 40))
             process = subprocess.Popen([sys.executable, str(CONTROLLER), str(path),
                                         "--run-id", "b" * 40, "--window", "1",
                                         "--old-primary-fenced"])
@@ -48,4 +48,4 @@ class PrimaryGateControllerTests(unittest.TestCase):
             start = time.monotonic()
             gate.control(path, "b" * 40, window=1, fenced=True)
             self.assertGreaterEqual(time.monotonic() - start, 1)
-            self.assertEqual(path.read_text(), "1000:" + "b" * 40 + "\n")
+            self.assertEqual(path.read_text(), gate.manifest(1, "b" * 40))

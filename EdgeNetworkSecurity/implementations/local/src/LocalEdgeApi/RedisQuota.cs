@@ -1,9 +1,10 @@
 using System.Net;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using StackExchange.Redis;
 
 /// <summary>
-/// A deliberately small, single-key, Redis-time-based fixed-window quota.
+/// A deliberately small, single-key, host-monotonic fixed-window quota.
 /// All API replicas use the same key/namespace. NOT a distributed concurrency semaphore.
 /// </summary>
 internal sealed class RedisQuota : IAsyncDisposable
@@ -14,7 +15,7 @@ internal sealed class RedisQuota : IAsyncDisposable
 
     private static string LoadScript()
     {
-        using var resource = typeof(RedisQuota).Assembly.GetManifestResourceStream("quota-v1.lua")
+        using var resource = typeof(RedisQuota).Assembly.GetManifestResourceStream("quota-v2.lua")
             ?? throw new InvalidOperationException("Missing embedded quota script.");
         using var reader = new StreamReader(resource);
         return reader.ReadToEnd();
@@ -28,6 +29,7 @@ internal sealed class RedisQuota : IAsyncDisposable
     private readonly int _windowMs;
     private readonly RedisKey _quotaKey;
     private readonly string? _primaryGate;
+    private readonly string? _clockDomain = ReadClockDomain();
     private readonly SemaphoreSlim _connectionGate = new(1, 1);
     private volatile ConnectionMultiplexer? _connection;
     private readonly object _circuitLock = new();
@@ -51,7 +53,7 @@ internal sealed class RedisQuota : IAsyncDisposable
         _primaryGate = primaryGate;
         _permits = permits;
         _windowMs = checked(windowSeconds * 1000);
-        _quotaKey = $"demo:edge:quota:v1:{quotaNamespace}";
+        _quotaKey = $"demo:edge:quota:v2:{quotaNamespace}";
     }
 
     public async Task<QuotaDecision> CheckAsync(CancellationToken ct)
@@ -61,7 +63,7 @@ internal sealed class RedisQuota : IAsyncDisposable
         {
             var raw = await Dispatch(epoch, ct, database => database.ScriptEvaluateAsync(
                 AtomicScript, new[] { _quotaKey },
-                new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "admit" })).WaitAsync(CommandTimeout, ct);
+                new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "admit", MonotonicMilliseconds() })).WaitAsync(CommandTimeout, ct);
 
             if (raw.Resp2Type != ResultType.Array ||
                 (RedisResult[]?)raw is not [{ Resp2Type: ResultType.Integer } allowed,
@@ -151,24 +153,49 @@ internal sealed class RedisQuota : IAsyncDisposable
         }
     }
 
+    // Linux Stopwatch uses CLOCK_MONOTONIC, shared by all processes in the same
+    // time namespace. Never accept a pin from another boot or time namespace.
+    private static string? ReadClockDomain()
+    {
+        if (!OperatingSystem.IsLinux()) return null;
+        try
+        {
+            var boot = File.ReadAllText("/proc/sys/kernel/random/boot_id").Trim();
+            var ns = new FileInfo("/proc/self/ns/time").LinkTarget;
+            if (!Guid.TryParseExact(boot, "D", out _) || ns is null ||
+                !Regex.IsMatch(ns, @"\Atime:\[[0-9]+\]\z")) return null;
+            return boot + ":" + ns;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private static long MonotonicMilliseconds() =>
+        Stopwatch.GetElapsedTime(0).Ticks / TimeSpan.TicksPerMillisecond;
+
     // The trusted controller atomically replaces a shared local manifest. No
     // cached identity or automatic re-enrollment on reconnect or API restart.
     private string ReadPrimaryPin()
     {
-        if (_primaryGate is null)
+        if (_primaryGate is null || _clockDomain is null)
             throw new QuotaUnavailableException("Primary gate not configured.");
         try
         {
             using var file = File.Open(_primaryGate, FileMode.Open, FileAccess.Read,
                 FileShare.Read | FileShare.Delete);
-            // Exact bounded ASCII format: <windowMs>:<40 hex run_id> followed by LF.
-            if (file.Length > 64)
+            // Exact bounded format: v2:<windowMs>:<run_id>:<boot_id>:<time namespace> LF.
+            if (file.Length > 160)
                 throw new QuotaUnavailableException("Invalid primary gate.");
             using var reader = new StreamReader(file);
             var pin = reader.ReadToEnd();
-            var prefix = _windowMs.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":";
+            var prefix = "v2:" + _windowMs.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":";
+            var suffix = ":" + _clockDomain + "\n";
             if (!pin.StartsWith(prefix, StringComparison.Ordinal) ||
-                !Regex.IsMatch(pin[prefix.Length..], @"\A[0-9a-f]{40}\n\z"))
+                !pin.EndsWith(suffix, StringComparison.Ordinal) ||
+                pin.Length != prefix.Length + 40 + suffix.Length ||
+                !Regex.IsMatch(pin.Substring(prefix.Length, 40), @"\A[0-9a-f]{40}\z"))
                 throw new QuotaUnavailableException("Primary gate closed or invalid.");
             return pin.Substring(prefix.Length, 40);
         }
@@ -181,7 +208,7 @@ internal sealed class RedisQuota : IAsyncDisposable
     private async Task<bool> ProbePrimaryAsync(IDatabase database)
     {
         var raw = await database.ScriptEvaluateAsync(AtomicScript, new[] { _quotaKey },
-            new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "probe" });
+            new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "probe", MonotonicMilliseconds() });
         if (raw.Resp2Type != ResultType.Integer || (long)raw != 1)
             throw new QuotaUnavailableException("Invalid primary probe.");
         return true;

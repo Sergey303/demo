@@ -27,6 +27,14 @@ def publish(path, content):
             os.unlink(temp)
 
 
+def manifest(window, run_id):
+    boot = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+    namespace = os.readlink("/proc/self/ns/time")
+    if not re.fullmatch(r"[0-9a-f-]{36}", boot) or not re.fullmatch(r"time:\[[0-9]+\]", namespace):
+        raise ValueError("Unknown Linux monotonic clock domain")
+    return f"v2:{window * 1000}:{run_id}:{boot}:{namespace}\n"
+
+
 def control(path, run_id=None, window=60, max_clock_delta_ms=0, *, fenced=False):
     if not path.is_absolute() or not path.parent.is_dir():
         raise ValueError("Use an absolute gate path in a trusted existing directory")
@@ -45,7 +53,7 @@ def control(path, run_id=None, window=60, max_clock_delta_ms=0, *, fenced=False)
             deadline = time.monotonic() + window + max_clock_delta_ms / 1000
             while (remaining := deadline - time.monotonic()) > 0:
                 time.sleep(remaining)
-            publish(path, f"{window * 1000}:{run_id}\n")
+            publish(path, manifest(window, run_id))
 
 
 def main():

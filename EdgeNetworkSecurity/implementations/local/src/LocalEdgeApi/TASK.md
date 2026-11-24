@@ -4,7 +4,7 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 
 ## Implemented and locally verified
 
-- [x] StackExchange.Redis pinned to 2.8.16; Redis `TIME` + atomic Lua fixed-window quota, one static namespace key.
+- [x] StackExchange.Redis pinned to 2.8.16; shared Linux monotonic clock + atomic Lua fixed-window quota, one static namespace key.
 - [x] Two real ASP.NET Core instances share an exact quota under concurrent requests.
 - [x] Exhausted quota returns 429 with calculated `Retry-After`.
 - [x] Missing/failed Redis yields 503 rather than independent per-process quotas.
@@ -13,14 +13,15 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 
 ## Next P0 tasks for Codex
 
-- [x] Add dependency readiness via Redis PING, separate from `/health`. Verify cold/warm loss, recovery and timeout without creating or refreshing quota state.
+- [x] Add dependency readiness via the read-only Redis script probe, separate from `/health`. Verify cold/warm loss, recovery and timeout without creating or refreshing quota state.
 - [x] Bound Redis command waits and respect HTTP request cancellation. Test paused Redis and client abort after dispatch. Verify fail-closed 503 for confirmed dependency failures and zero protected work for timed-out or aborted requests.
-- [x] Embed the versioned `quota-v1.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle expiry, and fail-closed behavior for malformed or future-bucket state.
+- [x] Embed the versioned `quota-v2.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle watermark retention, and fail-closed behavior for malformed or future-bucket state.
 - [x] Inject a TCP reset on the Redis connection after quota dispatch and before the reply reaches the API. The loopback relay test verified a sanitized 503, zero protected work and a retained charge after recovery under the same namespace.
 - [x] Exercise manual primary promotion with retained, partial and entirely lost quota state on two live API replicas. See [promotion report](../../REDIS-PROMOTION-REPORT.md): up to twice the quota observed in one window.
 - [x] Implement and verify a promotion-aware fail-closed admission gate for manual, single-host fenced failover; cover API/controller restart and stale state. See [primary gate](../../REDIS-PRIMARY-GATE.md).
 - [ ] Automate trusted fencing/clock evidence and distributed gate lifecycle if extending beyond the single-host lab.
-- [ ] Exercise actual cross-node clock skew; do not claim strict quota preservation until the clock assumptions are validated.
+- [x] Verify actual Redis wall-clock jumps forward/backward and restoration, persistent watermark, stale commands, and API restart. Reject boot/time-namespace mismatches. See [clock safety](../../REDIS-CLOCK-SAFETY.md).
+- [ ] Cross-host API time coordination is outside the single-clock-domain demo; design a trusted common clock or consensus admission before allowing it.
 - [x] Add a bounded circuit breaker and one read-only recovery probe per replica. Verify cold and warm 503, zero outage work, and a client abort during recovery.
 - [x] Record latency p50/p95, 429/503 counts, readiness recovery and CLI parameters in the [single-run two-replica report](../../REDIS-OUTAGE-REPORT.md).
 

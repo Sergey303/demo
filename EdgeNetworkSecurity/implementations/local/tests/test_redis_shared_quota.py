@@ -21,6 +21,8 @@ import unittest
 from uuid import uuid4
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+from primary_gate import manifest
 from test_local_edge_api import RunningApi, choose_port, get
 
 
@@ -140,7 +142,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
                         for window in (1, 3, 5, 20):
                             gate = Path(cls.gates.name) / str(window)
                             temp = gate.with_suffix(".tmp")
-                            temp.write_text(f"{window * 1000}:{run_id}\n")
+                            temp.write_text(manifest(window, run_id))
                             temp.replace(gate)
                         return
             except OSError:
@@ -196,18 +198,17 @@ class RedisSharedQuotaTests(unittest.TestCase):
 
                 return read_reply()
 
-    def redis_time(self):
-        seconds, micros = self.redis("TIME")
-        return int(seconds) + int(micros) / 1_000_000
+    def quota_time(self):
+        return time.monotonic()
 
     def ensure_window_budget(self, window_seconds=5):
-        remaining = window_seconds - (self.redis_time() % window_seconds)
+        remaining = window_seconds - (self.quota_time() % window_seconds)
         if remaining < window_seconds / 2:
             time.sleep(remaining + 0.15)
 
     @staticmethod
     def quota_key(options):
-        return "demo:edge:quota:v1:" + options["LOCAL_EDGE_REDIS_NAMESPACE"]
+        return "demo:edge:quota:v2:" + options["LOCAL_EDGE_REDIS_NAMESPACE"]
 
     def test_missing_malformed_and_wrong_window_gate_fail_closed(self):
         options = self.options(window=20)
@@ -217,8 +218,10 @@ class RedisSharedQuotaTests(unittest.TestCase):
             valid = Path(options["LOCAL_EDGE_REDIS_PRIMARY_GATE"]).read_text()
             options["LOCAL_EDGE_REDIS_PRIMARY_GATE"] = str(gate)
             with RunningApi(**options) as api:
-                for value in (None, "closed\n", "invalid", "1000:" + valid.split(":", 1)[1],
-                              "20000:" + "0" * 40 + "\n"):
+                for value in (None, "closed\n", "invalid", valid.replace("v2:20000:", "v2:1000:"),
+                              manifest(20, "0" * 40), valid.replace("time:[", "time:[9"),
+                              valid.replace(Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
+                                            "00000000-0000-0000-0000-000000000000")):
                     if value is not None:
                         temp = gate.with_suffix(".tmp")
                         temp.write_text(value)
@@ -247,7 +250,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertEqual(get(api.base_url + "/ready")[0], 200)
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 429)
             self.assertEqual(self.redis("GET", key), state)
-            self.assertLess(self.redis("PTTL", key), ttl)
+            self.assertEqual((self.redis("PTTL", key), ttl), (-1, -1))
 
     def test_window_rolls_over_with_old_key_still_present(self):
         options = self.options(window=3)
@@ -264,34 +267,32 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertEqual((status, body), (429, {"error": "rate_limited"}))
             self.assertIn(int(headers["Retry-After"]), range(1, 4))
             boundary = (old_bucket + 1) * 3
-            time.sleep(max(0, boundary - self.redis_time()) + 0.05)
+            time.sleep(max(0, boundary - self.quota_time()) + 0.05)
             self.assertEqual(self.redis("GET", key), old_state)
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
                 codes = list(pool.map(lambda api: get(api.base_url + "/api/expensive")[0],
                                       (first, second)))
             self.assertEqual(sorted(codes), [200, 429])
             self.assertEqual(self.redis("GET", key), f"{old_bucket + 1}:1".encode())
-            self.assertGreater(self.redis("PTTL", key), 0)
+            self.assertEqual(self.redis("PTTL", key), -1)
 
-    def test_idle_quota_key_expires(self):
+    def test_idle_quota_watermark_survives_multiple_windows(self):
         options = self.options(window=1)
         key = self.quota_key(options)
         with RunningApi(**options) as api:
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
-            ttl = self.redis("PTTL", key)
-            self.assertIn(ttl, range(1, 2001))
-            deadline = time.monotonic() + ttl / 1000 + 1
-            while self.redis("GET", key) is not None:
-                if time.monotonic() >= deadline:
-                    self.fail("idle quota key did not expire")
-                time.sleep(0.1)
+            state = self.redis("GET", key)
+            self.assertEqual(self.redis("PTTL", key), -1)
+            time.sleep(2.2)
+            self.assertEqual(self.redis("GET", key), state)
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+            self.assertGreater(int(self.redis("GET", key).split(b":")[0]), int(state.split(b":")[0]))
 
     def test_retained_bad_state_fails_closed_without_overwriting_it(self):
         options = self.options()
         key = self.quota_key(options)
         with RunningApi(**options) as api:
-            future_bucket = int(self.redis_time() // 5) + 2
+            future_bucket = int(self.quota_time() // 5) + 2
             for value in ("bad-state", f"{future_bucket}:1"):
                 with self.subTest(value=value):
                     self.assertEqual(self.redis("SET", key, value, "PX", 10000), b"OK")
