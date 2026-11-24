@@ -19,4 +19,4 @@ RUN set -eu; mkdir -p /opt/models; ollama serve >/tmp/ollama-build.log 2>&1 & \
 WORKDIR /app
 COPY contract.py worker.py transport.py /app/
 USER 10001:10001
-ENTRYPOINT ["python3","/app/worker.py"]
+ENTRYPOINT ["python3","-u","/app/worker.py"]
