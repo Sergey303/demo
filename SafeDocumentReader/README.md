@@ -26,8 +26,7 @@ detector, certified safe viewer or reliable prompt-injection classifier.**
 
 ## Linux setup
 
-Install and initialize Dangerzone from its official signed distribution and
-Poppler utilities (pdfinfo, pdftoppm). Install standalone Docker Sandboxes
+Install and initialize Dangerzone from its official signed distribution (0.11.1 or newer security-patched release) on a supported Linux host with rootless Podman, plus Poppler utilities (pdfinfo, pdftoppm, pdftotext, pdfdetach, pdfimages). See [renderer setup](RENDERER.md). Install standalone Docker Sandboxes
 (sbx) on a host supporting its microVMs and Docker for building the image.
 Do not install anything while processing a document.
 
@@ -35,7 +34,7 @@ Rendering only:
 
     python3 safe_read.py input.docx --out /private/review --render-only
 
-Outputs safe.pdf and numbered PNGs. Choose a new private directory outside
+Outputs safe.pdf and numbered PNGs after checking the reconstructed PDF has no extractable text, URLs, attachments, forms, JavaScript or encryption and every page contains an image. These are defense-in-depth structural checks, not proof against arbitrary PDF parser exploits. Choose a new private directory outside
 repositories, cloud-sync folders and other agent workspaces.
 
 Build the offline image beforehand on a trusted network. Replace placeholders

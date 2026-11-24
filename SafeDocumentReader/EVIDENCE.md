@@ -15,3 +15,7 @@ Docker 29.8.2 live probe using preexisting python:3.12-alpine: bind from RDC /tm
 ### Transport fix verification
 
 At `fd210c700eb86e0c350d2e25d9c0631ff8126389` all 12 unit tests and Python compilation passed on RDC. An initial piped Docker hash probe returned no stdout and failed the assertion; a repeat with a finite framed file on stdin and unbuffered Python passed: 90,131 bytes transferred; both PNG SHA-256 values matched exactly. Use unbuffered worker stdout. Separately generated two one-page synthetic PDFs differing only by invisible PDF text; pdftotext recovered the canary, but Poppler PNG files compared byte-identical (`cmp`, exit 0). This is a Poppler-only controlled test, not full Dangerzone acceptance. No new image downloads, confidential data or shared-service changes. Live SBX, Dangerzone and vision inference remain blocked.
+
+### Renderer follow-up
+
+RDC is Ubuntu 24.04.4 LTS; Podman and Dangerzone unavailable. `unshare --user --map-root-user true` returned Operation not permitted; /dev/fuse and /dev/kvm absent; NoNewPrivs=1, Seccomp=2. Official Dangerzone Linux runtime is Podman, with gVisor inside; 0.11.1 fixes October 2026 archive-update vulnerabilities. No privileged workaround or host package installation performed. Added structural audit on reconstructed PDF, provisioning guide and explicit synthetic live acceptance runner. Full Dangerzone conversion remains blocked.

@@ -11,6 +11,7 @@ import tempfile
 import uuid
 from contract import validate, MAX_OUTPUT, human_report
 from transport import pack
+from renderer_audit import check_pdf
 
 MAX_INPUT = 64 * 1024 * 1024
 MAX_RASTER = 256 * 1024 * 1024
@@ -50,11 +51,7 @@ def render(source, root, max_pages):
     staged.unlink()
     if not pdf.is_file() or pdf.is_symlink() or pdf.stat().st_size > MAX_RASTER:
         raise RuntimeError("Invalid sanitized PDF")
-    info = run(["pdfinfo", str(pdf)], capture=True).decode("ascii", errors="replace")
-    match = re.search(r"^Pages:\s+(\d+)\s*$", info, re.M)
-    if not match or not 1 <= int(match[1]) <= max_pages:
-        raise RuntimeError("Missing or excessive page count; no truncation")
-    count = int(match[1])
+    count = check_pdf(pdf, run, max_pages)
     pages = root / "pages"
     pages.mkdir(mode=0o700)
     run(["pdftoppm", "-png", "-scale-to", "2200", str(pdf), str(pages / "page")])
