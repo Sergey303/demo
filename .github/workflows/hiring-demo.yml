@@ -6,6 +6,7 @@ on:
       - 'bootstrap5/**'
       - 'hiring-demo/**'
       - 'enterprise-demo/**'
+      - 'enterprise-auth-bff/**'
       - 'architecture/**'
       - 'dotnet-outbox/**'
       - '.github/workflows/hiring-demo.yml'
@@ -14,6 +15,7 @@ on:
       - 'bootstrap5/**'
       - 'hiring-demo/**'
       - 'enterprise-demo/**'
+      - 'enterprise-auth-bff/**'
       - 'architecture/**'
       - 'dotnet-outbox/**'
       - '.github/workflows/hiring-demo.yml'
@@ -55,7 +57,7 @@ jobs:
       - name: Verify trusted proxy signer
         run: node --test tests/enterprise-auth.test.mjs
       - name: Browser contract tests (mocked HTTP)
-        run: npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts tests/enterprise-documents.spec.ts tests/enterprise-search.spec.ts tests/enterprise-answer.spec.ts tests/enterprise-generated.spec.ts tests/mcp-agent.spec.ts tests/enterprise-identity.spec.ts
+        run: npx playwright test tests/hiring-demo.spec.ts tests/enterprise-ai.spec.ts tests/enterprise-documents.spec.ts tests/enterprise-search.spec.ts tests/enterprise-answer.spec.ts tests/enterprise-generated.spec.ts tests/mcp-agent.spec.ts tests/enterprise-identity.spec.ts tests/enterprise-oidc.spec.ts
 
   live-screencast:
     runs-on: ubuntu-latest
@@ -113,6 +115,23 @@ jobs:
           python-version: "3.12"
       - name: Install lightweight Python PostgreSQL test dependencies (no ML model downloads)
         run: python -m pip install "psycopg[binary]>=3.2,<4" "pytest>=8,<10" "fastapi>=0.115,<1" "httpx>=0.27,<1" "mcp>=2.3,<2.4"
+      - name: EP-12 OIDC BFF tests (fake isolated HTTPS IdP, no external credentials)
+        run: dotnet test enterprise-auth-bff/tests/EnterpriseAuthBff.Tests.csproj -c Release --logger "console;verbosity=minimal"
+      - name: EP-12B separate disposable session database and explicit migration
+        env:
+          PGPASSWORD: demo
+        run: |
+          createdb -h 127.0.0.1 -p 5432 -U demo ep12_sessions
+          psql -h 127.0.0.1 -p 5432 -U demo -d ep12_sessions -v ON_ERROR_STOP=1 -f enterprise-auth-bff/sql/001_sessions.sql
+      - name: EP-12B revocation, encrypted keys and cross-instance cookie tests
+        env:
+          EP12_TEST_SESSION_CONNECTION: Host=127.0.0.1;Port=5432;Database=ep12_sessions;Username=demo;Password=demo
+        run: dotnet test enterprise-auth-bff/tests/EnterpriseAuthBff.Tests.csproj -c Release --logger "console;verbosity=minimal"
+      - name: EP-12B Linux foreign-owner secret rejection (privileged fixture)
+        run: |
+          sudo dotnet test enterprise-auth-bff/tests/EnterpriseAuthBff.Tests.csproj -c Release --no-build \
+            --filter "FullyQualifiedName~KeyOwnershipTests.Foreign_owned_secret_file_or_directory_is_rejected_even_with_exact_modes" \
+            --logger "console;verbosity=normal"
       - name: Real PostgreSQL Qwen-generation grants, exact quotes, search and outbox
         env:
           JOBS_TEST_CONNECTION: host=127.0.0.1 port=5432 dbname=reliable_jobs user=demo password=demo
@@ -136,4 +155,119 @@ jobs:
             bootstrap5/test-results/
             bootstrap5/playwright-report/
           retention-days: 14
+          if-no-files-found: warn
+
+  oidc-real-https:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: reliable_jobs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d reliable_jobs"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local PostgreSQL and Chromium certificate trust tooling
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client libnss3-tools
+      - name: Build real BFF with .NET 10
+        run: dotnet build enterprise-auth-bff/src/EnterpriseAuthBff.csproj -c Release
+      - name: Build bundled React SPA and install real Chromium
+        working-directory: bootstrap5
+        run: |
+          npm ci
+          npm run build
+          npx playwright install --with-deps chromium
+      - name: Real Keycloak HTTPS OIDC/PKCE login and stolen-cookie revocation
+        env:
+          EP12C_DISPOSABLE_POSTGRES: "1"
+          EP12C_PG_ADMIN_PASSWORD: demo
+        run: python3 enterprise-auth-bff/tests/live_oidc_acceptance.py
+      - name: Preserve failing OIDC browser traces only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ep12c-real-keycloak-https-playwright-failure
+          path: |
+            bootstrap5/test-results/
+            bootstrap5/playwright-report/
+          retention-days: 7
+          if-no-files-found: warn
+
+  oidc-caddy-uds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: reliable_jobs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo -d reliable_jobs"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bootstrap5/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real TLS/Unix socket acceptance prerequisites
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client libnss3-tools iproute2
+      - name: Build real .NET 10 BFF (UDS transport)
+        run: dotnet build enterprise-auth-bff/src/EnterpriseAuthBff.csproj -c Release
+      - name: Build React SPA and install Chromium
+        working-directory: bootstrap5
+        run: |
+          npm ci
+          npm run build
+          npx playwright install --with-deps chromium
+      - name: Real Caddy HTTPS to owner-only UDS BFF and Keycloak/PostgreSQL
+        env:
+          EP12E_DISPOSABLE_POSTGRES: "1"
+          EP12E_PG_ADMIN_PASSWORD: demo
+        run: python3 enterprise-auth-bff/tests/live_caddy_acceptance.py
+      - name: Preserve failed real Caddy browser traces only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ep12e-caddy-uds-keycloak-failure
+          path: |
+            bootstrap5/test-results/
+            bootstrap5/playwright-report/
+          retention-days: 7
           if-no-files-found: warn
