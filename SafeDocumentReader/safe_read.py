@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Trusted Linux controller; never interpret original document text."""
+"""Trusted host controller; never interpret original document text."""
 import argparse
 import json
 import os
@@ -38,6 +38,17 @@ def run(cmd, *, capture=False, timeout=1800, input_file=None):
             return data
     return b""
 
+def dangerzone_cli():
+    # The official Windows installer does not need to modify PATH.
+    if os.name == "nt":
+        installed = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Dangerzone" / "dangerzone-cli.exe"
+        if installed.is_file():
+            return str(installed)
+    binary = shutil.which("dangerzone-cli")
+    if not binary:
+        raise RuntimeError("Dangerzone CLI missing; install and initialize official distribution")
+    return binary
+
 def render(source, root, max_pages):
     staged = root / ("source" + source.suffix.lower())
     with source.open("rb") as inp, staged.open("xb") as out:
@@ -47,7 +58,7 @@ def render(source, root, max_pages):
         out.write(data)
     del data
     pdf = root / "safe.pdf"
-    run(["dangerzone-cli", "--output-filename", str(pdf), str(staged)])
+    run([dangerzone_cli(), "--output-filename", str(pdf), str(staged)])
     staged.unlink()
     if not pdf.is_file() or pdf.is_symlink() or pdf.stat().st_size > MAX_RASTER:
         raise RuntimeError("Invalid sanitized PDF")

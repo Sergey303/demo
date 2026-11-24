@@ -8,13 +8,18 @@ from unittest.mock import Mock
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from renderer_audit import check_pdf
 from generate_fixtures import pdf
-from safe_read import run
+from safe_read import run, dangerzone_cli
+from unittest.mock import patch
 
 INFO=b"Pages: 1\nForm: none\nJavaScript: no\nEncrypted: no\n"
 IMAGES=b"page num type width height\n 1 0 image 10 10\n"
 class RendererTests(unittest.TestCase):
     def check(self, values):
         return check_pdf(Path("synthetic.pdf"),Mock(side_effect=values),20)
+    def test_missing_dangerzone_fails_closed(self):
+        with patch("safe_read.shutil.which",return_value=None), patch("safe_read.Path.is_file",return_value=False):
+            with self.assertRaisesRegex(RuntimeError,"Dangerzone CLI missing"):
+                dangerzone_cli()
     def test_pixel_contract(self):
         self.assertEqual(self.check([INFO,b"\x0c",b"0 embedded files\n",b"Page Type URL\n",IMAGES]),1)
     def test_hidden_text_rejected(self):

@@ -24,7 +24,11 @@ detector, certified safe viewer or reliable prompt-injection classifier.**
    Remove the VM on success and handled failure; if deletion fails, do not
    publish the report. Unique names avoid reusing prior state.
 
-## Linux setup
+## Host setup
+
+Native Windows is also supported for structural tests; see [Windows provisioning](WINDOWS.md) for requirements and pending live acceptance.
+
+### Linux setup
 
 Install and initialize Dangerzone from its official signed distribution (0.11.1 or newer security-patched release) on a supported Linux host with rootless Podman, plus Poppler utilities (pdfinfo, pdftoppm, pdftotext, pdfdetach, pdfimages). See [renderer setup](RENDERER.md). Install standalone Docker Sandboxes
 (sbx) on a host supporting its microVMs and Docker for building the image.
