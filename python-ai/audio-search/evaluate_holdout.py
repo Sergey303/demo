@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 from time import perf_counter
+from statistics import median
 from pipeline import recognize, OnnxEncoder
 from rerank import RerankedIndex, CrossEncoderReranker
 from search import TranscriptIndex
@@ -35,14 +36,14 @@ def check(index, cases):
     outcomes=[]; times=[]
     for question, expected in cases:
         start=perf_counter()
-        hits=index.search(question,k=len(index.records))
+        hits=index.search(question,k=len(index.records)) if index.records else []
         times.append((perf_counter()-start)*1000)
         sources=list(dict.fromkeys(h.source for h in hits))
         source=expected+'.wav'
         rank=sources.index(source)+1 if source in sources else None
-        outcomes.append({'question':question,'expected':source,'top':sources[0], 'rank':rank})
+        outcomes.append({'question':question,'expected':source,'top':sources[0] if sources else None, 'rank':rank})
     return {'top1':sum(x['rank']==1 for x in outcomes),'top3':sum(x['rank'] is not None and x['rank']<=3 for x in outcomes),
-            'median_ms':round(sorted(times)[len(times)//2],3),'outcomes':outcomes}
+            'median_ms':round(median(times),3) if times else None,'outcomes':outcomes}
 
 def main():
     with tempfile.TemporaryDirectory(prefix='audio-holdout-') as temp:

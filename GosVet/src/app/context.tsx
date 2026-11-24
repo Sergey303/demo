@@ -41,7 +41,7 @@ const hydrateState = (restored: Partial<AppState> | null): AppState => {
 };
 
 export function DemoStoreProvider({ children }: PropsWithChildren) {
-  const [state, dispatch] = useReducer(reducer, hydrateState(loadState<Partial<AppState>>()));
+  const [state, dispatch] = useReducer(reducer, hydrateState(loadState()));
   useEffect(() => saveState(state), [state]);
   const value = useMemo(
     () => ({

@@ -197,3 +197,5 @@ smokes, not independent answer-quality measurements. The stricter sentence
 boundary was independently unit-tested; no separate live re-run is claimed
 for that incremental change. Existing guarded/evidence/retrieval tests remain
 green and the 0.67 relevance threshold is unchanged.
+
+A separate [finite-choice semantic contract](SEMANTIC-CONTRACT.md) has offline tests for evaluation correctness; its initial live model run was interrupted and has no quality result.

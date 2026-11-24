@@ -1,6 +1,8 @@
 """Bounded planner/executor with tool allowlist and explicit approval gate."""
 from dataclasses import dataclass
 from pathlib import Path
+import os
+import stat
 
 
 @dataclass(frozen=True)
@@ -10,6 +12,29 @@ class Action:
 
 
 ALLOWED_TOOLS = {'list_documents', 'read_document', 'draft_note'}
+MAX_DOCUMENT_CHARS = 4000
+
+
+def read_document_prefix(directory: Path, name: str) -> str:
+    # Linux/POSIX demo: open the directory and the file relative to its descriptor.
+    # Reject symlinks and special files without ever blocking on a FIFO.
+    try:
+        directory_fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory_fd)
+            try:
+                info = os.fstat(fd)
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                    raise ValueError('Document unavailable')
+                # TextIOWrapper performs bounded buffered reads, not read-to-end.
+                with os.fdopen(fd, 'r', encoding='utf8', closefd=False) as stream:
+                    return stream.read(MAX_DOCUMENT_CHARS)
+            finally:
+                os.close(fd)
+        finally:
+            os.close(directory_fd)
+    except (OSError, UnicodeError) as exc:
+        raise ValueError('Document unavailable') from exc
 
 
 def validate(action: Action) -> None:
@@ -32,15 +57,12 @@ class Agent:
     def execute(self, action: Action, approved: bool = False) -> dict:
         validate(action)
         if action.name == 'list_documents':
-            return {'documents': sorted(p.name for p in self.documents.glob('*.txt') if p.is_file())}
+            return {'documents': sorted(p.name for p in self.documents.glob('*.txt') if not p.is_symlink() and p.is_file())}
         if action.name == 'read_document':
             name = action.arguments['name']
             if Path(name).name != name or not name.endswith('.txt'):
                 raise ValueError('Only plain text filenames permitted')
-            path = (self.documents / name).resolve()
-            if path.parent != self.documents or not path.is_file():
-                raise ValueError('Document unavailable')
-            return {'name': name, 'content': path.read_text(encoding='utf8')[:4000]}
+            return {'name': name, 'content': read_document_prefix(self.documents, name)}
         if not approved:
             return {'status': 'approval_required', 'action': action.name,
                     'preview': action.arguments['text'][:200]}

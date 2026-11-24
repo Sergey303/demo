@@ -144,3 +144,5 @@ Playwright WebKit tests the WebKit engine, not the Safari application on Apple h
 - **Verification:** TypeScript, ESLint, production build and Playwright browser checks.
 
 This is an independent demonstration with invented data, not an implementation of a private customer project.
+
+Evidence-range contract: shared validation rejects nonfinite or reversed audio timecodes and invalid document offsets before rendering search results or citations. Offline regression: `node --test tests/evidence-contract.test.mjs` (Node 24 verified).
