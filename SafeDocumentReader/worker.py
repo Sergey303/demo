@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 import time
+import sys
+from transport import unpack
 import urllib.request
 from contract import SCHEMA,MAX_OUTPUT,parse,page
 
@@ -82,24 +84,23 @@ def main():
     p.add_argument("--model",required=True)
     p.add_argument("--words",type=int,required=True)
     args=p.parse_args()
-    pages=sorted(Path("/input").glob("*.png"))
-    if not 1<=len(pages)<=40:
-        raise RuntimeError("Invalid page count")
-    proc=start_model(args.model)
-    try:
-        handler=codex_page if args.engine=="codex" else ollama_page
-        result=[handler(path,args.model,args.words) for path in pages]
-        encoded=json.dumps(result,ensure_ascii=False).encode()
-        if len(encoded)>MAX_OUTPUT:
-            raise RuntimeError("Oversized report")
-        print(encoded.decode())
-    finally:
-        proc.terminate()
+    with tempfile.TemporaryDirectory(dir="/tmp",prefix="pages-") as tmp:
+        pages=unpack(sys.stdin.buffer,Path(tmp))
+        proc=start_model(args.model)
         try:
-            proc.wait(timeout=15)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
+            handler=codex_page if args.engine=="codex" else ollama_page
+            result=[handler(path,args.model,args.words) for path in pages]
+            encoded=json.dumps(result,ensure_ascii=False).encode()
+            if len(encoded)>MAX_OUTPUT:
+                raise RuntimeError("Oversized report")
+            print(encoded.decode())
+        finally:
+            proc.terminate()
+            try:
+                proc.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
 
 if __name__=="__main__":
     main()

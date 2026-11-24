@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import uuid
 from contract import validate, MAX_OUTPUT, human_report
+from transport import pack
 
 MAX_INPUT = 64 * 1024 * 1024
 MAX_RASTER = 256 * 1024 * 1024
@@ -17,13 +18,13 @@ EXTENSIONS = {".pdf", ".doc", ".docx", ".docm", ".xls", ".xlsx", ".xlsm",
               ".ppt", ".pptx", ".pptm", ".odt", ".ods", ".odp", ".rtf",
               ".txt", ".csv", ".png", ".jpg", ".jpeg", ".tiff"}
 
-def run(cmd, *, capture=False, timeout=1800):
+def run(cmd, *, capture=False, timeout=1800, input_file=None):
     env = {k:v for k,v in os.environ.items()
            if not k.startswith("DANGERZONE_") and k != "QUBES_CONVERSION"}
     env["LC_ALL"] = "C"
     with tempfile.TemporaryFile() as out:
         try:
-            subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL,
+            subprocess.run(cmd, env=env, stdin=input_file if input_file is not None else subprocess.DEVNULL,
                            stdout=out if capture else subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, timeout=timeout, check=True)
         except (OSError, subprocess.SubprocessError):
@@ -67,52 +68,53 @@ def render(source, root, max_pages):
             if f.read(8) != b"\x89PNG\r\n\x1a\n":
                 raise RuntimeError("Not PNG")
         path.rename(pages / f"{i:04d}.png")
-    # Private parent prevents access from other host users; worker is unprivileged.
-    pages.chmod(0o755)
-    for page in pages.iterdir():
-        page.chmod(0o644)
     return pdf, pages, count
 
-def docker_args(name, image, pages, engine, model, words):
-    return ["docker", "run", "--rm", "--pull=never", "--name", name,
+def docker_args(name, image, engine, model, words):
+    return ["docker", "run", "-i", "--rm", "--pull=never", "--name", name,
             "--network", "none", "--read-only", "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges", "--pids-limit", "256",
             "--memory", "16g", "--cpus", "4", "--user", "10001:10001",
             "--tmpfs", "/tmp:rw,nosuid,nodev,size=1g,mode=1777",
-            "--log-driver", "none", "--mount",
-            f"type=bind,src={pages},dst=/input,readonly",
+            "--log-driver", "none",
             image, "--engine", engine, "--model", model, "--words", str(words)]
 
 def summarize(pages, args):
     name = "sdr-" + uuid.uuid4().hex
     if not re.fullmatch(r"sha256:[a-f0-9]{64}", args.image_id or ""):
         raise ValueError("Trusted local image ID required")
-    if args.backend == "docker":
-        try:
-            return run(docker_args(name, args.image_id, pages, args.engine,
-                                   args.model, args.words), capture=True, timeout=args.timeout)
-        finally:
-            names = run(["docker","ps","-a","--filter","name=^/"+name+"$",
-                         "--format","{{.Names}}"], capture=True, timeout=30)
-            if name in names.decode("ascii").splitlines():
-                run(["docker","rm","-f",name], timeout=120)
-    archive = args.image_archive
-    if not archive or not archive.is_file():
-        raise ValueError("SBX requires trusted prebuilt docker save archive")
-    sbx = ["sbx", "--no-input"]
-    try:
-        run(sbx + ["create","--name",name,"--skills","off","--static-mcp","none",
-                   "--deny-network","**","--memory","20g","shell"])
-        run(sbx + ["cp", str(archive.resolve()), name + ":/tmp/sdr-image.tar"])
-        run(sbx + ["exec",name,"docker","load","-i","/tmp/sdr-image.tar"])
-        run(sbx + ["exec",name,"rm","/tmp/sdr-image.tar"])
-        run(sbx + ["cp",str(pages),name+":/tmp/sdr-pages"])
-        return run(sbx + ["exec",name] + docker_args(
-            name,args.image_id,"/tmp/sdr-pages",args.engine,args.model,args.words),
-            capture=True, timeout=args.timeout)
-    finally:
-        # Publication is blocked if deletion fails.
-        run(sbx + ["rm","--force",name], timeout=180)
+    with tempfile.TemporaryFile(dir=pages.parent) as payload:
+        pack(pages, payload)
+        payload.seek(0)
+        cmd = docker_args(name,args.image_id,args.engine,args.model,args.words)
+        if args.backend == "docker":
+            try:
+                return run(cmd,input_file=payload,capture=True,timeout=args.timeout)
+            finally:
+                names = run(["docker","ps","-a","--filter","name=^/"+name+"$",
+                             "--format","{{.Names}}"],capture=True,timeout=30)
+                if name in names.decode("ascii").splitlines():
+                    run(["docker","rm","-f",name],timeout=120)
+        archive=args.image_archive
+        if not archive or not archive.is_file():
+            raise ValueError("SBX requires trusted prebuilt docker save archive")
+        sbx=["sbx","--no-input"]
+        with tempfile.TemporaryDirectory(dir=pages.parent,prefix="transfer-") as transfer:
+            frame=Path(transfer)/"pages.bin"
+            with frame.open("xb") as f:
+                shutil.copyfileobj(payload,f)
+            try:
+                run(sbx+["create","--name",name,"--skills","off","--static-mcp","none",
+                         "--deny-network","**","--pull","never","--memory","20g","shell"])
+                run(sbx+["cp",str(archive.resolve()),name+":/tmp/sdr-image.tar"])
+                run(sbx+["exec",name,"docker","load","-i","/tmp/sdr-image.tar"])
+                run(sbx+["exec",name,"rm","/tmp/sdr-image.tar"])
+                run(sbx+["cp",str(frame),name+":/tmp/sdr-pages.bin"])
+                # Fixed shell syntax; user-controlled values passed only as argv.
+                return run(sbx+["exec",name,"sh","-c",'exec "$@" < /tmp/sdr-pages.bin',"sdr"]+cmd,
+                           capture=True,timeout=args.timeout)
+            finally:
+                run(sbx+["rm","--force",name],timeout=180)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

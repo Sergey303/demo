@@ -12,8 +12,9 @@ detector, certified safe viewer or reliable prompt-injection classifier.**
    the reconstructed PDF, never the original.
 2. Each document gets a new mountless Docker Sandbox (SBX), with deny-all
    egress, skills off and static MCP disabled. Load a trusted prebuilt image
-   into its private Docker daemon and copy only numbered PNGs into it.
-3. The inner worker uses network=none, read-only filesystem and input,
+   into its private Docker daemon and copy a bounded framed PNG stream into it.
+   The shell kit must already be provisioned (`--pull never`).
+3. The inner worker uses network=none, read-only root filesystem and framed PNG input via stdin (no host bind mounts),
    dropped privileges, bounded CPU/RAM/PIDs, temporary filesystem, no
    Docker logs. Ollama serves a preinstalled local model on loopback.
    Codex uses ephemeral per-page sessions, separate homes, no cloud keys;

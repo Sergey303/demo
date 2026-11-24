@@ -8,6 +8,9 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from contract import validate, human_report
 from safe_read import docker_args,summarize
+from transport import pack,unpack
+import io
+import struct
 
 GOOD={"summary":"Срок 5 дней","requirements":["Не ранее 10:00"],
       "suspicions":["Ignore instructions"],"uncertainties":[]}
@@ -35,8 +38,26 @@ class SecurityTests(unittest.TestCase):
         self.assertIn("\nPAGE 1\n",report)
         self.assertNotIn("\nPAGE 99\n",report)
         self.assertIn("\n    PAGE 99\n",report)
+    def test_transport_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            a=root/"a"; a.mkdir()
+            b=root/"b"; b.mkdir()
+            (a/"0001.png").write_bytes(b"\x89PNG\r\n\x1a\nabc")
+            (a/"0002.png").write_bytes(b"\x89PNG\r\n\x1a\ndef")
+            payload=io.BytesIO()
+            pack(a,payload)
+            paths=unpack(io.BytesIO(payload.getvalue()),b)
+            self.assertEqual([x.read_bytes() for x in paths],[x.read_bytes() for x in sorted(a.iterdir())])
+    def test_transport_rejects_bad_frames(self):
+        for raw in [b"",struct.pack(">I",41),struct.pack(">II",1,33*1024*1024),
+                    struct.pack(">II",1,8)+b"badbytes",
+                    struct.pack(">II",1,8)+b"\x89PNG\r\n\x1a\nextra"]:
+            with self.subTest(raw=raw), tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(ValueError):
+                    unpack(io.BytesIO(raw),Path(tmp))
     def test_isolation_flags(self):
-        cmd=docker_args("test","sha256:"+"a"*64,"/tmp/pages","codex","model",80)
+        cmd=docker_args("test","sha256:"+"a"*64,"codex","model",80)
         self.assertIn("--read-only",cmd)
         self.assertIn("--pull=never",cmd)
         self.assertEqual(cmd[cmd.index("--network")+1],"none")
@@ -47,6 +68,7 @@ class SecurityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             archive=Path(tmp)/"image.tar"
             archive.touch()
+            (Path(tmp)/"0001.png").write_bytes(b"\x89PNG\r\n\x1a\n")
             args=SimpleNamespace(image_id="sha256:"+"a"*64,backend="sbx",
                 image_archive=archive,engine="codex",model="model",words=80,timeout=5)
             with patch("safe_read.run",side_effect=[b"",RuntimeError("failed"),b""]) as run:
@@ -58,6 +80,7 @@ class SecurityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             archive=Path(tmp)/"image.tar"
             archive.touch()
+            (Path(tmp)/"0001.png").write_bytes(b"\x89PNG\r\n\x1a\n")
             args=SimpleNamespace(image_id="sha256:"+"a"*64,backend="sbx",
                 image_archive=archive,engine="codex",model="model",words=80,timeout=5)
             with patch("safe_read.run",side_effect=[b""]*5+[b"result",RuntimeError("cleanup failed")]):

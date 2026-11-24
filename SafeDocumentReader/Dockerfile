@@ -17,6 +17,6 @@ RUN set -eu; mkdir -p /opt/models; ollama serve >/tmp/ollama-build.log 2>&1 & \
     for i in $(seq 1 60); do if ollama list >/dev/null 2>&1; then break; fi; sleep 1; done; \
     ollama pull "$MODEL"; chmod -R a+rX /opt/models; rm -f /tmp/ollama-build.log
 WORKDIR /app
-COPY contract.py worker.py /app/
+COPY contract.py worker.py transport.py /app/
 USER 10001:10001
 ENTRYPOINT ["python3","/app/worker.py"]
