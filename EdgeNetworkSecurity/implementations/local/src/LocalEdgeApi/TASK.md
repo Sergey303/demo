@@ -17,7 +17,9 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 - [x] Bound Redis command waits and respect HTTP request cancellation. Test paused Redis and client abort after dispatch. Verify fail-closed 503 for confirmed dependency failures and zero protected work for timed-out or aborted requests.
 - [x] Embed the versioned `quota-v1.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle expiry, and fail-closed behavior for malformed or future-bucket state.
 - [x] Inject a TCP reset on the Redis connection after quota dispatch and before the reply reaches the API. The loopback relay test verified a sanitized 503, zero protected work and a retained charge after recovery under the same namespace.
-- [ ] Exercise primary failover and actual clock skew with retained or lost quota state. Verify the behavior and document how much quota can be lost or reopened.
+- [x] Exercise manual primary promotion with retained, partial and entirely lost quota state on two live API replicas. See [promotion report](../../REDIS-PROMOTION-REPORT.md): up to twice the quota observed in one window.
+- [ ] Implement and verify a promotion-aware fail-closed admission gate; cover fencing, restart and stale state.
+- [ ] Exercise actual cross-node clock skew; do not claim strict quota preservation until the clock assumptions are validated.
 - [x] Add a bounded circuit breaker and one read-only recovery probe per replica. Verify cold and warm 503, zero outage work, and a client abort during recovery.
 - [x] Record latency p50/p95, 429/503 counts, readiness recovery and CLI parameters in the [single-run two-replica report](../../REDIS-OUTAGE-REPORT.md).
 
@@ -40,7 +42,7 @@ Use synthetic, bounded localhost traffic only. Ordinary tests must not require D
 - [x] Real HTTP tests cover nonblocking concurrency slot release, worker kill/reap, cancellation, invalid outputs, source validation, per-replica aggregate-only input, and matching the EdgeAI fallback score.
 - [x] Implement and verify the opt-in persistent ASP.NET Core client with real loopback HTTP and a synthetic Python fixture. Verify PID reuse, separate startup/scoring deadlines, quota bypass prevention, strict protocol validation, cooldown, cancellation, and process reap.
 - [x] Run merged real ASP.NET Core → persistent seccomp Python → ONNX CPU E2E: two HTTP 200 scores use the same process/session, third request stays 429; measured 3817/4.24 ms and 2975/8.03 ms cold/warm on RDC. This is local evidence, not production latency/SLA.
-- [ ] Measure real request latency and failure probability under sustained safe localhost load, including CPU/RAM budgets, cold/warm startup, and multi-replica fairness. No production readiness claim.
+- [ ] DEFERRED (2026-11-24, not a demo completion gate): sustained-load latency, failure probability, CPU/RAM and multi-replica fairness. No production performance claim.
 
 ## P0 background prewarm
 
