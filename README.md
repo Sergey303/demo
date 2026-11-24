@@ -147,3 +147,6 @@ The **Enterprise AI Platform integrates selected `dotnet-outbox/`, `architecture
 **Grounded-answer safety boundary:** [guarded opt-in free-form RAG](python-ai/rag-docs/README.md) checks current source permissions and strict model citation/JSON output, abstaining on invalid/unsupported-format output; real local Qwen3 smoke tested. Citation validity is not proof of semantic support.
 
 **Claim-level provenance:** [opt-in exact-copy `claim_checked` RAG](python-ai/rag-docs/README.md) derives each claim from a complete sentence in a tenant-authorized source, with atomic rejection if any source span is invalid. This is NOT semantic entailment or independent evidence of accuracy.
+
+
+**Standalone document-security prototype:** [SafeDocumentReader](SafeDocumentReader/README.md) — Dangerzone pixel-only rendering, disposable offline Docker/SBX inference, strict page-level review output and negative unit tests. Live SBX/renderer/model acceptance is pending; not a certified malware or prompt-injection detector.

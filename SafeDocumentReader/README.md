@@ -61,7 +61,8 @@ tools. Explicit --backend docker skips the outer microVM for development;
 ordinary Docker is not equivalent to SBX. The SBX currently requests 20 GiB
 RAM; the inner container is capped at 16 GiB and four CPUs.
 
-Default target 80 summary words per page; critical requirements may exceed
+Reports are written as report.txt (human-readable, inert plain text) and
+report.json (structured, unverified). Default target 80 summary words per page; critical requirements may exceed
 the target. Default 20 pages, hard limit 40, 64 MiB input, 256 MiB raster
 output. Oversized and incomplete reports fail. --keep-pages retains images
 and PDF for human verification. Reports and images contain confidential
@@ -75,6 +76,15 @@ Deletion is not secure erasure and abrupt host termination can leave state.
 Unit checks verify output structure, page coverage, inert data, isolation flags
 and cleanup control flow. They do not prove runtime isolation or model quality.
 See SECURITY.md for live acceptance gates.
+
+Generate synthetic PDF/DOCX fixtures with visible injections, a hidden PDF
+text layer, cross-document canaries and labeled critical requirements:
+
+    python3 tests/generate_fixtures.py /private/sdr-fixtures
+
+Use each generated document separately; compare output to expected.json and
+inspect page images. A human must grade semantic coverage and warnings.
+See [EVIDENCE.md](EVIDENCE.md) for the actual test environment and limits.
 
 Dependencies: [Dangerzone](https://docs.dangerzone.rocks/),
 [Docker Sandboxes](https://docs.docker.com/reference/cli/sbx/create/),

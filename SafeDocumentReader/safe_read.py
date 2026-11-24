@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
-from contract import validate, MAX_OUTPUT
+from contract import validate, MAX_OUTPUT, human_report
 
 MAX_INPUT = 64 * 1024 * 1024
 MAX_RASTER = 256 * 1024 * 1024
@@ -149,6 +149,7 @@ def main():
                     (args.out/"report.json").write_text(json.dumps(
                         {"status":"UNVERIFIED_HUMAN_REVIEW_REQUIRED","pages":report},
                         ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+                    (args.out/"report.txt").write_text(human_report(report),encoding="utf-8")
                 if args.keep_pages or args.render_only:
                     shutil.copyfile(pdf,args.out/"safe.pdf")
                     shutil.copytree(pages,args.out/"pages")

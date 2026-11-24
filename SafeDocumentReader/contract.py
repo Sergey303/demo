@@ -43,3 +43,20 @@ def validate(raw,count):
     if not isinstance(obj,list) or len(obj)!=count:
         raise ValueError("Incomplete report")
     return [{"page":i,**page(x)} for i,x in enumerate(obj,1)]
+
+
+def human_report(pages):
+    """Inert text, with source-page numbers and indented untrusted lines."""
+    lines = ["UNVERIFIED — HUMAN REVIEW REQUIRED",
+             "Warnings may be incomplete. Check facts against page images.", ""]
+    for item in pages:
+        lines.append("PAGE " + str(item["page"]))
+        for key in FIELDS:
+            lines.append("  " + key.upper() + ":")
+            values = [item[key]] if key == "summary" else item[key]
+            for value in values:
+                lines.extend("    " + line for line in value.split("\n"))
+            if not values:
+                lines.append("    (none reported)")
+        lines.append("")
+    return "\n".join(lines) + "\n"
