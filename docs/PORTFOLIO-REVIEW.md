@@ -14,7 +14,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | P1-02 | Audio Search / frontend | **PASS (offline)**: standard median/empty hits (3 tests); shared React range validation (10 tests). Historical model timings not recalculated; full browser/build regression remains separate. |
 | P1-03 | GosVet / generated admin | **PARTIAL**: GosVet versioned structural validation (3 offline tests PASS); full business journey and related-entity CRUD remain open. |
 | P1-04 | Backend / Enterprise | Explicit text-job access boundary; distinguish model readiness from database readiness; disclose capped retrieval coverage; test process-tree cleanup. |
-| P1-05 | EP-12 | **REVIEWED**: [release decision](../architecture/management/EP12-RELEASE-DECISION.md); public A–G five CI jobs PASS at b318db8; later local slices and uncommitted U not merged. |
+| P1-05 | EP-12 | **REVIEWED**: [release decision](../architecture/management/EP12-RELEASE-DECISION.md); public A–G five CI jobs PASS at b318db8; integration candidate combines A–G with main a2e42cf, fresh acceptance required; later local slices and uncommitted U excluded. |
 | P2 | Edge / ML depth | Shared concurrency, production ingress, external provider validation, independent anomaly quality data, classifier stratification, GPU execution where supported. Scope by target role. |
 
 ## Project coverage and evidence boundaries
@@ -31,7 +31,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | [Alice](../alice-voice-gpt/README.md) | Local webhook/CLI prototype; stdout/stderr read-to-end is a resource-bound weakness, real voice acceptance separate. |
 | [Audio Search](../python-ai/audio-search/README.md) | Small authored reranking evaluation; empty result and standard median fixed; no new model measurement. |
 | [RAG](../python-ai/rag-docs/README.md) | Provenance and abstention; independent semantic labels absent. |
-| [Ticket classifier](../python-ai/ticket-classifier/README.md) | Training and inference code; split not stratified; CI logs identified missing evaluate.py in Dockerfile, corrected; subsequent hosted result tracked separately. |
+| [Ticket classifier](../python-ai/ticket-classifier/README.md) | Training and inference code; split not stratified; missing evaluate.py in Dockerfile corrected, [all six Python AI CI jobs passed](https://github.com/Sergey303/demo/actions/runs/45365176718) at 643898d. |
 | [GPU cosine](../python-ai/gpu-cosine/README.md) | Triton source; no hardware evidence, validate matching CUDA devices. |
 | [Tool Agent](../python-ai/tool-agent/README.md) | Explicit restricted tools; bounded regular-file prefix reads verified on Linux; listing and approved draft writes remain separate. |
 | [Edge Network](../EdgeNetworkSecurity/README.md) | Local Redis v2 and provider-specific offline evidence; not deployed anti-DDoS. |

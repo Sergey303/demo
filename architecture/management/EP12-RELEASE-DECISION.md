@@ -28,3 +28,8 @@ Decision date 2026-11-24. Compared main 81658db with local committed tip 078e2a7
 No branch switched, no merge, no workflow mutation, no service deployment or real database restart in this review. Updating workflow files requires appropriate repository workflow permissions (previous unrelated workflow push was refused); do not bypass the gate.
 
 Rollback for first slice: keep current main path default; enable isolated BFF by explicit config only after the acceptance gates; preserve session schema and key material across application rollback, revoke incompatible sessions rather than downgrade trust. Do not route protected traffic to an unauthenticated fallback. For future monitoring, missing or expired trusted telemetry is UNKNOWN, not healthy. Release owner and security reviewer must approve separately in a real team; roles here are proposed responsibilities, not named staff.
+
+
+## Integration candidate, 2026-11-24
+
+Candidate branch `integration/ep12-ag-20261124` combines main `a2e42cf` and public EP-12G `b318db8` in a separate worktree. Automatic three-way merge completed without conflicts; later EP-12H–U work is deliberately excluded. The missing EP-12F brief link is replaced by the existing implementation plan. This is a **merge candidate**, not a completed main release. Main integration requires fresh hosted acceptance across all five jobs. The historical five-job result is still attributed to b318db8. Python AI CI at main 643898d subsequently passed [all six jobs](https://github.com/Sergey303/demo/actions/runs/45365176718); no tests were disabled.
