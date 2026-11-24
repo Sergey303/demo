@@ -27,6 +27,7 @@ internal sealed class RedisQuota : IAsyncDisposable
     private readonly int _permits;
     private readonly int _windowMs;
     private readonly RedisKey _quotaKey;
+    private readonly string? _primaryGate;
     private readonly SemaphoreSlim _connectionGate = new(1, 1);
     private volatile ConnectionMultiplexer? _connection;
     private readonly object _circuitLock = new();
@@ -36,7 +37,7 @@ internal sealed class RedisQuota : IAsyncDisposable
     private long _retryAfterTick;
     private Task? _recovery;
 
-    public RedisQuota(int port, string quotaNamespace, int permits, int windowSeconds)
+    public RedisQuota(int port, string quotaNamespace, int permits, int windowSeconds, string? primaryGate)
     {
         if (port is < 1024 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(port));
@@ -47,6 +48,7 @@ internal sealed class RedisQuota : IAsyncDisposable
             throw new ArgumentException("Invalid quota configuration.");
 
         _redisPort = port;
+        _primaryGate = primaryGate;
         _permits = permits;
         _windowMs = checked(windowSeconds * 1000);
         _quotaKey = $"demo:edge:quota:v1:{quotaNamespace}";
@@ -59,7 +61,7 @@ internal sealed class RedisQuota : IAsyncDisposable
         {
             var raw = await Dispatch(epoch, ct, database => database.ScriptEvaluateAsync(
                 AtomicScript, new[] { _quotaKey },
-                new RedisValue[] { _permits, _windowMs })).WaitAsync(CommandTimeout, ct);
+                new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "admit" })).WaitAsync(CommandTimeout, ct);
 
             if (raw.Resp2Type != ResultType.Array ||
                 (RedisResult[]?)raw is not [{ Resp2Type: ResultType.Integer } allowed,
@@ -82,8 +84,7 @@ internal sealed class RedisQuota : IAsyncDisposable
         try
         {
             if (!recovered)
-                await Dispatch(epoch, ct, static database => database.PingAsync())
-                    .WaitAsync(CommandTimeout, ct);
+                await Dispatch(epoch, ct, ProbePrimaryAsync).WaitAsync(CommandTimeout, ct);
             ConfirmEpoch(epoch, ct);
         }
         catch (Exception error) when (IsDependencyFailure(error))
@@ -131,7 +132,7 @@ internal sealed class RedisQuota : IAsyncDisposable
             {
                 throw new TimeoutException("Redis connection deadline exceeded.");
             }
-            await connection.GetDatabase().PingAsync().WaitAsync(CommandTimeout);
+            await ProbePrimaryAsync(connection.GetDatabase()).WaitAsync(CommandTimeout);
             lock (_circuitLock)
             {
                 _open = false;
@@ -148,6 +149,42 @@ internal sealed class RedisQuota : IAsyncDisposable
             }
             throw;
         }
+    }
+
+    // The trusted controller atomically replaces a shared local manifest. No
+    // cached identity or automatic re-enrollment on reconnect or API restart.
+    private string ReadPrimaryPin()
+    {
+        if (_primaryGate is null)
+            throw new QuotaUnavailableException("Primary gate not configured.");
+        try
+        {
+            using var file = File.Open(_primaryGate, FileMode.Open, FileAccess.Read,
+                FileShare.Read | FileShare.Delete);
+            // Exact bounded ASCII format: <windowMs>:<40 hex run_id> followed by LF.
+            if (file.Length > 64)
+                throw new QuotaUnavailableException("Invalid primary gate.");
+            using var reader = new StreamReader(file);
+            var pin = reader.ReadToEnd();
+            var prefix = _windowMs.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":";
+            if (!pin.StartsWith(prefix, StringComparison.Ordinal) ||
+                !Regex.IsMatch(pin[prefix.Length..], @"\A[0-9a-f]{40}\n\z"))
+                throw new QuotaUnavailableException("Primary gate closed or invalid.");
+            return pin.Substring(prefix.Length, 40);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            throw new QuotaUnavailableException("Primary gate unavailable.");
+        }
+    }
+
+    private async Task<bool> ProbePrimaryAsync(IDatabase database)
+    {
+        var raw = await database.ScriptEvaluateAsync(AtomicScript, new[] { _quotaKey },
+            new RedisValue[] { _permits, _windowMs, ReadPrimaryPin(), "probe" });
+        if (raw.Resp2Type != ResultType.Integer || (long)raw != 1)
+            throw new QuotaUnavailableException("Invalid primary probe.");
+        return true;
     }
 
     private static void ObserveFailure(Task task) =>

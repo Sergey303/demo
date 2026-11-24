@@ -35,4 +35,4 @@ Cold recovery took 300.17 ms from the harness's first successful Redis PING to b
 
 In the same suite, `test_redis_reply_lost_after_quota_dispatch` used a loopback relay to send a TCP reset after receiving the real Redis Lua reply, before forwarding it to the API. The test observed 503, exactly one Redis charge and zero protected work. After reconnection, the same namespace returned 429 with its one permit still charged. `test_client_abort_during_recovery_keeps_probe_slot` verified fast rejection for a competing request while the abandoned probe was still pending, followed by readiness with the quota key still absent.
 
-Primary failover, lost-state behavior on promotion, and live clock skew remain open.
+Historical observation: primary failover was subsequently exercised in [promotion report](REDIS-PROMOTION-REPORT.md) and guarded by [primary gate](REDIS-PRIMARY-GATE.md). Live cross-node clock skew remains open.

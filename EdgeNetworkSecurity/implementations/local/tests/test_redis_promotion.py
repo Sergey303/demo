@@ -5,6 +5,10 @@ import select
 import socket
 import socketserver
 import threading
+import tempfile
+from pathlib import Path
+import subprocess
+import sys
 import time
 import unittest
 from uuid import uuid4
@@ -59,6 +63,7 @@ class Endpoint(socketserver.ThreadingTCPServer):
 
 @unittest.skipUnless(os.getenv("RUN_REDIS_TESTS") == "1", "Opt-in disposable Redis")
 class RedisPromotionTests(unittest.TestCase):
+    WINDOW = 30
     def poll(self, fn, predicate, timeout=15):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
@@ -104,22 +109,29 @@ class RedisPromotionTests(unittest.TestCase):
                                   str(pport if nested else 6379)])
             self.poll(lambda: cli(replica, "INFO", "replication"),
                       lambda info: "master_link_status:up" in info)
-            with Endpoint(pport) as endpoint:
+            with Endpoint(pport) as endpoint, tempfile.TemporaryDirectory() as gates:
+                gate = Path(gates) / "primary"
+                def run_id(name):
+                    return next(line.split(":", 1)[1] for line in cli(name, "INFO", "server").splitlines()
+                                if line.startswith("run_id:"))
+                # Fresh isolated namespace; initial pin has no predecessor.
+                gate.write_text(f"{self.WINDOW * 1000}:{run_id(primary)}\n")
                 namespace = "promotion-" + uuid4().hex[:20]
                 key = "demo:edge:quota:v1:" + namespace
                 options = dict(LOCAL_EDGE_REDIS_PORT=str(endpoint.server_address[1]),
                                LOCAL_EDGE_REDIS_NAMESPACE=namespace,
-                               LOCAL_EDGE_PERMITS="4", LOCAL_EDGE_WINDOW_SECONDS="60")
+                               LOCAL_EDGE_PERMITS="4", LOCAL_EDGE_WINDOW_SECONDS=str(self.WINDOW),
+                               LOCAL_EDGE_REDIS_PRIMARY_GATE=str(gate))
                 with RunningApi(**options) as first, RunningApi(**options) as second:
                     apis = (first, second)
                     for api in apis:
                         self.poll(lambda: get(api.base_url + "/ready")[0], lambda s: s == 200)
                     # All assertions must hold within one Redis-time bucket.
                     now = lambda name: int(cli(name, "TIME").splitlines()[0])
-                    remaining = 60 - now(primary) % 60
-                    if remaining < 22:
+                    remaining = self.WINDOW - now(primary) % self.WINDOW
+                    if remaining < 15:
                         time.sleep(remaining + .2)
-                    bucket = now(primary) // 60
+                    bucket = now(primary) // self.WINDOW
                     def request(api):
                         return get(api.base_url + "/api/expensive")[0]
                     # Replicate exactly the chosen number of permits, then sever replication.
@@ -147,17 +159,59 @@ class RedisPromotionTests(unittest.TestCase):
                     self.assertEqual(cli(replica, "ROLE").splitlines()[0], "master")
                     self.assertEqual(cli(replica, "GET", key), expected)
                     endpoint.switch(rport)
+                    # A stale but valid old pin must not authorize the new primary.
                     for api in apis:
-                        self.poll(lambda: get(api.base_url + "/ready")[0], lambda s: s == 200)
-                    self.assertEqual(now(replica) // 60, bucket, "window crossed during promotion")
+                        self.assertEqual(get(api.base_url + "/ready")[0], 503)
+                    self.assertEqual(now(replica) // self.WINDOW, bucket, "window crossed")
                     after = [request(apis[i % 2]) for i in range(5)]
-                    self.assertEqual(after, [200] * (4 - retained) + [429] * (retained + 1))
-                    self.assertEqual(now(replica) // 60, bucket)
-                    self.assertEqual(cli(replica, "GET", key), f"{bucket}:4")
-                    started = sum(get(a.base_url + "/metrics")[2]["started"] for a in apis)
-                    self.assertEqual(started, 8 - retained)
-                    print(f"PROMOTION retained={retained} state={expected!r} after={after} started={started}",
-                          flush=True)
+                    self.assertEqual(after, [503] * 5)
+                    self.assertEqual(cli(replica, "GET", key), expected)
+                    self.assertEqual(sum(get(a.base_url + "/metrics")[2]["started"] for a in apis), 4)
+                    # Restart cannot self-enroll on the promoted primary.
+                    with RunningApi(**options) as restarted:
+                        self.assertEqual(get(restarted.base_url + "/ready")[0], 503)
+                        self.assertEqual(request(restarted), 503)
+                        self.assertEqual(get(restarted.base_url + "/metrics")[2]["started"], 0)
+                    self.assertEqual(now(replica) // self.WINDOW, bucket)
+                    if retained == 0:
+                        controller = Path(__file__).resolve().parents[1] / "tools" / "primary_gate.py"
+                        begun = time.monotonic()
+                        with subprocess.Popen([sys.executable, str(controller), str(gate),
+                                               "--run-id", run_id(replica), "--window", str(self.WINDOW),
+                                               "--old-primary-fenced"]) as rotation:
+                            try:
+                                self.poll(gate.read_text, lambda value: value == "closed\n")
+                                for api in apis:
+                                    self.assertEqual(request(api), 503)
+                                self.assertEqual(rotation.wait(timeout=self.WINDOW + 5), 0)
+                            finally:
+                                if rotation.poll() is None:
+                                    rotation.kill()
+                                    rotation.wait()
+                        self.assertGreaterEqual(time.monotonic() - begun, self.WINDOW)
+                        for api in apis:
+                            self.poll(lambda: get(api.base_url + "/ready")[0], lambda s: s == 200)
+                        self.assertGreater(now(replica) // self.WINDOW, bucket)
+                        reopened = [request(apis[i % 2]) for i in range(5)]
+                        self.assertEqual(reopened, [200, 200, 200, 200, 429])
+                        # A previously fenced server returning at the old endpoint
+                        # must not re-enroll or open an independent quota.
+                        docker("start", primary)
+                        def old_ping():
+                            try:
+                                return cli(primary, "PING")
+                            except RuntimeError:
+                                return ""
+                        self.poll(old_ping, lambda reply: reply == "PONG")
+                        endpoint.switch(pport)
+                        time.sleep(.3)
+                        for api in apis:
+                            self.assertEqual(get(api.base_url + "/ready")[0], 503)
+                            self.assertEqual(request(api), 503)
+                        self.assertEqual(cli(primary, "GET", key), "")
+                        self.assertEqual(sum(get(a.base_url + "/metrics")[2]["started"] for a in apis), 8)
+                    print(f"SAFE_PROMOTION retained={retained} state={expected!r} after={after} "
+                          f"old_window_started=4", flush=True)
 
     def test_retained_state(self):
         self.run_promotion(4)

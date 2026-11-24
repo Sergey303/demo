@@ -13,7 +13,8 @@
 - [x] Verify dependency readiness without quota use, bounded waits and request cancellation, atomic window rollover, and idle key expiry on disposable Redis 7.
 - [x] Verify quota-reply TCP reset, circuit breaker, and recovery, with p50/p95 and status counts in the [two-replica report](REDIS-OUTAGE-REPORT.md).
 - [x] Verify manual primary promotion with retained and lost state: [three real Redis tests](REDIS-PROMOTION-REPORT.md).
-- [ ] Preserve admission safety during stale promotion and validate live clock skew. See [detailed Redis tasks](src/LocalEdgeApi/TASK.md).
+- [x] Preserve admission safety during manually fenced single-host promotion via a shared primary admission gate. See [gate protocol](REDIS-PRIMARY-GATE.md).
+- [ ] Validate live cross-node clock skew and automatic fencing for broader deployment. See [detailed Redis tasks](src/LocalEdgeApi/TASK.md).
 - [ ] Sliding-window/token bucket comparison with measured impact on legitimate bursts.
 - [ ] Trusted reverse proxy, known-proxy allowlist and origin-only ingress; consider authenticated identity partitions only with a validated security boundary.
 - [ ] Distributed concurrency control separate from current per-process semaphore.

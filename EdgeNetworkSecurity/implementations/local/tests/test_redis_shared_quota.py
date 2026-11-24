@@ -15,6 +15,7 @@ import struct
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import unittest
 from uuid import uuid4
@@ -31,7 +32,7 @@ def docker(*args, timeout=30):
 
 
 class ReplyResetRelay(socketserver.ThreadingTCPServer):
-    """Loopback Redis relay that resets one connection after an EVAL reply arrives."""
+    """Loopback Redis relay that resets one connection after an EVAL/EVALSHA reply arrives."""
 
     daemon_threads = True
 
@@ -61,10 +62,11 @@ class ReplyResetRelay(socketserver.ThreadingTCPServer):
                         return
                     if source is self.request:
                         command = (tail + data).upper()
-                        if self.server.armed.is_set() and b"\r\nEVAL\r\n" in command:
+                        if self.server.armed.is_set() and (b"\r\nEVAL\r\n" in command
+                                                          or b"\r\nEVALSHA\r\n" in command):
                             discard_reply = True
                             self.server.armed.clear()
-                        tail = command[-7:]
+                        tail = command[-11:]
                         upstream.sendall(data)
                     elif discard_reply:
                         self.request.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
@@ -96,10 +98,12 @@ class RedisSharedQuotaTests(unittest.TestCase):
         cls.redis_port = choose_port()
         cls.name = "demo-edge-redis-" + uuid4().hex[:10]
         cls.container_started = False
+        cls.gates = tempfile.TemporaryDirectory(prefix="edge-gates-")
         try:
             cls.start_redis()
         except BaseException:
             cls.stop_redis()
+            cls.gates.cleanup()
             raise
 
     @classmethod
@@ -127,6 +131,17 @@ class RedisSharedQuotaTests(unittest.TestCase):
                 with socket.create_connection(("127.0.0.1", cls.redis_port), timeout=0.3) as conn:
                     conn.sendall(b"*1\r\n$4\r\nPING\r\n")
                     if b"PONG" in conn.recv(128):
+                        # This fixture uses fresh namespaces after starting a new Redis.
+                        info = docker("exec", cls.name, "redis-cli", "-p",
+                                      str(cls.redis_port if network_container else 6379),
+                                      "INFO", "server")
+                        run_id = next(line.split(":", 1)[1] for line in info.splitlines()
+                                      if line.startswith("run_id:"))
+                        for window in (1, 3, 5, 20):
+                            gate = Path(cls.gates.name) / str(window)
+                            temp = gate.with_suffix(".tmp")
+                            temp.write_text(f"{window * 1000}:{run_id}\n")
+                            temp.replace(gate)
                         return
             except OSError:
                 pass
@@ -145,13 +160,15 @@ class RedisSharedQuotaTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.stop_redis()
+        cls.gates.cleanup()
 
-    def options(self, namespace=None):
+    def options(self, namespace=None, window=5):
         return dict(
             LOCAL_EDGE_REDIS_PORT=str(self.redis_port),
             LOCAL_EDGE_REDIS_NAMESPACE=namespace or ("test-" + uuid4().hex[:20]),
             LOCAL_EDGE_PERMITS="4",
-            LOCAL_EDGE_WINDOW_SECONDS="5",
+            LOCAL_EDGE_WINDOW_SECONDS=str(window),
+            LOCAL_EDGE_REDIS_PRIMARY_GATE=str(Path(self.gates.name) / str(window)),
             LOCAL_EDGE_CONCURRENCY="20",
         )
 
@@ -192,6 +209,29 @@ class RedisSharedQuotaTests(unittest.TestCase):
     def quota_key(options):
         return "demo:edge:quota:v1:" + options["LOCAL_EDGE_REDIS_NAMESPACE"]
 
+    def test_missing_malformed_and_wrong_window_gate_fail_closed(self):
+        options = self.options(window=20)
+        key = self.quota_key(options)
+        with tempfile.TemporaryDirectory() as directory:
+            gate = Path(directory) / "primary"
+            valid = Path(options["LOCAL_EDGE_REDIS_PRIMARY_GATE"]).read_text()
+            options["LOCAL_EDGE_REDIS_PRIMARY_GATE"] = str(gate)
+            with RunningApi(**options) as api:
+                for value in (None, "closed\n", "invalid", "1000:" + valid.split(":", 1)[1],
+                              "20000:" + "0" * 40 + "\n"):
+                    if value is not None:
+                        temp = gate.with_suffix(".tmp")
+                        temp.write_text(value)
+                        temp.replace(gate)
+                    time.sleep(.8)
+                    self.assertEqual(get(api.base_url + "/ready")[0], 503)
+                    self.assert_dependency_unavailable(api)
+                    self.assertIsNone(self.redis("GET", key))
+                gate.write_text(valid)
+                self.wait_ready(api)
+                self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
+                self.assertEqual(get(api.base_url + "/metrics")[2]["started"], 1)
+
     def test_readiness_does_not_create_or_extend_quota(self):
         options = self.options()
         key = self.quota_key(options)
@@ -210,8 +250,8 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertLess(self.redis("PTTL", key), ttl)
 
     def test_window_rolls_over_with_old_key_still_present(self):
-        options = self.options()
-        options.update(LOCAL_EDGE_PERMITS="1", LOCAL_EDGE_WINDOW_SECONDS="3")
+        options = self.options(window=3)
+        options.update(LOCAL_EDGE_PERMITS="1")
         key = self.quota_key(options)
         with RunningApi(**options) as first, RunningApi(**options) as second:
             self.assertEqual(get(first.base_url + "/ready")[0], 200)
@@ -234,8 +274,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertGreater(self.redis("PTTL", key), 0)
 
     def test_idle_quota_key_expires(self):
-        options = self.options()
-        options["LOCAL_EDGE_WINDOW_SECONDS"] = "1"
+        options = self.options(window=1)
         key = self.quota_key(options)
         with RunningApi(**options) as api:
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
@@ -366,8 +405,8 @@ class RedisSharedQuotaTests(unittest.TestCase):
         self.fail("Redis quota did not recover")
 
     def test_redis_reply_lost_after_quota_dispatch(self):
-        options = self.options()
-        options.update(LOCAL_EDGE_PERMITS="1", LOCAL_EDGE_WINDOW_SECONDS="20")
+        options = self.options(window=20)
+        options.update(LOCAL_EDGE_PERMITS="1")
         key = self.quota_key(options)
         with ReplyResetRelay(self.redis_port) as relay:
             options["LOCAL_EDGE_REDIS_PORT"] = str(relay.server_address[1])
@@ -408,8 +447,7 @@ class RedisSharedQuotaTests(unittest.TestCase):
             self.assertEqual(get(api.base_url + "/api/expensive")[0], 200)
 
     def test_two_replica_outage_report(self):
-        options = self.options()
-        options.update(LOCAL_EDGE_WINDOW_SECONDS="20")
+        options = self.options(window=20)
         key = self.quota_key(options)
         report = {}
 

@@ -25,7 +25,17 @@ docker run --pull never --rm --name edge-demo-only-redis -p 127.0.0.1:16379:6379
   redis:7-alpine redis-server --save '' --appendonly no
 ```
 
-In two other terminals, run with the **same Redis namespace and identical quotas**, but different ports:
+Authorize the initial primary using the single-host Linux lab controller. Use a private directory owned by the trusted operator, readable by both APIs (the lab runs under one account). The attestation is valid here only because this is a fresh isolated Redis with no predecessor.
+
+```bash
+mkdir -m 700 -p /tmp/edge-demo-gate
+RUN_ID=$(docker exec edge-demo-only-redis redis-cli INFO server | tr -d '\r' | sed -n 's/^run_id://p')
+python3 EdgeNetworkSecurity/implementations/local/tools/primary_gate.py \
+  /tmp/edge-demo-gate/primary --run-id "$RUN_ID" --window 2 --old-primary-fenced
+export LOCAL_EDGE_REDIS_PRIMARY_GATE=/tmp/edge-demo-gate/primary
+```
+
+In two other terminals (export the same gate path in each), run with the **same Redis namespace and identical quotas**, but different ports:
 
 ```bash
 LOCAL_EDGE_PORT=5088 LOCAL_EDGE_REDIS_PORT=16379 LOCAL_EDGE_REDIS_NAMESPACE=edge-demo \
@@ -39,11 +49,11 @@ Calls to either `http://127.0.0.1:5088/api/expensive` or port 5089 consume **one
 
 The embedded [quota-v1.lua](src/LocalEdgeApi/quota-v1.lua) script uses Redis `TIME` and an atomic evaluation of one key. A 429 includes `Retry-After`, rounded up from the remaining window time. Rejections leave the counter and TTL unchanged. A successful admission stores the current bucket and count with a TTL of two windows. The next window starts a fresh count even while the previous bucket's key exists.
 
-A Redis connection error, timeout or script failure returns **503 `quota_dependency_unavailable`** for `/api/expensive`. Protected work requires a confirmed Redis admission. Each replica opens its circuit on the first confirmed dependency failure and rejects requests immediately during a 750 ms cooldown. At startup or after cooldown, one caller per replica can trigger a read-only recovery PING. Other callers receive 503 while it runs, including during a healthy cold start. A successful PING closes the circuit. Every protected request still needs its own confirmed Lua result, and a reply from before the latest circuit opening cannot authorize work.
+A Redis connection error, timeout or script failure returns **503 `quota_dependency_unavailable`** for `/api/expensive`. Protected work requires a confirmed Redis admission. Each replica opens its circuit on the first confirmed dependency failure and rejects requests immediately during a 750 ms cooldown. At startup or after cooldown, one caller per replica can trigger a read-only recovery probe. Other callers receive 503 while it runs, including during a healthy cold start. A successful read-only identity/role Lua probe closes the circuit. Every protected request still needs its own confirmed Lua result, and a reply from before the latest circuit opening cannot authorize work.
 
-A cold probe waits up to two seconds for connection acquisition and one second for PING. A warm probe reuses the multiplexer, which handles reconnection. The API waits up to one second for each Redis command and cancels the HTTP wait on a client abort. An in-progress recovery probe retains its slot after an HTTP abort until the probe succeeds or reaches its deadline. Redis can still execute a dispatched Lua command and charge a permit after a timeout, disconnect or cancellation. Ambiguous admissions receive no retry or refund.
+A cold probe waits up to two seconds for connection acquisition and one second for the identity/role probe. A warm probe reuses the multiplexer, which handles reconnection. The API waits up to one second for each Redis command and cancels the HTTP wait on a client abort. An in-progress recovery probe retains its slot after an HTTP abort until the probe succeeds or reaches its deadline. Redis can still execute a dispatched Lua command and charge a permit after a timeout, disconnect or cancellation. Ambiguous admissions receive no retry or refund.
 
-A retained bucket ahead of Redis time causes a 503 until the clock catches up, the state expires, or the state is repaired. Malformed retained state also produces a 503. If failover loses quota state, the new primary can admit a fresh quota. Primary failover and live clock changes remain open for testing. The lab supports loopback Redis without TLS or authentication.
+A retained bucket ahead of Redis time causes a 503 until the clock catches up, the state expires, or the state is repaired. Malformed retained state also produces a 503. A new primary is now **rejected by default** even if Redis is reachable and the quota key is absent. See [promotion safety](REDIS-PRIMARY-GATE.md). The trusted shared gate pins a Redis process run ID and the configured window; missing, malformed, closed or stale gates produce 503. The script checks the pin and primary role atomically before reading or writing the counter. There is no automatic enrollment on reconnect or API restart. Cross-host clock behavior and automatic fencing remain open. The lab supports loopback Redis without TLS or authentication.
 
 ### Endpoints, concurrency and counters
 
@@ -55,7 +65,7 @@ A retained bucket ahead of Redis time causes a 503 until the clock catches up, t
 | `GET /api/expensive?holdMs=450` | Bounded synthetic work (0..500ms) |
 | `GET /metrics` | Per-process counters; `scope` names quota mode, **not globally aggregated metrics** |
 
-Readiness checks Redis with a non-mutating PING. It does not consume permits or check quota state, script execution permissions, or write availability.
+Readiness uses the non-mutating identity/role branch of the same Lua script. It checks script execution and the current pin, but does not consume permits, inspect the counter or verify write availability.
 
 `LOCAL_EDGE_PERMITS` 1..100, `LOCAL_EDGE_WINDOW_SECONDS` 1..60, `LOCAL_EDGE_CONCURRENCY` 1..32, `LOCAL_EDGE_PORT` 1024..65535. A per-process semaphore independently permits at most two simultaneous expensive requests by default, returning 503 `concurrency_exhausted` when saturated. **This is not distributed concurrency control.** Invalid inputs return 400 when they pass the rate filter. Metrics have no client identifiers, tokens or dynamic labels.
 

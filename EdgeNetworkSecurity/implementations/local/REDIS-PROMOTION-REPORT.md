@@ -1,5 +1,7 @@
 # Redis primary promotion and quota loss
 
+**Historical baseline:** reproduced before adding the [primary admission gate](REDIS-PRIMARY-GATE.md). Current promotion tests assert safe behavior instead of the historical violation.
+
 **Local-tested, 2026-11-24.** Base SHA `3ef2b6d`. Build: 0 warnings, 0 errors. Three bounded functional tests passed in 30.471 s on RDC. No sustained load measurements were performed.
 
 ## Reproduce

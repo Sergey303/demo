@@ -18,7 +18,8 @@ Read [../../TASK.md](../../TASK.md), [../../README.md](../../README.md), and [Ed
 - [x] Embed the versioned `quota-v1.lua` artifact. Verify atomic admission at rollover while the old key still exists, idle expiry, and fail-closed behavior for malformed or future-bucket state.
 - [x] Inject a TCP reset on the Redis connection after quota dispatch and before the reply reaches the API. The loopback relay test verified a sanitized 503, zero protected work and a retained charge after recovery under the same namespace.
 - [x] Exercise manual primary promotion with retained, partial and entirely lost quota state on two live API replicas. See [promotion report](../../REDIS-PROMOTION-REPORT.md): up to twice the quota observed in one window.
-- [ ] Implement and verify a promotion-aware fail-closed admission gate; cover fencing, restart and stale state.
+- [x] Implement and verify a promotion-aware fail-closed admission gate for manual, single-host fenced failover; cover API/controller restart and stale state. See [primary gate](../../REDIS-PRIMARY-GATE.md).
+- [ ] Automate trusted fencing/clock evidence and distributed gate lifecycle if extending beyond the single-host lab.
 - [ ] Exercise actual cross-node clock skew; do not claim strict quota preservation until the clock assumptions are validated.
 - [x] Add a bounded circuit breaker and one read-only recovery probe per replica. Verify cold and warm 503, zero outage work, and a client abort during recovery.
 - [x] Record latency p50/p95, 429/503 counts, readiness recovery and CLI parameters in the [single-run two-replica report](../../REDIS-OUTAGE-REPORT.md).

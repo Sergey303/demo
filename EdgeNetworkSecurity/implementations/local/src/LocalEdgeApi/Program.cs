@@ -31,7 +31,7 @@ await using var redisQuota = redisPortRaw is null
     ? null
     : new RedisQuota(ConfigInt("LOCAL_EDGE_REDIS_PORT", 0, 1024, 65535),
         Environment.GetEnvironmentVariable("LOCAL_EDGE_REDIS_NAMESPACE") ?? "demo-local",
-        permits, windowSeconds);
+        permits, windowSeconds, AbsolutePath("LOCAL_EDGE_REDIS_PRIMARY_GATE"));
 
 var advisoryEnabled = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_ENABLED") == "1";
 var advisoryMode = Environment.GetEnvironmentVariable("LOCAL_EDGE_ADVISORY_MODE") ?? "oneshot";

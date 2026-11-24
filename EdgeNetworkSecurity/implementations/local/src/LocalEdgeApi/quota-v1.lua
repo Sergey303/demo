@@ -1,5 +1,14 @@
 -- Key: demo:edge:quota:v1:<namespace>. Value: <Redis time bucket>:<admitted count>.
--- ARGV: permit limit, window in milliseconds. Reply: {allowed (0/1), ms to next bucket}.
+-- ARGV: permit limit, window in milliseconds, pinned run_id, admit/probe.
+-- Verify identity and role inside the same atomic execution as admission.
+local server = redis.call("INFO", "server")
+local runId = string.match(server, "\r\nrun_id:([0-9a-f]+)\r\n")
+local replication = redis.call("INFO", "replication")
+if not runId or runId ~= ARGV[3] or not string.find(replication, "\r\nrole:master\r\n", 1, true) then
+    return redis.error_reply("ERR quota primary not authorized")
+end
+if ARGV[4] == "probe" then return 1 end
+if ARGV[4] ~= "admit" then return redis.error_reply("ERR invalid quota mode") end
 local permits = tonumber(ARGV[1])
 local windowMs = tonumber(ARGV[2])
 local clock = redis.call('TIME')
