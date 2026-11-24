@@ -19,3 +19,5 @@ At `fd210c700eb86e0c350d2e25d9c0631ff8126389` all 12 unit tests and Python compi
 ### Renderer follow-up
 
 RDC is Ubuntu 24.04.4 LTS; Podman and Dangerzone unavailable. `unshare --user --map-root-user true` returned Operation not permitted; /dev/fuse and /dev/kvm absent; NoNewPrivs=1, Seccomp=2. Official Dangerzone Linux runtime is Podman, with gVisor inside; 0.11.1 fixes October 2026 archive-update vulnerabilities. No privileged workaround or host package installation performed. Added structural audit on reconstructed PDF, provisioning guide and explicit synthetic live acceptance runner. Full Dangerzone conversion remains blocked.
+
+At `cf8db1a2e2141a8d06d6f1dea92bf69fc974edd9`, fresh RDC checkout: 20/20 tests passed (including two real Poppler-based tests: synthetic image-only PDF accepted, text-bearing PDF rejected); compilation passed. `tests/live_renderer.py` exited nonzero on first.pdf with missing dangerzone-cli, confirmed no published output. Full renderer acceptance is BLOCKED, not PASS.
