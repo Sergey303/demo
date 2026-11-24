@@ -22,7 +22,7 @@ This is a **public engineering portfolio**. Evaluate engineering decisions from 
 
 **EP-05b Qwen generation review:** inspect [real Chromium/Qwen acceptance](enterprise-demo/EVIDENCE-2026-11-09-QWEN.md), [bounded Ollama transport](architecture/guarded_generation.py), signed [answer mode switch](architecture/search_api.py), [DB revoke-during-model tests](architecture/tests/test_generation_postgres.py) and [browser contract](bootstrap5/tests/enterprise-generated.spec.ts). Confirm extractive default is unchanged; the model cannot pick tenant, URL or citation metadata; SQL grants filter context before Ollama; fresh SQL checks ALL prompt sources after inference; wrong tenant/no evidence avoids a model call; malformed JSON/forged citation IDs are rejected; Ollama 503 does not break exact citations. **Never equate citation validity with semantic truth.**
 
-## AI Gateway / orchestration review (EP-10 branch)
+## AI Gateway / orchestration review (EP-10)
 
 Read [AI Gateway trust boundaries](architecture/AI-GATEWAY.md), then
 [`ai_gateway.py`](architecture/ai_gateway.py), [Qwen3 MCP host](architecture/mcp_agent_host.py),
@@ -33,8 +33,7 @@ gates independently from actual SQL authorization. Any direct model or MCP
 invocation must be incapable of choosing tenant/subject or accessing arbitrary
 tools. Credential/injection regexes are imperfect; never credit them as a
 complete DLP, moderation, prompt-injection defense or production IAM system.
-The current gateway is a branch implementation until a separate review and
-integration acceptance. No model-backed new EP-10 E2E is claimed.
+The EP-10 implementation is in main. Its historical deterministic tests and the later EP-11 local two-principal acceptance have separate evidence boundaries; do not infer production IAM.
 
 ## Architect-level review route
 

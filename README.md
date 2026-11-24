@@ -6,7 +6,7 @@
 
 **As-built:** WAV + Markdown → durable PostgreSQL outbox → Whisper/ONNX → grant-first retrieval → **default exact-quote answer OR optional real local Qwen3:8b generated answer with validated citations and post-inference grant check**. [Real model-backed Chromium + Qwen evidence](enterprise-demo/EVIDENCE-2026-11-09-QWEN.md). **Not** production IAM or verified semantic faithfulness; standalone [RAG research](python-ai/rag-docs/README.md), [BM25+RRF](python-ai/audio-search/hybrid.py), [reranking](python-ai/audio-search/rerank.py) and [PyTorch](python-ai/ticket-classifier/README.md) are separate from the integrated default.
 
-**New security slice (EP-10, branch-scoped):** [AI Gateway + authorized MCP orchestrator](architecture/AI-GATEWAY.md)
+**Security slice (EP-10, integrated into main):** [AI Gateway + authorized MCP orchestrator](architecture/AI-GATEWAY.md)
 adds request, tool, untrusted-source and output gates around the existing signed
 user and PostgreSQL grant-first retrieval. The real orchestrator remains Qwen3
 tool-calling through the official MCP stdio client; the model never supplies a
@@ -25,6 +25,8 @@ complete prompt-injection classifier, or proof of semantic truth.**
 
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
+
+See the [portfolio verification and improvement register](docs/PORTFOLIO-REVIEW.md) for current evidence boundaries and prioritized follow-ups across all examples.
 
 ## Edge architecture labs — three independent engineering projects
 
@@ -46,7 +48,7 @@ Each linked README includes source paths, reproducible commands, implementation 
 
 In this single localhost-only journey, a WAV is transcribed by **Whisper** and a Markdown document is indexed by **BGE-small ONNX**; both persist through the **same .NET/PostgreSQL outbox and Python worker**. A signed demo user asks one question; **PostgreSQL applies current tenant and explicit read grants before returning segments**, then one local encoder ranks the two sources and the browser shows exact source/time/character citations. Revoking either grant removes it on the next search **and answer request**. An evidence-only answer copies at most two complete authorized excerpts with job IDs/time/character offsets; no evidence or insufficient similarity produces a refusal instead of an invented fact. [The actual model-backed acceptance, 2026-11-09](enterprise-demo/EVIDENCE-2026-11-09-ANSWER.md) documents the exact guarantee and its semantic limitations.
 
-This is a **bounded synthetic engineering demonstration**, **not** a commercial deployment: fixed localhost identity, no production OIDC/RLS, no multi-user login, no PDF/OCR, no independently evaluated generated-answer faithfulness, no real-world relevance benchmark, and a previously observed .NET out-of-memory under prolonged high RDC load remains unresolved. Architecture decisions and verification evidence are available in the source and CI.
+This is a **bounded synthetic engineering demonstration**, **not** a commercial deployment: two verified localhost demo principals ([EP-11](enterprise-demo/EP11-LIVE-QWEN-2026-11-15.md)), no human login or production OIDC/RLS, no PDF/OCR, no independently evaluated generated-answer faithfulness, no real-world relevance benchmark, and a previously observed .NET out-of-memory under prolonged high RDC load remains unresolved. Architecture decisions and verification evidence are available in the source and CI.
 
 ## Enterprise AI Platform integration roadmap
 
@@ -76,7 +78,7 @@ Follow the implementation and repeatable checks rather than relying on claims.
 
 **Local LLM capture:** [reproducible, loopback-only Ollama recording](python-ai/rag-docs/BLIND-EVAL.md) ties raw generations to sealed evaluation cases; now verified against local Ollama/Qwen3 1.7B on RDC for one synthetic case; independent human review is still unavailable.
 
-**AI quality evidence:** [RAG refusal, source-grounding and failure analysis](python-ai/rag-docs/QUALITY-EVAL.md) — an executable score gate with a deliberately non-passing real-model result. [Independent blind annotation and free-form answer review](python-ai/rag-docs/BLIND-EVAL.md) adds a sealed evaluation workflow, with **no independent labels or measured LLM answers yet**.
+**AI quality evidence:** [RAG refusal, source-grounding and failure analysis](python-ai/rag-docs/QUALITY-EVAL.md) — an executable score gate with a deliberately non-passing real-model result. [Independent blind annotation and free-form answer review](python-ai/rag-docs/BLIND-EVAL.md) adds a sealed evaluation workflow, with recorded synthetic LLM answers but **no independent labels or semantic-quality acceptance yet**.
 
 **Security engineering:** [tenant-scoped audio retrieval](architecture/AUDIO-ACCESS.md) and [document RAG access](python-ai/rag-docs/README.md) — signed identity, owner grants, fail-closed search and HTTP result reads (PostgreSQL ACL integration and full model-backed E2E verified on 2026-11-07); separate from production OIDC/RLS.
 

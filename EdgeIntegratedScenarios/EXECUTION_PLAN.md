@@ -14,8 +14,8 @@ All work belongs in **Sergey303/demo**, not KnowledgePilot. Follow each project'
 | 1 | ENS | [ENS-01](../EdgeNetworkSecurity/simulator/bgp/TASK.md) | **DONE (offline)**: bounded JSON replay + negative tests; AS graph is further TODO |
 | 2 | ENS | [ENS-02](../EdgeNetworkSecurity/simulator/anycast/TASK.md) | **DONE (offline)**: site outage/routing, overload and interrupted sessions |
 | 3 | EAI | [EAI-01](../EdgeAI/scenarios/traffic-anomaly-detection/TASK.md) | **PARTIAL**: labelled synthetic quality evaluation; trained scorer TODO |
-| 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | **PARTIAL**: offline replay, bounded synthetic audit and FPR/FNR, loopback HTTP measurements followed by offline advice; inline API and provider integration TODO |
-| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | **PARTIAL / locally verified**: ASP.NET Core 429/503, Redis-time atomic quota across replicas, cold/warm dependency outages and recovery; production proxy/Redis failover TODO |
+| 4 | EIS | [EIS-01](ai-assisted-ddos-defense/TASK.md) | **PARTIAL**: offline replay, bounded synthetic audit and FPR/FNR, loopback HTTP measurements followed by offline advice; inline HTTP ONNX and prewarm locally verified; provider integration TODO |
+| 5 | ENS | [ENS-04](../EdgeNetworkSecurity/implementations/local/TASK.md) | **PARTIAL / locally verified**: ASP.NET Core 429/503, host-monotonic v2 quota, cold/warm outages, controlled primary promotion and wall-clock jumps locally verified; production ingress and automatic cross-host failover TODO |
 | 6 | ENS | [ENS-03](../EdgeNetworkSecurity/shared/traffic-generator/TASK.md) | **PARTIAL / locally verified**: loopback generator, redirect protection, bounds and real 429 test; burst profiles TODO |
 | 7 | EAI | [EAI-02](../EdgeAI/implementations/onnx-local/TASK.md) | **LOCAL CPU VERIFIED / external CI pending**: generated synthetic ONNX, CPU runtime, SHA and integrity tests, integrated safe replay |
 | 8 | EAI | [EAI-08](../EdgeAI/benchmarks/TASK.md) | **PARTIAL**: CPU runtime cold-init/warm p50/p95/p99 implementation; shared quality/cost evaluation TODO |
