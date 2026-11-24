@@ -150,3 +150,7 @@ The **Enterprise AI Platform integrates selected `dotnet-outbox/`, `architecture
 
 
 **Standalone document-security prototype:** [SafeDocumentReader](SafeDocumentReader/README.md) — Dangerzone pixel-only rendering, disposable offline Docker/SBX inference, strict page-level review output and negative unit tests. Live SBX/renderer/model acceptance is pending; not a certified malware or prompt-injection detector.
+
+## Architecture leadership and decision evidence
+
+[Head/CTO decision pack](architecture/management/README.md) — illustrative capacity-adjusted TCO, risk/technical-debt decisions, rollout gates and 90-day delivery plan. [EP-12 publication review](architecture/management/EP12-RELEASE-DECISION.md) links verified public branch CI without implying all EP-12 slices are merged or production-deployed.

@@ -14,7 +14,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | P1-02 | Audio Search / frontend | **PASS (offline)**: standard median/empty hits (3 tests); shared React range validation (10 tests). Historical model timings not recalculated; full browser/build regression remains separate. |
 | P1-03 | GosVet / generated admin | **PARTIAL**: GosVet versioned structural validation (3 offline tests PASS); full business journey and related-entity CRUD remain open. |
 | P1-04 | Backend / Enterprise | Explicit text-job access boundary; distinguish model readiness from database readiness; disclose capped retrieval coverage; test process-tree cleanup. |
-| P1-05 | EP-12 | Review separate branch and acceptance artifacts, publish only coherent validated slices, do not merge solely to claim OIDC/operability. |
+| P1-05 | EP-12 | **REVIEWED**: [release decision](../architecture/management/EP12-RELEASE-DECISION.md); public A–G five CI jobs PASS at b318db8; later local slices and uncommitted U not merged. |
 | P2 | Edge / ML depth | Shared concurrency, production ingress, external provider validation, independent anomaly quality data, classifier stratification, GPU execution where supported. Scope by target role. |
 
 ## Project coverage and evidence boundaries
@@ -31,7 +31,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | [Alice](../alice-voice-gpt/README.md) | Local webhook/CLI prototype; stdout/stderr read-to-end is a resource-bound weakness, real voice acceptance separate. |
 | [Audio Search](../python-ai/audio-search/README.md) | Small authored reranking evaluation; empty result and standard median fixed; no new model measurement. |
 | [RAG](../python-ai/rag-docs/README.md) | Provenance and abstention; independent semantic labels absent. |
-| [Ticket classifier](../python-ai/ticket-classifier/README.md) | Training and inference code; split not stratified, historical CI issues need current verification. |
+| [Ticket classifier](../python-ai/ticket-classifier/README.md) | Training and inference code; split not stratified; CI logs identified missing evaluate.py in Dockerfile, corrected; subsequent hosted result tracked separately. |
 | [GPU cosine](../python-ai/gpu-cosine/README.md) | Triton source; no hardware evidence, validate matching CUDA devices. |
 | [Tool Agent](../python-ai/tool-agent/README.md) | Explicit restricted tools; bounded regular-file prefix reads verified on Linux; listing and approved draft writes remain separate. |
 | [Edge Network](../EdgeNetworkSecurity/README.md) | Local Redis v2 and provider-specific offline evidence; not deployed anti-DDoS. |
@@ -39,3 +39,7 @@ Baseline: public main `ab1ecaf`, 2026-11-24. This is a technical backlog, not a 
 | [Edge scenarios](../EdgeIntegratedScenarios/README.md) | Deterministic fallback and local HTTP integration; small authored evaluation. |
 
 The backlog is ordered by expected evidence/correctness improvement relative to effort, not by an invented probability of hiring. Historical evidence remains immutable; new tests must record exact base, conditions, results and limitations.
+
+## Head/CTO decision evidence
+
+[Management decision pack](../architecture/management/README.md): explicit cost model, capacity and privacy constraints, technology exit criteria, debt/risk register and proposed 90-day capacity plan. All financial/effort inputs are illustrative; not claimed commercial outcomes.
