@@ -72,3 +72,10 @@ concurrency or retry timing; inspect the original API/worker tests.
 Before a public release, review actual media for publication permission, run the
 browser smoke on the deployed HTTPS mount and verify website links.
 The provided workflow template builds an artifact only; it does not publish or alter Pages. It is intentionally inactive: the current GitHub OAuth credential lacks workflow scope. To enable it, an authorized maintainer should copy public-demos.workflow.yml.example to .github/workflows/public-demos.yml.
+
+## Коммерческие сценарии и карточки Engineering
+
+[COMMERCIAL-HANDOFF.md](COMMERCIAL-HANDOFF.md) содержит готовые тексты
+карточек AppForge, Reliable Jobs и Enterprise AI, точки входа и CTA,
+сценарии первого разговора, границы подтверждённых результатов.
+GosVet описан отдельно в GosVet/COMMERCIAL-HANDOFF.md.
