@@ -19,6 +19,7 @@ const rowValidators: Record<string, (row: Row) => boolean> = {
   animals: row => strings(row, ["id", "name", "species", "chip", "ownerId"]),
   appointments: row => strings(row, ["id", "clinicId", "doctor", "ownerId", "animalId", "reason",
     "complaint", "soapObjective", "soapAssessment", "soapPlan"]) &&
+    (row.complaintTags === undefined || (Array.isArray(row.complaintTags) && row.complaintTags.length <= 12 && row.complaintTags.every(value => typeof value === "string" && value.length <= 80))) &&
     optionalText(row.startedAt) &&
     member(row.status, ["draft", "in_progress", "completed_internal", "requires_external_attention", "completed_with_external_success"]) &&
     (row.vetisStatus === undefined || member(row.vetisStatus, ["not_started", "queued", "sending", "sent", "fill_error"])),

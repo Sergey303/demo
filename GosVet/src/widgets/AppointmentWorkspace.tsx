@@ -135,6 +135,7 @@ export function AppointmentWorkspace(props: Props) {
           <VetisErrorPanel submissions={externalSubmissions} />
           <SoapEditor
             appointment={appointment}
+            species={animal.species}
             readOnly={!canEdit}
             fieldErrors={soapFieldErrors}
             highlightFieldPath={highlightFieldPath}

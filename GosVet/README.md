@@ -38,3 +38,14 @@ Versioned localStorage snapshots validate row shapes, IDs, enums and required fi
 [Сценарий показа и приёмки](gosvet_demo_scenarios_for_doctor.md) · [реестр первого прогона](DOCTOR-JOURNEY-2026-11-26.md).
 
 Из корня репозитория: `npm ci --prefix public-demos`, `npm ci --prefix GosVet`, `npm run build --prefix GosVet`, затем `node public-demos/gosvet-journey.mjs GosVet/dist/index.html`. Это диагностический прогон, который намеренно сообщает ненулевой код при обнаружении дефектов; пока не включён в зелёный smoke gate.
+
+## Учебный помощник врача
+
+Под полем анамнеза — несколько сохраняемых причин обращения, гипотезы по
+совпадениям текста/тегов, отдельные типовые варианты для вида животного и
+уточняющие вопросы. `src/entities/clinicalDemo.ts` содержит полностью
+статические примеры и простые правила (включая ограниченную обработку отрицаний).
+Не реальная LLM, не медицинская база, не статистика распространённости.
+Диагноз и назначения остаются полями врача; никаких автоматических записей.
+Проверка: `node --test tests/clinical-demo.test.mjs tests/storage.test.mjs`.
+Браузерная приёмка включена в public-demos/smoke.mjs, сценарий G18.

@@ -54,6 +54,7 @@ export type Appointment = {
   status: AppointmentStatus;
   vetisStatus?: VetisSendStatus;
   complaint: string;
+  complaintTags?: string[];
   soapObjective: string;
   soapAssessment: string;
   soapPlan: string;

@@ -12,6 +12,7 @@ import "./styles/attention-polish.css";
 import "./styles/vaccination-polish.css";
 import "./styles/vetis-status.css";
 import "./styles/prime-overrides.css";
+import "./styles/clinical-assistant.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -53,7 +53,7 @@ def build(out):
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise SystemExit("Use a new, empty output directory.")
     subprocess.run(["npm", "run", "check"], cwd=ROOT / "GosVet", check=True)
-    subprocess.run(["node", "--test", "tests/storage.test.mjs"], cwd=ROOT / "GosVet", check=True)
+    subprocess.run(["node", "--test", "tests/storage.test.mjs", "tests/clinical-demo.test.mjs"], cwd=ROOT / "GosVet", check=True)
     subprocess.run(["npm", "run", "build"], cwd=ROOT / "GosVet", check=True)
     subprocess.run(["node", "--test", str(SRC / "model.test.mjs")], check=True)
     out.mkdir(parents=True, exist_ok=True)

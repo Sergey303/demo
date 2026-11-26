@@ -1,3 +1,4 @@
+import { complaintTags } from "../entities/clinicalDemo";
 import {
   actions,
   animals,
@@ -66,6 +67,7 @@ export const initialState: AppState = {
 type Action =
   | { type: "select_context"; clinicId: string; role: Role }
   | { type: "select_theme"; theme: PrimeThemeKey }
+  | { type: "toggle_complaint_tag"; appointmentId: string; tag: string }
   | { type: "update_soap"; appointmentId: string; field: SoapField; value: string }
   | { type: "update_action"; actionId: string; vaccineName?: string; vaccineSeries?: string; vaccineValidUntil?: string }
   | { type: "add_vaccination_action"; action: AppointmentAction; submission: ExternalSubmission }
@@ -119,6 +121,14 @@ export function reducer(state: AppState, action: Action): AppState {
     if (exists) return state;
     const item = { id: `dict-${Date.now()}`, code: "vaccine" as const, name: action.value, scope: "clinic" as const };
     return { ...state, dictionaries: [...state.dictionaries, item] };
+  }
+  if (action.type === "toggle_complaint_tag") {
+    const appointment = state.appointments.find(item => item.id === action.appointmentId);
+    if (!appointment || !complaintTags.some(tag=>tag===action.tag) || (!["draft","in_progress","requires_external_attention"].includes(appointment.status) && appointment.vetisStatus !== "fill_error")) return state;
+    const tags = appointment.complaintTags ?? [];
+    return { ...state, appointments: state.appointments.map(item => item.id !== action.appointmentId ? item : {
+      ...item, complaintTags: tags.includes(action.tag) ? tags.filter(tag => tag !== action.tag) : [...tags,action.tag].slice(0,12)
+    }) };
   }
   if (action.type === "update_soap") {
     const appointmentsNext = state.appointments.map((item) =>
