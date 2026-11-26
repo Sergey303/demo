@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {newAdmin,newJobs,replay} from './model.mjs';
+test('idempotency and conflict',()=>{const s=newJobs();const first=s.submit('a','one two');assert.equal(first.status,202);assert.equal(s.submit('a','one two').status,200);assert.equal(s.submit('a','one two').job.id,first.job.id);assert.equal(s.submit('a','different').status,409);assert.equal(s.list().length,1);});
+test('rollback does not consume attempt, success terminal',()=>{const s=newJobs();s.submit('a','one two');assert.equal(s.step('a','rollback').attempts,0);assert.equal(s.step('a','success').words,2);assert.equal(s.step('a','success'),null);});
+test('five failures terminal',()=>{const s=newJobs();s.submit('a','one');for(let i=0;i<4;i++)assert.equal(s.step('a','failure').state,'queued');assert.equal(s.step('a','failure').state,'failed');assert.equal(s.step('a','success'),null);});
+test('CRUD, filter, invalid input, soft delete',()=>{const s=newAdmin();assert.equal(s.save({name:'Test',email:'',segment:'B2B'}),true);const [x]=s.list('Test');assert.equal(s.save({...x,name:'New'}),true);assert.equal(s.list('Test').length,0);assert.equal(s.list('New').length,1);assert.equal(s.save({name:'',email:'',segment:''}),false);assert.equal(s.remove(x.id),true);assert.equal(s.list('New').length,0);});
+test('replay recorded only with full grants',()=>{const s=replay({grants:['doc','audio'],scenario:'refund',mode:'generated'});assert.equal(s.recorded,true);assert.equal(s.sources.length,2);const t=replay({grants:['doc'],scenario:'refund',mode:'generated'});assert.equal(t.recorded,false);assert.deepEqual(t.sources.map(x=>x.id),['doc']);});
+test('revoke all or unknown question yields no evidence',()=>{for(const [grants,scenario] of [[[],'refund'],[['doc','audio'],'unknown']])assert.equal(replay({grants,scenario,mode:'generated'}).sources.length,0);});

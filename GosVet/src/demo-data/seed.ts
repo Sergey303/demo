@@ -16,8 +16,8 @@ export const clinics: Clinic[] = [
 ];
 
 export const owners: Owner[] = [
-  { id: "owner-1", fullName: "Иванова Марина Петровна", phone: "+79990001122" },
-  { id: "owner-2", fullName: "Петров Андрей Сергеевич", phone: "+79995553344" }
+  { id: "owner-1", fullName: "Иванова Марина Петровна", phone: "+70000000001" },
+  { id: "owner-2", fullName: "Петров Андрей Сергеевич", phone: "+70000000002" }
 ];
 
 export const animals: Animal[] = [
