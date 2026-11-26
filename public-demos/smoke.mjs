@@ -74,10 +74,16 @@ try {
   await complaint.fill('Рвота второй день');
   await byHistory.getByText('Заболевания ЖКТ',{exact:true}).waitFor();
   await questions.getByText('Менялся ли корм',{exact:false}).waitFor();
+  const nextQuestion=questions.locator('.clinical-next-question');
+  assert.equal(await nextQuestion.getAttribute('data-question-id'),'diet-change');
+  await nextQuestion.getByText('Различает близкие гипотезы',{exact:true}).waitFor();
+  await nextQuestion.getByText('Сопоставляет:',{exact:false}).waitFor();
   const diet=questions.getByRole('group',{name:'Менялся ли корм незадолго до симптомов?'});
   const parasite=questions.getByRole('group',{name:'Был ли контакт с животными с известными паразитами?'});
   await diet.getByRole('button',{name:'Нет',exact:true}).click();
+  assert.equal(await nextQuestion.getAttribute('data-question-id'),'parasite-exposure');
   await parasite.getByRole('button',{name:'Да',exact:true}).click();
+  assert.equal(await nextQuestion.getAttribute('data-question-id'),'foreign-object');
   assert.equal(await byHistory.locator('[data-hypothesis-id]').first().getAttribute('data-hypothesis-id'),'parasites');
   await byHistory.locator('[data-hypothesis-id=digestive]').getByText('Меньше внимания',{exact:false}).waitFor();
   await page.reload();

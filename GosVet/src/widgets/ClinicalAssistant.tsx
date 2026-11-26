@@ -17,10 +17,21 @@ export function ClinicalAssistant({ anamnesis, tags, species, answers, onAnswer 
   const [showCommon,setShowCommon] = useState(true);
   const [showAll,setShowAll] = useState(false);
   const activeAnswered=result.questions.filter(q=>answers[q.id]!==undefined).length;
-  const visibleQuestions=showAll?result.questions:result.questions.filter((q,i)=>i<6 || answers[q.id]!==undefined);
-  const renderQuestion=(q:typeof clinicalQuestions[number],retained=false)=><li key={q.id} className="clinical-question" data-question-id={q.id}>
+  const visibleQuestions=showAll?result.questions:result.questions.filter((q,i)=>i<3 || answers[q.id]!==undefined);
+  const hiddenCount=result.questions.length-visibleQuestions.length;
+  const priorityLabel=(id:string) => {
+    const p=result.questionPriority[id];
+    return p.tier===3?"Различает близкие гипотезы":p.tier===2?"Различает варианты":p.tier===1?(p.affected===1?"Уточняет одну гипотезу":"Общий для гипотез признак"):"Общий контекст";
+  };
+  const renderQuestion=(q:typeof clinicalQuestions[number],retained=false)=><li key={q.id} className={`clinical-question ${!retained && result.nextQuestion?.id===q.id?"clinical-next-question":""}`} data-question-id={q.id}>
+    {!retained && answers[q.id]===undefined && <div className="clinical-question-priority">
+      {result.nextQuestion?.id===q.id && <span className="clinical-next-label">Следующий вопрос</span>}
+      <span>{priorityLabel(q.id)}</span>
+    </div>}
     <strong>{q.text}</strong>
     {!retained && result.questionContext[q.id]?.length>0 && <small>Уточнить: {result.questionContext[q.id].join("; ")}</small>}
+    {!retained && answers[q.id]===undefined && result.questionPriority[q.id].closePairs.length>0 &&
+      <small>Сопоставляет: {result.questionPriority[q.id].closePairs[0].first} / {result.questionPriority[q.id].closePairs[0].second}</small>}
     <div className="clinical-answer-options" role="group" aria-label={q.text}>
       {options.map(option=><button key={option.value} type="button" aria-pressed={answers[q.id]===option.value} onClick={()=>onAnswer(q.id,answers[q.id]===option.value?null:option.value)}>{option.label}</button>)}
       {answers[q.id]!==undefined && <button type="button" className="clinical-clear-answer" onClick={()=>onAnswer(q.id,null)} aria-label={`Сбросить ответ: ${q.text}`}>×</button>}
@@ -49,9 +60,10 @@ export function ClinicalAssistant({ anamnesis, tags, species, answers, onAnswer 
           </section>
           <section className="clinical-section" aria-label="Уточняющие вопросы">
             <h4>Что уточнить у владельца <span className="clinical-count">{activeAnswered}/{result.questions.length}</span></h4>
-            <p className="clinical-note">Отметьте ответ владельца. Неизвестно — без изменения порядка. Повторное нажатие отменяет выбор.</p>
+            <p className="clinical-note">Сначала вопросы, различающие близкие учебные гипотезы. «Неизвестно» не меняет их порядок; следующий вопрос выбирается заново. Это не клиническая оценка срочности.</p>
+            {result.pendingCount===0 && <p className="clinical-empty" role="status">Учебные вопросы исчерпаны. Это не означает, что данных достаточно для диагноза.</p>}
             <ul className="clinical-questions">{visibleQuestions.map(q=>renderQuestion(q))}</ul>
-            {result.questions.length>visibleQuestions.length || showAll && result.questions.length>6 ? <button type="button" className="clinical-text-button" aria-expanded={showAll} onClick={()=>setShowAll(x=>!x)}>{showAll?"Скрыть дополнительные вопросы":`Ещё вопросы (${result.questions.length-visibleQuestions.length})`}</button>:null}
+            {hiddenCount>0 || showAll && result.pendingCount>3 ? <button type="button" className="clinical-text-button" aria-expanded={showAll} onClick={()=>setShowAll(x=>!x)}>{showAll?"Скрыть дополнительные вопросы":`Ещё вопросы (${hiddenCount})`}</button>:null}
             {result.retainedQuestions.length>0 && <details className="clinical-retained"><summary>Сохранённые ответы вне текущих гипотез ({result.retainedQuestions.length})</summary><p className="clinical-note">Не влияют на текущий порядок.</p><ul className="clinical-questions">{result.retainedQuestions.map(q=>renderQuestion(q,true))}</ul></details>}
           </section>
         </div>

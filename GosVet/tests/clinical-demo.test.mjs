@@ -49,3 +49,39 @@ test('persisted answers validate IDs and enum and accept old snapshots',()=>{
  }
  assert(decodeState(JSON.stringify({appointments:[row]})));
 });
+
+test('adaptive question order distinguishes close hypotheses before shared and generic context',()=>{
+ const x=getClinicalDemo('Рвота',[],'Кошка');
+ assert.equal(x.nextQuestion.id,'diet-change');
+ assert.equal(x.questionPriority['diet-change'].tier,3);
+ assert.equal(x.questionPriority['loose-stool'].tier,1);
+ assert.equal(x.questionPriority['sudden-onset'].tier,0);
+ assert(x.questions.findIndex(q=>q.id==='parasite-exposure')<x.questions.findIndex(q=>q.id==='loose-stool'));
+ const y=getClinicalDemo('Рвота',[],'Кошка',{'diet-change':'yes'});
+ assert.equal(y.nextQuestion.id,'parasite-exposure');
+ assert.equal(y.questions.at(-1).id,'diet-change');
+ assert.equal(y.questionPriority['parasite-exposure'].closePairs.length,1);
+ const z=getClinicalDemo('Рвота',[],'Кошка',{'diet-change':'yes','foreign-object':'yes'});
+ assert.equal(z.questionPriority['parasite-exposure'].tier,2);
+ assert.equal(z.questionPriority['parasite-exposure'].closePairs.length,0);
+});
+test('unknown advances question without changing hypotheses, reset restores initial ordering',()=>{
+ const initial=getClinicalDemo('Рвота',[],'Кошка');
+ const x=getClinicalDemo('Рвота',[],'Кошка',{'diet-change':'unknown'});
+ assert.deepEqual(x.hypotheses,initial.hypotheses);
+ assert.equal(x.nextQuestion.id,'parasite-exposure');
+ const answered=Object.fromEntries(initial.questions.map(q=>[q.id,'unknown']));
+ const done=getClinicalDemo('Рвота',[],'Кошка',answered);
+ assert.equal(done.nextQuestion,null);assert.equal(done.pendingCount,0);
+ assert.deepEqual(done.hypotheses,initial.hypotheses);
+ assert.equal(getClinicalDemo('Рвота',[],'Кошка',{}).nextQuestion.id,'diet-change');
+});
+test('no matches and one match do not pretend to distinguish competing hypotheses',()=>{
+ const empty=getClinicalDemo('',[],'Кошка');
+ assert.equal(empty.nextQuestion.id,'sudden-onset');
+ assert.equal(empty.questionPriority[empty.nextQuestion.id].tier,0);
+ const single=getClinicalDemo('Хромота',[],'Собака');
+ assert.equal(single.hypotheses.length,1);
+ assert.equal(single.nextQuestion.id,'trauma');
+ assert.equal(single.questionPriority.trauma.tier,1);
+});

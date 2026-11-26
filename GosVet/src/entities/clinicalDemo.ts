@@ -85,7 +85,7 @@ export function getClinicalDemo(anamnesis: string, tags: readonly string[], spec
   // Interleave questions across competing hypotheses so one branch does not crowd out another.
   const questionIds = [...new Set(Array.from({length: Math.max(0,...matches.map(row=>row.rule.questions.length))},
     (_,i)=>matches.map(row=>row.rule.questions[i]).filter(Boolean)).flat())];
-  const activeIds = questionIds.length ? questionIds : genericQuestions;
+  const activeIds = [...questionIds, ...genericQuestions];
   const activeQuestions = activeIds.map(id=>clinicalQuestions.find(q=>q.id===id)!);
   const active = new Set(activeIds);
   const hypotheses = matches.map(({rule,evidence}, index) => {
@@ -100,5 +100,33 @@ export function getClinicalDemo(anamnesis: string, tags: readonly string[], spec
   }).sort((a,b)=>b.score-a.score || a.index-b.index);
   const retainedQuestions = clinicalQuestions.filter(q=>!active.has(q.id) && answers[q.id] !== undefined);
   const questionContext = Object.fromEntries(activeQuestions.map(q=>[q.id,matches.filter(({rule})=>q.relates.includes(rule.id)).map(({rule})=>rule.title)]));
-  return { hypotheses, common: common[kind], questions: activeQuestions, retainedQuestions, questionContext };
+  // Pure, synthetic question ordering: compare changes to the relative score
+  // of each pair under the two possible answers. No clinical probabilities.
+  // Unanswered questions that can change a close ordering come first.
+  const relation = (q: Question, id: string, answer: "yes"|"no") =>
+    answer==="yes" ? Number(q.yes.includes(id)) : -Number(q.no.includes(id));
+  const questionPriority = Object.fromEntries(activeQuestions.map((q,index)=>{
+    const pairs: {first:string;second:string;close:boolean;weight:number}[]=[];
+    for (let i=0;i<hypotheses.length;i++) for (let j=i+1;j<hypotheses.length;j++){
+      const a=hypotheses[i], b=hypotheses[j];
+      const yes=relation(q,a.id,"yes")-relation(q,b.id,"yes");
+      const no=relation(q,a.id,"no")-relation(q,b.id,"no");
+      if (yes===no) continue;
+      const gap=a.score-b.score;
+      const close=gap+Math.min(yes,no)<=0 && gap+Math.max(yes,no)>=0;
+      pairs.push({first:a.title,second:b.title,close,weight:1/(1+gap)});
+    }
+    const closePairs=pairs.filter(pair=>pair.close);
+    const affected=hypotheses.filter(h=>relation(q,h.id,"yes")!==relation(q,h.id,"no")).length;
+    const tier=closePairs.length?3:pairs.length?2:affected?1:0;
+    const weight=(closePairs.length?closePairs:pairs).reduce((sum,pair)=>sum+pair.weight,0);
+    return [q.id,{tier,weight,index,closePairs,pairs,affected}];
+  }));
+  const pending=activeQuestions.filter(q=>answers[q.id]===undefined).sort((a,b)=>{
+    const x=questionPriority[a.id],y=questionPriority[b.id];
+    return y.tier-x.tier || y.weight-x.weight || x.index-y.index;
+  });
+  const answered=activeQuestions.filter(q=>answers[q.id]!==undefined);
+  return { hypotheses, common: common[kind], questions: [...pending,...answered], nextQuestion:pending[0]??null,
+    questionPriority, pendingCount:pending.length, retainedQuestions, questionContext };
 }

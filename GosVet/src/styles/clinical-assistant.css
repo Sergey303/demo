@@ -46,3 +46,6 @@
 .clinical-answer-summary { font-size:.85rem; margin:.5rem 0; }
 .clinical-answer-summary h4 {margin:.4rem 0;}
 .clinical-answer-summary ul {padding-left:1.2rem;}
+.clinical-question-priority { display:flex; align-items:center; flex-wrap:wrap; gap:.3rem; font-size:.72rem; color:var(--text-color-secondary,var(--text-color)); margin-bottom:.3rem; }
+.clinical-next-question { padding:.55rem; border:1px solid color-mix(in srgb,var(--primary-color) 50%,var(--surface-border)); border-radius:8px; background:color-mix(in srgb,var(--primary-color) 5%,var(--surface-card)); }
+.clinical-next-label { background:var(--primary-color); color:var(--primary-color-text); padding:.15rem .35rem; border-radius:4px; font-weight:600; }
