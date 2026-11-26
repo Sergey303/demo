@@ -1,3 +1,4 @@
+import { draftSignature, canModifyVisit } from "../entities/draftCheckpoint";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useDemoStore } from "../app/context";
@@ -10,6 +11,7 @@ type Props = {
   actions: AppointmentAction[];
   submissions: ExternalSubmission[];
   displayName: string;
+  pendingVaccination?: boolean;
 };
 
 const hasRequiredExternalData = (
@@ -17,6 +19,7 @@ const hasRequiredExternalData = (
   submissions: ExternalSubmission[],
   actions: AppointmentAction[]
 ) => {
+  if(actions.some(a=>!a.vaccineName.trim()||!a.vaccineSeries.trim()||!a.vaccineValidUntil?.trim()))return false;
   const requiredSubmissions = externalSubmissionsForConfirmedVaccinations(submissions, actions);
   if (requiredSubmissions.length === 0 || !hasVetisVaccinationToSend(actions)) return true;
   return getMissingVetisSoapFields(appointment).length === 0 &&
@@ -38,13 +41,14 @@ const canRetryAppointment = (appointment: Appointment) =>
 const isVetisSending = (appointment: Appointment) =>
   appointment.vetisStatus === "queued" || appointment.vetisStatus === "sending";
 
-export function BottomBar({ appointment, actions, submissions, displayName }: Props) {
-  const { dispatch } = useDemoStore();
+export function BottomBar({ appointment, actions, submissions, displayName, pendingVaccination=false }: Props) {
+  const { dispatch, persistence } = useDemoStore();
   const navigate = useNavigate();
-  const editableMode = canEditAppointment(appointment);
+  const editableMode = canEditAppointment(appointment) && canModifyVisit(appointment);
+  const dirty = draftSignature(appointment,actions)!==appointment.draftCheckpoint;
   const completeMode = canCompleteAppointment(appointment);
   const retryMode = canRetryAppointment(appointment);
-  const canSend = hasRequiredExternalData(appointment, submissions, actions);
+  const canSend = !pendingVaccination && hasRequiredExternalData(appointment, submissions, actions);
   const handleDelete = () => {
     if (!window.confirm(`Удалить приём «${displayName}»?`)) return;
     dispatch({ type: "delete_appointment", appointmentId: appointment.id });
@@ -52,7 +56,7 @@ export function BottomBar({ appointment, actions, submissions, displayName }: Pr
   };
   const handleComplete = () => {
     const confirmed = window.confirm(
-      "Завершить приём? После подтверждения приём будет отправлен в ВЕТИС."
+      hasVetisVaccinationToSend(actions) ? "Завершить приём? После подтверждения приём будет отправлен в ВЕТИС." : "Завершить приём без отправки в ВЕТИС?"
     );
     if (!confirmed) return;
     dispatch({ type: "complete", appointmentId: appointment.id });
@@ -61,7 +65,7 @@ export function BottomBar({ appointment, actions, submissions, displayName }: Pr
     <div className="appointment-bottom-bar">
       <div className="actions-row">
         {editableMode && (
-          <Button label="Сохранить черновик" onClick={() => dispatch({ type: "save_draft", appointmentId: appointment.id })} />
+          <Button label="Сохранить черновик" icon="pi pi-save" disabled={pendingVaccination || (!dirty && persistence!=="failed")} onClick={() => dispatch({ type: "save_draft", appointmentId: appointment.id })} />
         )}
         {completeMode && (
           <Button
@@ -79,7 +83,8 @@ export function BottomBar({ appointment, actions, submissions, displayName }: Pr
             onClick={() => dispatch({ type: "retry", appointmentId: appointment.id })}
           />
         )}
-        <Button label="Удалить" icon="pi pi-trash" severity="danger" outlined onClick={handleDelete} />
+        {editableMode && <Button label="Удалить приём" icon="pi pi-trash" severity="danger" outlined onClick={handleDelete} />}
+        {editableMode && <span role="status" className="draft-save-status">{pendingVaccination?"Подтвердите или отмените редактирование прививки":persistence==="failed"?"Не удалось сохранить в браузере. Повторите попытку.":persistence==="pending"?"Сохранение в браузере…":dirty?"Есть изменения · автокопия в браузере":appointment.draftSavedAt?"✓ Черновик сохранён · "+new Date(appointment.draftSavedAt).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}):"Нет изменений"}</span>}
       </div>
     </div>
   );

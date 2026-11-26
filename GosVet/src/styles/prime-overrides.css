@@ -22,3 +22,9 @@
 .p-message {
   border-radius: 12px;
 }
+
+/* One joined input group, not a rounded stand-alone action button. */
+.gosvet-date-picker.p-calendar {display:inline-flex;min-width:0;align-items:stretch;}
+.gosvet-date-picker.p-calendar .p-inputtext {flex:1 1 auto;min-width:0;width:0;border-radius:8px 0 0 8px;border-right:0;}
+.gosvet-date-picker.p-calendar .p-datepicker-trigger.p-button {flex:0 0 2.75rem;width:2.75rem;min-width:2.75rem;border-radius:0 8px 8px 0;margin:0;align-self:stretch;}
+.gosvet-date-picker.p-calendar:focus-within .p-inputtext {position:relative;z-index:1;}

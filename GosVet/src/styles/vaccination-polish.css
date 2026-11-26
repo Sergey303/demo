@@ -89,3 +89,8 @@
   justify-content: flex-end;
   margin-top: 0.75rem;
 }
+.vaccine-row-actions {display:flex;flex-wrap:wrap;gap:.35rem;}
+.vaccine-row-actions button {border:1px solid var(--surface-border);border-radius:6px;padding:.35rem .5rem;background:var(--surface-card);color:var(--text-color);font:inherit;font-size:.8rem;cursor:pointer;}
+.vaccine-row-actions button:disabled {opacity:.55;cursor:default;}
+.vaccine-row-actions button:focus-visible {outline:2px solid var(--primary-color);outline-offset:2px;}
+.draft-save-status {font-size:.82rem;color:var(--text-color-secondary,var(--text-color));align-self:center;flex:1 1 12rem;}

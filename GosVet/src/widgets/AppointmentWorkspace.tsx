@@ -55,6 +55,7 @@ export function AppointmentWorkspace(props: Props) {
   const { state, dispatch } = useDemoStore();
   const navigate = useNavigate();
   const displayName = appointmentDisplayName(appointment, owner, animal);
+  const [pendingVaccination,setPendingVaccination] = useState(false);
   const [followUpDate, setFollowUpDate] = useState("");
   const [createdFollowUp, setCreatedFollowUp] = useState<{ id: string; dateText: string } | null>(null);
   const vaccinationsText = useMemo(() => vaccinationSummaryText(actions), [actions]);
@@ -142,6 +143,8 @@ export function AppointmentWorkspace(props: Props) {
             requiredForVetis={vetisRequired}
           />
           <ActionEditor
+            key={appointment.id}
+            onPendingChange={setPendingVaccination}
             appointment={appointment}
             actions={actions}
             readOnly={!canEdit}
@@ -190,7 +193,7 @@ export function AppointmentWorkspace(props: Props) {
           )}
         </div>
       </Card>
-      <BottomBar appointment={appointment} actions={actions} submissions={submissions} displayName={displayName} />
+      <BottomBar appointment={appointment} actions={actions} submissions={submissions} displayName={displayName} pendingVaccination={pendingVaccination} />
     </section>
   );
 }

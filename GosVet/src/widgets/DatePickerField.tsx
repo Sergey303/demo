@@ -15,7 +15,7 @@ const toDate = (value: string) => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;
   const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  return Number.isNaN(date.getTime()) ? null : date;
+  return Number.isNaN(date.getTime()) || date.getFullYear()!==Number(match[1]) || date.getMonth()!==Number(match[2])-1 || date.getDate()!==Number(match[3]) ? null : date;
 };
 
 const toDateInputValue = (value: Date) => {
@@ -43,7 +43,7 @@ export function DatePickerField({
       placeholder={placeholder}
       showIcon
       disabled={disabled}
-      className={className}
+      className={["gosvet-date-picker",className].filter(Boolean).join(" ")}
       inputClassName={inputClassName}
     />
   );

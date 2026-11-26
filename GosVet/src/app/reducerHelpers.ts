@@ -1,3 +1,4 @@
+import {draftSignature} from "../entities/draftCheckpoint";
 import type { Appointment, AppointmentAction, AuditEvent, ExternalSubmission, Notification } from "../entities/types";
 import { externalSubmissionsForConfirmedVaccinations } from "../entities/vaccinationDisplay";
 import { evaluateVetisSubmission } from "../entities/vetisValidation";
@@ -8,7 +9,7 @@ const attemptMarker = "Попытка отправки в ВЕТИС";
 
 export const appendAudit = (state: AppState, appointmentId: string, text: string): AuditEvent[] => [
   ...state.audit,
-  { id: `audit-${Date.now()}`, appointmentId, text, at: new Date().toISOString() }
+  { id: `audit-${Date.now()}-${state.audit.length}`, appointmentId, text, at: new Date().toISOString() }
 ];
 
 export const evaluateSubmission = (
@@ -175,7 +176,7 @@ export const addAppointmentState = (
   submission?: ExternalSubmission
 ): AppState => ({
   ...state,
-  appointments: [...state.appointments, appointment],
+  appointments: [...state.appointments, {...appointment,draftCheckpoint:draftSignature(appointment,action?[action]:[])}],
   actions: action ? [...state.actions, action] : state.actions,
   submissions: submission ? [...state.submissions, submission] : state.submissions,
   audit: appendAudit(state, appointment.id, "Приём создан")

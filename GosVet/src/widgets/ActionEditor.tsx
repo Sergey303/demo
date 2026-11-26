@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { canModifyVaccination } from "../entities/draftCheckpoint";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { createVaccinationActionDraft, type VaccinationActionDraft } from "../app/appointmentFactory";
@@ -15,6 +16,7 @@ type Props = {
   highlightFieldPath?: string;
   readOnly?: boolean;
   externalFieldErrors?: Record<string, string>;
+  onPendingChange?: (pending:boolean)=>void;
 };
 const fieldKey = (actionId: string, field: string) => `${actionId}:${field}`;
 const normalize = (value: string) => value.trim().toLowerCase();
@@ -24,12 +26,18 @@ export function ActionEditor({
   highlightActionId,
   highlightFieldPath,
   readOnly = false,
-  externalFieldErrors = {}
+  externalFieldErrors = {},
+  onPendingChange
 }: Props) {
   const { state, dispatch } = useDemoStore();
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [, setNameValidity] = useState<Record<string, boolean>>({});
   const [newDraft, setNewDraft] = useState<VaccinationActionDraft | null>(null);
+  const [editing,setEditing] = useState<AppointmentAction|null>(null);
+  const pending=Boolean(newDraft||editing);
+  useEffect(()=>{onPendingChange?.(pending);return ()=>onPendingChange?.(false);},[pending,onPendingChange]);
+  const editable=(action:AppointmentAction)=>!readOnly&&canModifyVaccination(appointment,state.submissions,action.id);
+  const updateEditing=(patch:Partial<AppointmentAction>)=>setEditing(prev=>prev?{...prev,...patch}:prev);
   const options = useMemo(() => {
     const local = state.dictionaries.map((item) => item.name);
     return Array.from(new Set([...vaccineDemoOptions, ...local]));
@@ -50,7 +58,7 @@ export function ActionEditor({
     setNewDraft((prev) => (prev ? { ...prev, action: { ...prev.action, ...patch } } : prev));
   };
   const handleAdd = () => {
-    if (newDraft || readOnly) return;
+    if (newDraft || editing || readOnly) return;
     setNewDraft(createVaccinationActionDraft(appointment.id));
   };
   const handleCancelNew = () => {
@@ -88,10 +96,11 @@ export function ActionEditor({
   return (
     <Card title="Прививки">
       <div className="stack">
-        <VaccinationSummaryTable actions={actions} />
+        <VaccinationSummaryTable actions={actions} canEdit={readOnly?undefined:editable} busy={pending} onEdit={action=>setEditing({...action})}
+          onDelete={action=>{if(window.confirm("Удалить прививку из приёма? Данные ещё не отправлены в ВЕТИС.")) dispatch({type:"delete_vaccination_action",actionId:action.id});}}/>
         {actions.map((action, index) => {
           const actionHasExternalError = Object.keys(externalFieldErrors).some((key) => key.startsWith(`${action.id}:`));
-          const shouldShowEditor = !readOnly && (isIncompleteVaccination(action) || highlightActionId === action.id || actionHasExternalError);
+          const shouldShowEditor = editable(action) && editing?.id!==action.id && (isIncompleteVaccination(action) || highlightActionId === action.id || actionHasExternalError);
           if (!shouldShowEditor) return null;
           const nameExternalError = externalFieldErrors[fieldKey(action.id, "vaccination.vaccineName")];
           const seriesExternalError = externalFieldErrors[fieldKey(action.id, "vaccination.vaccineSeries")];
@@ -127,6 +136,28 @@ export function ActionEditor({
             />
           );
         })}
+        {editing && !readOnly && (
+          <div className="vaccination-new-editor">
+            <VaccinationEditForm action={editing} index={actions.findIndex(a=>a.id===editing.id)} options={options} titleLabel="Редактирование прививки"
+              nameInvalid={isTouched(editing.id,"vaccineName")&&!isKnownVaccineName(editing.vaccineName)}
+              seriesInvalid={isTouched(editing.id,"vaccineSeries")&&!editing.vaccineSeries.trim()}
+              validUntilInvalid={isTouched(editing.id,"vaccineValidUntil")&&!editing.vaccineValidUntil?.trim()}
+              highlightName={false} highlightSeries={false} highlightValidUntil={false}
+              onNameChange={value=>updateEditing({vaccineName:value})} onSeriesChange={value=>updateEditing({vaccineSeries:value})}
+              onValidUntilChange={value=>updateEditing({vaccineValidUntil:value})}
+              onAddDictionary={value=>dispatch({type:"add_dictionary",value})} onNameValidityChange={()=>{}}
+              onTouched={field=>markTouched(editing.id,field)} />
+            <div className="vaccination-confirm-actions">
+              <Button label="Отмена" outlined onClick={()=>setEditing(null)}/>
+              <Button label="Применить изменения" icon="pi pi-check" onClick={()=>{
+                touchAll(editing.id);
+                if(!isKnownVaccineName(editing.vaccineName)||!editing.vaccineSeries.trim()||!editing.vaccineValidUntil?.trim())return;
+                dispatch({type:"update_action",actionId:editing.id,vaccineName:editing.vaccineName,vaccineSeries:editing.vaccineSeries,vaccineValidUntil:editing.vaccineValidUntil});
+                setEditing(null);
+              }}/>
+            </div>
+          </div>
+        )}
         {newDraft && !readOnly && (
           <div className="vaccination-new-editor">
             <VaccinationEditForm
@@ -157,7 +188,7 @@ export function ActionEditor({
             </div>
           </div>
         )}
-        {!newDraft && !readOnly && <div className="vaccination-editor-actions">
+        {!newDraft && !editing && !readOnly && <div className="vaccination-editor-actions">
           <Button label="Добавить прививку" icon="pi pi-plus" outlined onClick={handleAdd} />
         </div>}
       </div>

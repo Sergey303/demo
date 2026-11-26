@@ -1,3 +1,4 @@
+import { draftSignature, canModifyVisit, canModifyVaccination } from "../entities/draftCheckpoint";
 import { isObservationId, isObservationValue, type ObservationValue } from "../entities/clinicalStages";
 import { complaintTags, isClinicalQuestionId, isClinicalAnswer, type ClinicalAnswer } from "../entities/clinicalDemo";
 import {
@@ -53,7 +54,7 @@ export const initialState: AppState = {
   clinics,
   owners,
   animals,
-  appointments,
+  appointments: appointments.map(a=>({...a,draftCheckpoint:draftSignature(a,actions)})),
   actions,
   submissions,
   notifications,
@@ -72,6 +73,7 @@ type Action =
   | { type: "set_clinical_answer"; appointmentId: string; questionId: string; answer: ClinicalAnswer | null }
   | { type: "toggle_complaint_tag"; appointmentId: string; tag: string }
   | { type: "update_soap"; appointmentId: string; field: SoapField; value: string }
+  | { type: "delete_vaccination_action"; actionId: string }
   | { type: "update_action"; actionId: string; vaccineName?: string; vaccineSeries?: string; vaccineValidUntil?: string }
   | { type: "add_vaccination_action"; action: AppointmentAction; submission: ExternalSubmission }
   | { type: "add_appointment"; appointment: Appointment; action?: AppointmentAction; submission?: ExternalSubmission }
@@ -86,6 +88,8 @@ type Action =
   | { type: "reset" };
 
 const updateActionRows = (state: AppState, action: Extract<Action, { type: "update_action" }>) => {
+  const current=state.actions.find(item=>item.id===action.actionId);
+  if(!current||!canModifyVaccination(state.appointments.find(a=>a.id===current.appointmentId),state.submissions,current.id))return state;
   const actionsNext = state.actions.map((item) =>
     item.id === action.actionId
       ? {
@@ -101,7 +105,7 @@ const updateActionRows = (state: AppState, action: Extract<Action, { type: "upda
   const submissionsNext = state.submissions.map((item) =>
     item.actionId === action.actionId && actionRow ? evaluateSubmission(actionRow, item, appointment) : item
   );
-  return { ...state, actions: actionsNext, submissions: submissionsNext };
+  return { ...state, actions: actionsNext, submissions: submissionsNext, audit: appendAudit(state,current.appointmentId,"Данные прививки изменены") };
 };
 
 export function reducer(state: AppState, action: Action): AppState {
@@ -109,9 +113,10 @@ export function reducer(state: AppState, action: Action): AppState {
   if (action.type === "select_context") return { ...state, selectedClinicId: action.clinicId, selectedRole: action.role };
   if (action.type === "select_theme") return { ...state, selectedTheme: action.theme };
   if (action.type === "add_appointment") return addAppointmentState(state, action.appointment, action.action, action.submission);
-  if (action.type === "delete_appointment") return deleteAppointmentState(state, action.appointmentId);
+  if (action.type === "delete_appointment") return canModifyVisit(state.appointments.find(a=>a.id===action.appointmentId)) ? deleteAppointmentState(state, action.appointmentId) : state;
   if (action.type === "add_vaccination_action") {
     const appointment = state.appointments.find((item) => item.id === action.action.appointmentId);
+    if(!canModifyVisit(appointment))return state;
     return {
       ...state,
       actions: [...state.actions, action.action],
@@ -154,6 +159,7 @@ export function reducer(state: AppState, action: Action): AppState {
     }) };
   }
   if (action.type === "update_soap") {
+    if(!canModifyVisit(state.appointments.find(a=>a.id===action.appointmentId)))return state;
     const appointmentsNext = state.appointments.map((item) =>
       item.id === action.appointmentId ? { ...item, [action.field]: action.value } : item
     );
@@ -167,23 +173,22 @@ export function reducer(state: AppState, action: Action): AppState {
     });
     return { ...state, appointments: appointmentsNext, submissions: submissionsNext };
   }
+  if (action.type === "delete_vaccination_action") {
+    const current=state.actions.find(v=>v.id===action.actionId);
+    if(!current||!canModifyVaccination(state.appointments.find(a=>a.id===current.appointmentId),state.submissions,current.id))return state;
+    const remaining=state.actions.filter(v=>v.id!==current.id);
+    return {...state,actions:remaining,submissions:state.submissions.filter(s=>s.actionId!==current.id),
+      focusedProblem:state.focusedProblem?.actionId===current.id?null:state.focusedProblem,
+      audit:appendAudit(state,current.appointmentId,"Прививка удалена до отправки")};
+  }
   if (action.type === "update_action") return updateActionRows(state, action);
   if (action.type === "save_draft") {
     const appointment = state.appointments.find((item) => item.id === action.appointmentId);
-    const keepCompletedErrorStatus =
-      appointment?.status === "requires_external_attention" || appointment?.vetisStatus === "fill_error";
-    const appointmentsNext = state.appointments.map((item) =>
-      item.id === action.appointmentId && !keepCompletedErrorStatus ? { ...item, status: "draft" as const } : item
-    );
-    return {
-      ...state,
-      appointments: appointmentsNext,
-      audit: appendAudit(
-        state,
-        action.appointmentId,
-        keepCompletedErrorStatus ? "Правки для повторной отправки сохранены" : "Черновик сохранён"
-      )
-    };
+    if(!appointment||!canModifyVisit(appointment))return state;
+    const checkpoint=draftSignature(appointment,state.actions);
+    const keepCompletedErrorStatus=appointment.status==="requires_external_attention"||appointment.vetisStatus==="fill_error";
+    return {...state,appointments:state.appointments.map(item=>item.id===appointment.id?{...item,draftCheckpoint:checkpoint,draftSavedAt:new Date().toISOString(),status:keepCompletedErrorStatus?item.status:"draft"}:item),
+      audit:appendAudit(state,appointment.id,keepCompletedErrorStatus?"Правки для повторной отправки сохранены":"Черновик сохранён")};
   }
   if (action.type === "check_readiness") {
     const appointment = state.appointments.find((item) => item.id === action.appointmentId);
@@ -195,6 +200,7 @@ export function reducer(state: AppState, action: Action): AppState {
     return { ...state, submissions: submissionsNext };
   }
   if (action.type === "complete" || action.type === "retry") {
+    if(!canModifyVisit(state.appointments.find(a=>a.id===action.appointmentId)) || state.actions.some(v=>v.appointmentId===action.appointmentId&&(!v.vaccineName.trim()||!v.vaccineSeries.trim()||!v.vaccineValidUntil?.trim())))return state;
     const { event, ...result } = completeOrRetry(state, action.appointmentId);
     return { ...state, ...result, audit: event ? appendAudit(state, action.appointmentId, event) : state.audit };
   }

@@ -3,12 +3,16 @@ import type { AppointmentAction } from "../entities/types";
 
 type Props = {
   actions: AppointmentAction[];
+  canEdit?: (action:AppointmentAction)=>boolean;
+  onEdit?: (action:AppointmentAction)=>void;
+  onDelete?: (action:AppointmentAction)=>void;
+  busy?: boolean;
 };
 
 export const isIncompleteVaccination = (action: AppointmentAction) =>
   !action.vaccineName.trim() || !action.vaccineSeries.trim() || !action.vaccineValidUntil?.trim();
 
-export function VaccinationSummaryTable({ actions }: Props) {
+export function VaccinationSummaryTable({ actions,canEdit,onEdit,onDelete,busy }: Props) {
   if (actions.length === 0) {
     return (
       <div className="vaccination-empty">
@@ -24,18 +28,25 @@ export function VaccinationSummaryTable({ actions }: Props) {
         <thead>
           <tr>
             <th scope="col">Название</th>
+            <th scope="col">Серия</th>
             <th scope="col">Дата окончания действия</th>
+            {canEdit && <th scope="col">Действия</th>}
           </tr>
         </thead>
         <tbody>
           {actions.map((action) => (
             <tr key={action.id}>
               <td>{action.vaccineName.trim() || <MissingValue text="препарат не указан" />}</td>
+              <td>{action.vaccineSeries || "—"}</td>
               <td>
                 {action.vaccineValidUntil?.trim()
                   ? formatAppointmentDate(action.vaccineValidUntil)
                   : <MissingValue text="не указана" />}
               </td>
+              {canEdit && <td><div className="vaccine-row-actions">{canEdit(action) ? <>
+                <button type="button" disabled={busy} onClick={()=>onEdit?.(action)}>Изменить</button>
+                <button type="button" disabled={busy} onClick={()=>onDelete?.(action)}>Удалить прививку</button>
+              </>:<span className="muted-line">Только чтение</span>}</div></td>}
             </tr>
           ))}
         </tbody>

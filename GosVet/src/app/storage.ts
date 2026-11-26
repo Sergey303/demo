@@ -24,6 +24,7 @@ const rowValidators: Record<string, (row: Row) => boolean> = {
     (row.complaintTags === undefined || (Array.isArray(row.complaintTags) && row.complaintTags.length <= 12 && row.complaintTags.every(value => typeof value === "string" && value.length <= 80))) &&
     (row.clinicalAnswers === undefined || (object(row.clinicalAnswers) && Object.entries(row.clinicalAnswers).every(([id,value])=>isClinicalQuestionId(id) && isClinicalAnswer(value)))) &&
     (row.clinicalObservations === undefined || (object(row.clinicalObservations) && Object.entries(row.clinicalObservations).every(([id,value])=>isObservationId(id) && isObservationValue(value)))) &&
+    optionalText(row.draftCheckpoint) && optionalText(row.draftSavedAt) &&
     optionalText(row.startedAt) &&
     member(row.status, ["draft", "in_progress", "completed_internal", "requires_external_attention", "completed_with_external_success"]) &&
     (row.vetisStatus === undefined || member(row.vetisStatus, ["not_started", "queued", "sending", "sent", "fill_error"])),
@@ -93,11 +94,12 @@ export function loadState(): Partial<AppState> | null {
   }
 }
 
-export function saveState(state: AppState): void {
+export function saveState(state: AppState): boolean {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: VERSION, state }));
+    return true;
   } catch {
-    // demo should remain usable without storage
+    return false;
   }
 }
 
