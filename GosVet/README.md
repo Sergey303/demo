@@ -32,3 +32,9 @@ Routes:
 ## Persisted demo state
 
 Versioned localStorage snapshots validate row shapes, IDs, enums and required fields before hydration; incompatible data falls back to seed state. Valid legacy partial snapshots remain readable. This is structural validation, not business-level referential integrity. Run `node --test tests/storage.test.mjs` on Node 22.18+ (Node 24 used for verification).
+
+## Сквозная приёмка рабочего дня врача
+
+[Сценарий показа и приёмки](gosvet_demo_scenarios_for_doctor.md) · [реестр первого прогона](DOCTOR-JOURNEY-2026-11-26.md).
+
+Из корня репозитория: `npm ci --prefix public-demos`, `npm ci --prefix GosVet`, `npm run build --prefix GosVet`, затем `node public-demos/gosvet-journey.mjs GosVet/dist/index.html`. Это диагностический прогон, который намеренно сообщает ненулевой код при обнаружении дефектов; пока не включён в зелёный smoke gate.
