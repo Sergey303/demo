@@ -37,8 +37,8 @@ noindex,follow; the commercial service pages remain the SEO landing pages.
 | Name | Relative URL | Type | Sales purpose |
 | --- | --- | --- | --- |
 | Catalog | /demos/ | static | choose scenario |
-| GosVet | /demos/gosvet/ | original working React prototype | business systems / complex workflows |
-| GosVet appointment | /demos/gosvet/app.html#/appointment/demo-001 | original working React prototype | deep link into populated workflow |
+| GosVet | /demos/gosvet/ | original working React prototype | business systems / complex workflows / simulated AI assistant |
+| GosVet appointment | /demos/gosvet/app.html#/appointment/demo-001 | original working React prototype | deep link into editable workflow |
 | AppForge | /demos/appforge/ | original generated Customer React + local preview adapter, lightweight simulator and live evidence | internal tools / backoffice |
 | AppForge generated UI | /demos/appforge/generated/ | original generated Customer page + isolated local transport | direct link into original UI |
 | Reliable Jobs | /demos/reliable-jobs/ | in-browser model of API and outbox behavior | reliable integrations / architecture |
