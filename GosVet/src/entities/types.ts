@@ -55,6 +55,7 @@ export type Appointment = {
   vetisStatus?: VetisSendStatus;
   complaint: string;
   complaintTags?: string[];
+  clinicalAnswers?: import("./clinicalDemo").ClinicalAnswers;
   soapObjective: string;
   soapAssessment: string;
   soapPlan: string;

@@ -1,4 +1,5 @@
 import type { AppState } from "./state";
+import { isClinicalQuestionId, isClinicalAnswer } from "../entities/clinicalDemo.ts";
 
 const STORAGE_KEY = "gosvetclinic-demo-state-v1";
 const VERSION = 2;
@@ -20,6 +21,7 @@ const rowValidators: Record<string, (row: Row) => boolean> = {
   appointments: row => strings(row, ["id", "clinicId", "doctor", "ownerId", "animalId", "reason",
     "complaint", "soapObjective", "soapAssessment", "soapPlan"]) &&
     (row.complaintTags === undefined || (Array.isArray(row.complaintTags) && row.complaintTags.length <= 12 && row.complaintTags.every(value => typeof value === "string" && value.length <= 80))) &&
+    (row.clinicalAnswers === undefined || (object(row.clinicalAnswers) && Object.entries(row.clinicalAnswers).every(([id,value])=>isClinicalQuestionId(id) && isClinicalAnswer(value)))) &&
     optionalText(row.startedAt) &&
     member(row.status, ["draft", "in_progress", "completed_internal", "requires_external_attention", "completed_with_external_success"]) &&
     (row.vetisStatus === undefined || member(row.vetisStatus, ["not_started", "queued", "sending", "sent", "fill_error"])),
@@ -66,7 +68,12 @@ export function decodeState(raw: string): Partial<AppState> | null {
     const parsed: unknown = JSON.parse(raw);
     if (!object(parsed)) return null;
     if ("version" in parsed) {
-      return parsed.version === VERSION && validState(parsed.state, false) ? parsed.state : null;
+      if (parsed.version !== VERSION || !object(parsed.state)) return null;
+      // Earlier completion reducers accidentally persisted their transient audit event.
+      // Strip only that known field; all remaining snapshot validation still applies.
+      const {event,...snapshot}=parsed.state;
+      if (event!==undefined && event!==null && !text(event)) return null;
+      return validState(snapshot, false) ? snapshot : null;
     }
     // Legacy snapshots contain the state directly; hydration supplies missing fields.
     return validState(parsed, true) ? parsed : null;

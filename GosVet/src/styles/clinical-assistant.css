@@ -28,3 +28,21 @@
 
 .clinical-common .clinical-common-list {display:flex; flex-wrap:wrap; gap:.35rem; list-style:none; padding:0;}
 .clinical-common .clinical-common-list li {margin:0; border:1px solid var(--surface-border); border-radius:6px; padding:.24rem .4rem; font-size:.76rem; background:var(--surface-card);}
+.clinical-question { list-style:none; border-bottom:1px solid var(--surface-border); padding:.35rem 0 .6rem; }
+.clinical-questions { padding-left:0!important; }
+.clinical-question:last-child { border-bottom:0; }
+.clinical-question>strong { font-size:.81rem; font-weight:600; }
+.clinical-answer-options { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.45rem; }
+.clinical-answer-options button { border:1px solid var(--surface-border); background:var(--surface-card); color:var(--text-color); font:inherit; font-size:.76rem; padding:.28rem .55rem; border-radius:6px; cursor:pointer; min-height:30px; }
+.clinical-answer-options button[aria-pressed=true] { border-color:var(--primary-color); background:color-mix(in srgb,var(--primary-color) 13%,var(--surface-card)); font-weight:650; }
+.clinical-answer-options button:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
+.clinical-answer-options .clinical-clear-answer {padding:.1rem .55rem;}
+.clinical-hypothesis-feedback { margin-top:.3rem; display:grid; gap:.15rem; }
+.clinical-direction-up,.clinical-direction-down,.clinical-direction-neutral { font-size:.75rem; font-weight:650; }
+.clinical-direction-up {color:var(--primary-color);}
+.clinical-direction-down,.clinical-direction-neutral {color:var(--text-color-secondary,var(--text-color));}
+.clinical-retained { margin-top:.65rem; font-size:.8rem; }
+.clinical-retained summary { cursor:pointer; }
+.clinical-answer-summary { font-size:.85rem; margin:.5rem 0; }
+.clinical-answer-summary h4 {margin:.4rem 0;}
+.clinical-answer-summary ul {padding-left:1.2rem;}

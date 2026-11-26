@@ -6,25 +6,58 @@ export const complaintTags = [
   "Повышенная жажда", "Профилактический осмотр", "Вакцинация"
 ] as const;
 export type ComplaintTag = typeof complaintTags[number];
+export type ClinicalAnswer = "yes" | "no" | "unknown";
+export type ClinicalAnswers = Record<string, ClinicalAnswer>;
+type Question = { id: string; text: string; relates: string[]; yes: string[]; no: string[] };
 type Rule = { id: string; title: string; cues: string[]; questions: string[]; species?: "cat" | "dog" };
+// The yes/no links are invented for demonstrating interaction, not validated clinical weights.
+// A negative answer never excludes a disease. Questions with no links only collect context.
+const question = (id: string, text: string, relates: string[], yes: string[] = [], no: string[] = []): Question =>
+  ({ id,text,relates,yes,no });
+export const clinicalQuestions: Question[] = [
+  question("diet-change","Менялся ли корм незадолго до симптомов?",["digestive","skin"],["digestive"]),
+  question("foreign-object","Могло ли животное проглотить посторонний предмет?",["digestive"],["digestive"]),
+  question("loose-stool","Есть ли жидкий стул?",["digestive","parasites"],["digestive","parasites"]),
+  question("parasite-exposure","Был ли контакт с животными с известными паразитами?",["parasites"],["parasites"]),
+  question("blood-stool","Замечали ли кровь в рвоте или стуле?",["digestive","parasites"]),
+  question("new-care","Появились ли новые средства ухода?",["skin"],["skin"]),
+  question("skin-changes","Есть ли видимые изменения кожи?",["skin"],["skin"]),
+  question("nasal-discharge","Есть ли выделения из носа?",["respiratory","cat-upper"],["respiratory","cat-upper"]),
+  question("breathing","Наблюдается ли затруднение дыхания?",["respiratory"]),
+  question("trauma","Была ли травма перед появлением хромоты?",["musculoskeletal"],["musculoskeletal"]),
+  question("limb-pain","Есть ли болезненность при движении?",["musculoskeletal"],["musculoskeletal"]),
+  question("urinary-pain","Есть ли признаки болезненного мочеиспускания?",["urinary"],["urinary"]),
+  question("water-volume","Стало ли животное пить заметно больше?",["metabolic","urinary"],["metabolic"]),
+  question("weight-change","Заметили ли снижение массы тела?",["metabolic","nonspecific"],["metabolic"]),
+  question("low-activity","Стало ли животное менее активным?",["nonspecific"],["nonspecific"]),
+  question("eye-discharge","Есть ли выделения из глаз?",["cat-upper"],["cat-upper"]),
+  question("ear-discharge","Есть ли выделения из уха?",["dog-ear"],["dog-ear"]),
+  question("sudden-onset","Начались ли изменения внезапно?",[]),
+  question("other-signs","Есть ли другие изменения состояния, кроме описанных?",[]),
+  question("chronic","Есть ли известные хронические заболевания?",[])
+];
+// All simple yes/no cues above use the same synthetic inverse link for a negative answer.
+for (const item of clinicalQuestions) item.no = [...item.yes];
+export const isClinicalQuestionId = (id: string) => clinicalQuestions.some(item=>item.id===id);
+export const isClinicalAnswer = (value: unknown): value is ClinicalAnswer => value==="yes" || value==="no" || value==="unknown";
 const rules: Rule[] = [
-  {id:"digestive", title:"Заболевания ЖКТ", cues:["рвот","тошн","диаре","понос","жидкий стул","аппетит","не ест","отказ от еды"], questions:["Когда появились симптомы? Как часто повторяются?","Менялся ли корм, могло ли животное съесть посторонний предмет?","Есть ли кровь в рвоте или стуле?"]},
-  {id:"parasites",title:"Паразитарные заболевания ЖКТ",cues:["диаре","понос","жидкий стул","рвот"],questions:["Когда проводилась последняя обработка от паразитов?","Есть ли контакт с другими животными?"]},
-  {id:"skin",title:"Дерматологические заболевания (в том числе аллергические)",cues:["зуд","чешет","расчес","расчёс","сыпь","шерст"],questions:["Где именно зуд и изменения кожи?","Были ли новые корма, средства ухода или обработки от паразитов?"]},
-  {id:"respiratory",title:"Заболевания дыхательных путей",cues:["кашл","кашел","кашель","чих","выделения из носа","одыш","тяжело дыш"],questions:["Кашель или чихание: когда возникают, в покое или при нагрузке?","Есть ли выделения из носа или затруднение дыхания?"]},
-  {id:"musculoskeletal",title:"Боль или заболевания опорно-двигательного аппарата",cues:["хром","лап","травм","не наступает"],questions:["Когда началась хромота? Была ли травма?","На какую конечность животное опирается хуже?"]},
-  {id:"urinary",title:"Заболевания мочевыводящих путей",cues:["мочеиспуск","мочится","моча","мочи","лоток","лотк"],questions:["Как часто животное мочится и какой объём мочи выделяется?","Есть ли болезненность, кровь или попытки без выделения мочи?"]},
-  {id:"metabolic",title:"Метаболические или почечные нарушения",cues:["жажд","много пь","похуд","снижение веса","частое мочеиспуск"],questions:["Изменились ли масса тела, аппетит и объём выпитой воды?","Какие хронические заболевания и лекарства известны?"]},
-  {id:"nonspecific",title:"Неспецифические признаки: требуется уточнение",cues:["вял","апат","слаб","температур","аппетит","не ест"],questions:["Когда изменилось поведение?","Есть ли дополнительные признаки: рвота, диарея, изменение мочеиспускания или дыхания?"]},
-  {id:"cat-upper",title:"Заболевания верхних дыхательных путей у кошек",species:"cat",cues:["чих","выделения из носа","выделения из глаз"],questions:["Есть ли выделения из глаз и контакт с другими кошками?"]},
-  {id:"dog-ear",title:"Заболевания наружного уха у собак",species:"dog",cues:["трясет головой","трясёт головой","чешет ухо","зуд уха"],questions:["Есть ли запах, выделения или болезненность уха?"]}
+  {id:"digestive", title:"Заболевания ЖКТ", cues:["рвот","тошн","диаре","понос","жидкий стул","аппетит","не ест","отказ от еды"], questions:["diet-change","loose-stool","foreign-object","blood-stool"]},
+  {id:"parasites",title:"Паразитарные заболевания ЖКТ",cues:["диаре","понос","жидкий стул","рвот"],questions:["parasite-exposure","loose-stool","blood-stool"]},
+  {id:"skin",title:"Дерматологические заболевания (в том числе аллергические)",cues:["зуд","чешет","расчес","расчёс","сыпь","шерст"],questions:["skin-changes","new-care","diet-change"]},
+  {id:"respiratory",title:"Заболевания дыхательных путей",cues:["кашл","кашел","кашель","чих","выделения из носа","одыш","тяжело дыш"],questions:["nasal-discharge","breathing"]},
+  {id:"musculoskeletal",title:"Боль или заболевания опорно-двигательного аппарата",cues:["хром","лап","травм","не наступает"],questions:["trauma","limb-pain"]},
+  {id:"urinary",title:"Заболевания мочевыводящих путей",cues:["мочеиспуск","мочится","моча","мочи","лоток","лотк"],questions:["urinary-pain","water-volume"]},
+  {id:"metabolic",title:"Метаболические или почечные нарушения",cues:["жажд","много пь","похуд","снижение веса","частое мочеиспуск"],questions:["water-volume","weight-change"]},
+  {id:"nonspecific",title:"Неспецифические признаки: требуется уточнение",cues:["вял","апат","слаб","температур","аппетит","не ест"],questions:["low-activity","weight-change"]},
+  {id:"cat-upper",title:"Заболевания верхних дыхательных путей у кошек",species:"cat",cues:["чих","выделения из носа","выделения из глаз"],questions:["eye-discharge","nasal-discharge"]},
+  {id:"dog-ear",title:"Заболевания наружного уха у собак",species:"dog",cues:["трясет головой","трясёт головой","чешет ухо","зуд уха"],questions:["ear-discharge"]}
 ];
 const common = {
   cat:["Заболевания ЖКТ","Заболевания мочевыводящих путей","Стоматологические заболевания","Дерматологические заболевания"],
   dog:["Заболевания ЖКТ","Дерматологические заболевания","Заболевания наружного уха","Заболевания опорно-двигательного аппарата"],
   other:["Заболевания ЖКТ","Дерматологические заболевания","Заболевания дыхательных путей"]
 };
-const genericQuestions = ["Когда начались симптомы и как менялись?","Изменились ли аппетит, питьё, активность или туалет?","Какие заболевания, лекарства и профилактические процедуры известны?"];
+const genericQuestions = ["sudden-onset","other-signs","chronic"];
 const normalize = (s: string) => s.toLowerCase().replace(/ё/g,"е").replace(/\s+/g," ").trim();
 // Conservative rule matching: ignore simple explicit negation in a clause.
 // Ambiguous/unsupported language is not interpreted as clinical fact.
@@ -44,14 +77,28 @@ function matchCue(text: string, cue: string) {
     return false;
   });
 }
-export function getClinicalDemo(anamnesis: string, tags: readonly string[], species: string) {
+export function getClinicalDemo(anamnesis: string, tags: readonly string[], species: string, answers: ClinicalAnswers = {}) {
   const kind = /кошк|кот/i.test(species) ? "cat" : /собак|пес|пёс/i.test(species) ? "dog" : "other";
-  // Each selected tag is an independent explicit input, not a medical fact inferred from free text.
   const matches = rules.filter(rule => !rule.species || rule.species === kind)
     .map(rule => ({rule, evidence:rule.cues.filter(cue => matchCue(anamnesis,cue) || tags.some(tag => matchCue(tag,cue)))}))
     .filter(row=>row.evidence.length>0);
-  const hypotheses = matches.slice(0,5).map(({rule,evidence}) => ({id:rule.id,title:rule.title,evidence}));
-  const questions = [...new Set(matches.flatMap(({rule})=>rule.questions))].slice(0,6);
-  const questionContext = Object.fromEntries(questions.map(question => [question, matches.filter(({rule})=>rule.questions.includes(question)).map(({rule})=>rule.title)]));
-  return { hypotheses, common: common[kind], questions: questions.length?questions:genericQuestions, questionContext };
+  // Interleave questions across competing hypotheses so one branch does not crowd out another.
+  const questionIds = [...new Set(Array.from({length: Math.max(0,...matches.map(row=>row.rule.questions.length))},
+    (_,i)=>matches.map(row=>row.rule.questions[i]).filter(Boolean)).flat())];
+  const activeIds = questionIds.length ? questionIds : genericQuestions;
+  const activeQuestions = activeIds.map(id=>clinicalQuestions.find(q=>q.id===id)!);
+  const active = new Set(activeIds);
+  const hypotheses = matches.map(({rule,evidence}, index) => {
+    const reasons = activeQuestions.flatMap<{id:string;text:string;answer:ClinicalAnswer;direction:number}>(q => {
+      const answer=answers[q.id];
+      if (answer==="yes" && q.yes.includes(rule.id)) return [{id:q.id,text:q.text,answer,direction:1}];
+      if (answer==="no" && q.no.includes(rule.id)) return [{id:q.id,text:q.text,answer,direction:-1}];
+      return [];
+    });
+    const score = reasons.reduce((sum,r)=>sum+r.direction,0);
+    return {id:rule.id,title:rule.title,evidence,reasons,score,index};
+  }).sort((a,b)=>b.score-a.score || a.index-b.index);
+  const retainedQuestions = clinicalQuestions.filter(q=>!active.has(q.id) && answers[q.id] !== undefined);
+  const questionContext = Object.fromEntries(activeQuestions.map(q=>[q.id,matches.filter(({rule})=>q.relates.includes(rule.id)).map(({rule})=>rule.title)]));
+  return { hypotheses, common: common[kind], questions: activeQuestions, retainedQuestions, questionContext };
 }

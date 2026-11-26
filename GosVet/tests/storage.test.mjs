@@ -32,3 +32,12 @@ test('localStorage envelope and unavailable storage',()=>{
     assert.equal(loadState(),null);
   } finally {delete globalThis.window;}
 });
+
+test('recover valid older snapshots polluted by transient completion event',()=>{
+ for(const event of ['Приём завершён',null]){
+  const completed={...state,appointments:state.appointments.map((a,i)=>i===0?{...a,status:'completed_internal',clinicalAnswers:{'diet-change':'yes'}}:a)};
+  assert.deepEqual(decodeState(JSON.stringify({version:2,state:{...completed,event}})),completed);
+ }
+ assert.equal(decodeState(JSON.stringify({version:2,state:{...state,event:{}}})),null);
+ assert.equal(decodeState(JSON.stringify({version:2,state:{...state,event:null,unexpected:true}})),null);
+});

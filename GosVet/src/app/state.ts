@@ -1,4 +1,4 @@
-import { complaintTags } from "../entities/clinicalDemo";
+import { complaintTags, isClinicalQuestionId, isClinicalAnswer, type ClinicalAnswer } from "../entities/clinicalDemo";
 import {
   actions,
   animals,
@@ -67,6 +67,7 @@ export const initialState: AppState = {
 type Action =
   | { type: "select_context"; clinicId: string; role: Role }
   | { type: "select_theme"; theme: PrimeThemeKey }
+  | { type: "set_clinical_answer"; appointmentId: string; questionId: string; answer: ClinicalAnswer | null }
   | { type: "toggle_complaint_tag"; appointmentId: string; tag: string }
   | { type: "update_soap"; appointmentId: string; field: SoapField; value: string }
   | { type: "update_action"; actionId: string; vaccineName?: string; vaccineSeries?: string; vaccineValidUntil?: string }
@@ -122,6 +123,16 @@ export function reducer(state: AppState, action: Action): AppState {
     const item = { id: `dict-${Date.now()}`, code: "vaccine" as const, name: action.value, scope: "clinic" as const };
     return { ...state, dictionaries: [...state.dictionaries, item] };
   }
+  if (action.type === "set_clinical_answer") {
+    const appointment = state.appointments.find(item=>item.id===action.appointmentId);
+    if (!appointment || !isClinicalQuestionId(action.questionId) ||
+        (action.answer!==null && !isClinicalAnswer(action.answer)) ||
+        (!["draft","in_progress","requires_external_attention"].includes(appointment.status) && appointment.vetisStatus!=="fill_error")) return state;
+    const answers = {...appointment.clinicalAnswers};
+    if (action.answer===null) delete answers[action.questionId];
+    else answers[action.questionId]=action.answer;
+    return {...state, appointments:state.appointments.map(item=>item.id===appointment.id ? {...item,clinicalAnswers:answers}:item)};
+  }
   if (action.type === "toggle_complaint_tag") {
     const appointment = state.appointments.find(item => item.id === action.appointmentId);
     if (!appointment || !complaintTags.some(tag=>tag===action.tag) || (!["draft","in_progress","requires_external_attention"].includes(appointment.status) && appointment.vetisStatus !== "fill_error")) return state;
@@ -172,8 +183,8 @@ export function reducer(state: AppState, action: Action): AppState {
     return { ...state, submissions: submissionsNext };
   }
   if (action.type === "complete" || action.type === "retry") {
-    const result = completeOrRetry(state, action.appointmentId);
-    return { ...state, ...result, audit: result.event ? appendAudit(state, action.appointmentId, result.event) : state.audit };
+    const { event, ...result } = completeOrRetry(state, action.appointmentId);
+    return { ...state, ...result, audit: event ? appendAudit(state, action.appointmentId, event) : state.audit };
   }
   if (action.type === "advance_vetis_sending") return advanceVetisSendingState(state, action.appointmentId);
   if (action.type === "open_notification") {

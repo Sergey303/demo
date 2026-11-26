@@ -4,7 +4,7 @@ import type { Appointment, SoapField } from "../entities/types";
 import { vetisRequiredSoapError } from "../entities/vetisValidation";
 import { useDemoStore } from "../app/context";
 import { complaintTags } from "../entities/clinicalDemo";
-import { ClinicalAssistant } from "./ClinicalAssistant";
+import { ClinicalAssistant, ClinicalAnswerSummary } from "./ClinicalAssistant";
 
 type Props = {
   appointment: Appointment;
@@ -85,7 +85,9 @@ export function SoapEditor({
                   {readOnly && selectedTags.length===0 && <span className="clinical-note">Не выбраны</span>}
                 </div>
               </div>
-              {!readOnly && <ClinicalAssistant key={appointment.id} anamnesis={appointment.complaint} tags={selectedTags} species={species} />}
+              {readOnly ? <ClinicalAnswerSummary answers={appointment.clinicalAnswers ?? {}} /> :
+                <ClinicalAssistant key={appointment.id} anamnesis={appointment.complaint} tags={selectedTags} species={species} answers={appointment.clinicalAnswers ?? {}}
+                  onAnswer={(questionId,answer)=>dispatch({type:"set_clinical_answer",appointmentId:appointment.id,questionId,answer})} />}
             </>}
             </div>
           );
