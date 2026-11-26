@@ -1,3 +1,4 @@
+import { previewId } from "../../previewId";
 // Preview-only replacement for the staged generated runtime. Never use this
 // file in the real generated application. No IndexedDB, auth partition,
 // recovery or retry guarantees are implied by a local demo operation.
@@ -19,7 +20,7 @@ export function createDurableMutationExecutor<TInput,TOutput>(
   _errorRefs:readonly string[],
 ):DurableMutationExecutor<TInput,TOutput>{
   return {
-    execute:(input,options)=>transport(input,{...options,headers:{...options?.headers,[descriptor.idempotencyHeaderName]:crypto.randomUUID()}}),
+    execute:(input,options)=>transport(input,{...options,headers:{...options?.headers,[descriptor.idempotencyHeaderName]:previewId()}}),
     recover:async()=>{},clear:async()=>{},clearOtherPartitions:async()=>{}
   };
 }

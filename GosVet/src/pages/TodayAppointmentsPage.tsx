@@ -3,8 +3,8 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import { useNavigate } from "react-router-dom";
-import { isAppointmentOnDate, sortAppointmentsByDateDesc, todayDateInputValue } from "../app/selectors";
-import { appointmentDisplayName } from "../entities/appointmentDisplay";
+import { appointmentDateInputValue, isAppointmentOnDate, sortAppointmentsByDateDesc, todayDateInputValue } from "../app/selectors";
+import { appointmentDisplayName, formatAppointmentDate } from "../entities/appointmentDisplay";
 import { compactAppointmentStatusText } from "../entities/status";
 import { vaccinationSummaryText } from "../entities/vaccinationDisplay";
 import type { Appointment } from "../entities/types";
@@ -15,6 +15,8 @@ export function TodayAppointmentsPage() {
   const { state } = useDemoStore();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(todayDateInputValue());
+  const example = state.appointments.find((item) => item.id === "demo-001" && item.clinicId === state.selectedClinicId);
+  const exampleDate = example ? appointmentDateInputValue(example) : "";
   const items = sortAppointmentsByDateDesc(
     state.appointments.filter(
       (item) => item.clinicId === state.selectedClinicId && isAppointmentOnDate(item, selectedDate)
@@ -37,7 +39,7 @@ export function TodayAppointmentsPage() {
               <span>Дата</span>
               <DatePickerField value={selectedDate} onChange={setSelectedDate} />
             </label>
-            <Button label="Пример: 1 июня" outlined onClick={() => setSelectedDate("2026-06-01")} />
+            {exampleDate && <Button label={`Пример: ${formatAppointmentDate(example?.startedAt)}`} outlined onClick={() => setSelectedDate(exampleDate)} />}
             <Button label="Сегодня" outlined onClick={() => setSelectedDate(todayDateInputValue())} />
             <Button label="Новый приём" icon="pi pi-plus" onClick={() => navigate("/search")} />
           </div>

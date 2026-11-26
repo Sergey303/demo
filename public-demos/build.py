@@ -37,7 +37,7 @@ def build_appforge(out):
         for name in ["package.json","tsconfig.json"]:
             shutil.copy2(original/name,stage/name)
         (stage/"node_modules").symlink_to(original/"node_modules",target_is_directory=True)
-        for name in ["preview.tsx","previewClient.ts"]:
+        for name in ["preview.tsx","previewClient.ts","previewId.ts"]:
             shutil.copy2(SRC/"appforge-preview"/name,stage/"src"/name)
         # The actual generated durability executor requires an authenticated
         # account partition and writes to IndexedDB. Substitute only in the

@@ -1,3 +1,4 @@
+import { previewId } from "./previewId";
 import type { HttpClient, HttpCallResult, HttpRequestDescriptor, HttpResponseMode } from "./generated-ts/runtime/httpClient";
 import type { CustomerDto } from "./generated-ts/customers/types/CustomerDto.generated";
 
@@ -57,7 +58,7 @@ export function createPreviewClient():HttpClient {
       if(name==="__none")data=[];
       else{const key=field(name),term=(q.get("query")??"").toLowerCase();data=[...new Set(rows().map(r=>String(r[key]??"")).filter(v=>v&&v.toLowerCase().includes(term)))].slice(0,10).map(v=>({label:v,value:v}));}
     } else if(path==="/api/customers"&&method==="POST"){
-      const row={id:crypto.randomUUID(),...parseBody(request.body)};records.set(row.id,row);data={...row};status=201;
+      const row={id:previewId(),...parseBody(request.body)};records.set(row.id,row);data={...row};status=201;
     } else if(/^\/api\/customers\/[0-9a-f-]+$/i.test(path)){
       const id=path.split("/").pop()!,row=records.get(id);
       if(!row)throw new Error("Customer not found");

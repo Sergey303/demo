@@ -23,7 +23,9 @@ const base='http://127.0.0.1:'+server.address().port+prefix;
 let browser;
 try {
   browser=await chromium.launch({headless:true});
-  const context=await browser.newContext({viewport:{width:1280,height:900}});
+  const context=await browser.newContext({viewport:{width:1280,height:900},timezoneId:'Pacific/Honolulu'});
+  // Reproduce the missing secure-context API without relying on host DNS.
+  await context.addInitScript(()=>Object.defineProperty(Crypto.prototype,'randomUUID',{value:undefined,configurable:true}));
   const unexpected=[],errors=[];
   await context.route('**/*',route=>{
     if(!route.request().url().startsWith(base)){unexpected.push(route.request().url());return route.abort();}
@@ -42,6 +44,7 @@ try {
   console.log('PASS AppForge simulator CRUD and reset');
   await page.getByRole('link',{name:'Открыть сгенерированный интерфейс'}).click();
   await page.getByText('Alfa Service (sample)',{exact:true}).first().waitFor();console.log('Generated seed loaded');
+  assert.equal(await page.evaluate(()=>typeof crypto.randomUUID),'undefined');
   await page.getByRole('button',{name:'Create Customer'}).click();
   await page.locator('#customer-name').fill('Generated smoke');
   await page.locator('#customer-segment').fill('SMB');
@@ -62,7 +65,7 @@ try {
 
   await page.goto(base+'reliable-jobs/');await click('submit');await has('log','202 · JOB-001');await click('submit');await has('log','200 · JOB-001');await page.locator('#payload').fill('changed');await click('submit');await has('log','409');await click('rollback');await has('jobs','попыток: 0');await click('success');await has('jobs','done');await click('reset');await click('submit');for(let i=0;i<5;i++)await click('failure');await has('jobs','failed');console.log('PASS Reliable Jobs simulator');
   await page.goto(base+'enterprise-ai/');await has('answer','within 30 days');await has('provenance','Qwen3');await page.locator('#doc').uncheck();assert.equal(await page.locator('#sources li').count(),1);await page.locator('#audio').uncheck();await has('answer','Нет разрешённых');assert.equal(await page.locator('#sources li').count(),0);await page.locator('#doc').check();await page.locator('#scenario').selectOption('unknown');assert.equal(await page.locator('#sources li').count(),0);assert.equal((await context.request.get(base+'enterprise-ai/qwen.mp4')).status(),200);console.log('PASS Enterprise replay and grants');
-  await page.goto(base+'gosvet/');await page.getByRole('link',{name:'Открыть приём'}).click();await page.getByText('Демонстрационный прототип',{exact:false}).waitFor();await page.getByText('Прививки',{exact:true}).first().waitFor();await page.getByRole('link',{name:'Мои приёмы'}).click();await page.getByRole('button',{name:'Пример: 1 июня'}).click();await page.getByRole('button',{name:'Открыть',exact:true}).first().waitFor();await page.getByRole('link',{name:'Поиск',exact:true}).click();console.log('PASS GosVet real React navigation and seeded date');
+  await page.goto(base+'gosvet/');await page.getByRole('link',{name:'Открыть приём'}).click();await page.getByText('Демонстрационный прототип',{exact:false}).waitFor();await page.getByText('Прививки',{exact:true}).first().waitFor();await page.getByRole('link',{name:'Мои приёмы'}).click();await page.getByRole('button',{name:'Пример: 31.05.2026'}).click();await page.getByRole('button',{name:'Открыть',exact:true}).first().waitFor();await page.getByRole('link',{name:'Поиск',exact:true}).click();console.log('PASS GosVet real React navigation and seeded date');
   await page.setViewportSize({width:390,height:844});
   for(const p of ['', 'appforge/','reliable-jobs/','enterprise-ai/','gosvet/']){
     await page.goto(base+p);
