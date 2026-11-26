@@ -26,6 +26,8 @@ complete prompt-injection classifier, or proof of semantic truth.**
 These project folders contain **original engineering examples, not claims of commercial deployments**. The integrated Enterprise AI demonstration below explicitly reuses several of their real services; remaining examples have their own runbooks. Commercial X5 and CASESTUDIO experience is described in the resume rather than inferred from this code.
 
 
+**Public demo preparation:** [static publication package and browser acceptance instructions](public-demos/README.md). No public backend exposure is required.
+
 See the [portfolio verification and improvement register](docs/PORTFOLIO-REVIEW.md) for current evidence boundaries and prioritized follow-ups across all examples.
 
 ## Edge architecture labs — three independent engineering projects

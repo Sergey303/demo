@@ -34,6 +34,7 @@ export function DemoLayout({ children }: PropsWithChildren) {
   return (
     <div className="demo-app">
       <header className="app-header">
+        <div role="note" style={{ padding: "8px 12px", background: "#fff6df", color: "#4c390d", fontSize: "0.875rem" }}>Демонстрационный прототип · вымышленные данные · ВетИС имитируется · не вводите реальные персональные данные.</div>
         <div className="header-row">
           <div>
             <strong>Клиника:</strong> {clinic?.name}

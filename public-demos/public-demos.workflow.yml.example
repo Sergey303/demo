@@ -1,0 +1,37 @@
+name: Public static demos
+on:
+  pull_request:
+    paths:
+      - 'GosVet/**'
+      - 'public-demos/**'
+      - 'appforge-admin/**'
+      - 'enterprise-demo/media/**'
+      - '.github/workflows/public-demos.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --prefix GosVet
+      - run: npm ci --prefix public-demos
+      - run: npm ci --prefix appforge-admin/generated/frontend-app
+      - run: python public-demos/build.py --out "$RUNNER_TEMP/public-demos"
+      - run: npx playwright install --with-deps chromium
+        working-directory: public-demos
+      - run: npm run smoke -- "$RUNNER_TEMP/public-demos"
+        working-directory: public-demos
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-demos
+          path: ${{ runner.temp }}/public-demos
+          if-no-files-found: error

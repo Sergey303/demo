@@ -37,6 +37,7 @@ export function TodayAppointmentsPage() {
               <span>Дата</span>
               <DatePickerField value={selectedDate} onChange={setSelectedDate} />
             </label>
+            <Button label="Пример: 1 июня" outlined onClick={() => setSelectedDate("2026-06-01")} />
             <Button label="Сегодня" outlined onClick={() => setSelectedDate(todayDateInputValue())} />
             <Button label="Новый приём" icon="pi pi-plus" onClick={() => navigate("/search")} />
           </div>

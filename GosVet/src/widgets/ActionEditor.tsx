@@ -28,7 +28,7 @@ export function ActionEditor({
 }: Props) {
   const { state, dispatch } = useDemoStore();
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [nameValidity, setNameValidity] = useState<Record<string, boolean>>({});
+  const [, setNameValidity] = useState<Record<string, boolean>>({});
   const [newDraft, setNewDraft] = useState<VaccinationActionDraft | null>(null);
   const options = useMemo(() => {
     const local = state.dictionaries.map((item) => item.name);
