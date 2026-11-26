@@ -58,6 +58,7 @@ export function DemoLayout({ children }: PropsWithChildren) {
                   onChange={(event) => dispatch({ type: "select_theme", theme: event.value })}
                 />
               </label>
+              <Link className="demo-settings-menu-link" to="/demo-settings" onClick={()=>userMenuRef.current?.hide()}><i className="pi pi-cog" aria-hidden="true"/> Настройки демо</Link>
             </div>
           </OverlayPanel>
         </div>
@@ -65,7 +66,6 @@ export function DemoLayout({ children }: PropsWithChildren) {
           <Link className={location.pathname === "/appointments/today" ? "active" : ""} to="/appointments/today">Мои приёмы</Link>
           <Link className={location.pathname === "/search" ? "active" : ""} to="/search">Поиск</Link>
           <Link className={location.pathname === "/attention" ? "active" : ""} to="/attention">Требуют внимания <Badge value={openCount} /></Link>
-          <Link className={location.pathname === "/demo-settings" ? "active" : ""} to="/demo-settings">Настройки демо</Link>
         </nav>
       </header>
       <Dialog

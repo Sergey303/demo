@@ -65,6 +65,50 @@ try {
 
   await page.goto(base+'reliable-jobs/');await click('submit');await has('log','202 · JOB-001');await click('submit');await has('log','200 · JOB-001');await page.locator('#payload').fill('changed');await click('submit');await has('log','409');await click('rollback');await has('jobs','попыток: 0');await click('success');await has('jobs','done');await click('reset');await click('submit');for(let i=0;i<5;i++)await click('failure');await has('jobs','failed');console.log('PASS Reliable Jobs simulator');
   await page.goto(base+'enterprise-ai/');await has('answer','within 30 days');await has('provenance','Qwen3');await page.locator('#doc').uncheck();assert.equal(await page.locator('#sources li').count(),1);await page.locator('#audio').uncheck();await has('answer','Нет разрешённых');assert.equal(await page.locator('#sources li').count(),0);await page.locator('#doc').check();await page.locator('#scenario').selectOption('unknown');assert.equal(await page.locator('#sources li').count(),0);assert.equal((await context.request.get(base+'enterprise-ai/qwen.mp4')).status(),200);console.log('PASS Enterprise replay and grants');
+  await page.goto(base+'gosvet/app.html#/search');
+  const search=page.getByPlaceholder('Телефон, кличка, чип, владелец');
+  await page.getByText('Животные в демо · 2',{exact:true}).waitFor();
+  const barsik=page.getByRole('article',{name:'Барсик',exact:true});
+  const rex=page.getByRole('article',{name:'Рекс',exact:true});
+  assert(await barsik.isVisible()&&await rex.isVisible());
+  await barsik.getByText('Первичный осмотр',{exact:false}).waitFor();
+  await barsik.getByText('4/4 полей',{exact:false}).waitFor();
+  await barsik.getByRole('button',{name:'Посмотреть пример'}).click();
+  assert(page.url().endsWith('#/appointment/demo-003'));
+  assert(await page.locator('#soap-complaint').isDisabled());
+  await page.getByRole('link',{name:'Поиск',exact:true}).click();
+  await rex.getByRole('button',{name:'Открыть приём'}).click();
+  assert(page.url().endsWith('#/appointment/demo-002'));
+  await page.getByRole('link',{name:'Поиск',exact:true}).click();
+  for(const query of ['Барсик','Иванова','RU-1001','+7 (000) 000-00-01']){
+    await search.fill(query);assert.equal(await page.getByRole('article').count(),1);assert(await barsik.isVisible());
+  }
+  await search.fill('Нет такого животного');
+  await page.getByText('Ничего не найдено.',{exact:false}).waitFor();
+  await page.getByRole('button',{name:'Очистить поиск'}).click();
+  await page.getByText('Животные в демо · 2',{exact:true}).waitFor();
+  await rex.getByRole('button',{name:'Начать новый приём'}).click();
+  const dialog=page.getByRole('dialog');
+  assert(await dialog.getByRole('button',{name:'Создать приём'}).isDisabled());
+  await dialog.getByRole('button',{name:'Контрольный осмотр',exact:true}).click();
+  assert(await dialog.getByRole('button',{name:'Создать приём'}).isEnabled());
+  await dialog.getByRole('button',{name:'Отмена',exact:true}).click();
+  await page.getByRole('dialog').waitFor({state:'hidden'});
+  assert.equal(await page.locator('.app-nav').getByText('Настройки демо',{exact:true}).count(),0);
+  await page.getByRole('button',{name:'Меню пользователя'}).click();
+  await page.getByRole('link',{name:'Настройки демо',exact:true}).click();
+  await page.locator('.demo-settings-card').waitFor();
+  await page.getByRole('link',{name:'Настройки демо',exact:true}).waitFor({state:'hidden'});
+  assert(await page.locator('.demo-settings-card').evaluate(el=>el.getBoundingClientRect().width<=480));
+  assert(await page.getByRole('button',{name:'Сохранить должность'}).isDisabled());
+  page.once('dialog',d=>d.dismiss());
+  await page.getByRole('button',{name:'Сбросить демо'}).click();
+  await page.setViewportSize({width:390,height:844});
+  await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1,undefined,{timeout:2000});
+  await page.getByRole('link',{name:'Поиск',exact:true}).click();
+  await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1,undefined,{timeout:2000});
+  await page.setViewportSize({width:1280,height:900});
+  console.log('PASS GosVet discoverable animal catalog, history/current links, formatted search and compact hidden settings');
   await page.goto(base+'gosvet/');await page.getByRole('link',{name:'Открыть приём'}).click();await page.getByText('Демонстрационный прототип',{exact:false}).waitFor();await page.getByText('Прививки',{exact:true}).first().waitFor();
   const assistant=page.getByRole('complementary',{name:'Подсказки ИИ'});
   const byHistory=assistant.getByRole('region',{name:'Гипотезы по анамнезу'});
@@ -278,6 +322,11 @@ try {
   assert.equal(await page.getByRole('complementary',{name:'Подсказки ИИ'}).count(),0);
   console.log('PASS GosVet live hints, multiple tags, reload, negation, independent diagnosis, mobile and read-only isolation');
   await page.getByRole('link',{name:'Мои приёмы'}).click();await page.getByRole('button',{name:'Пример: 31.05.2026'}).click();await page.getByRole('button',{name:'Открыть',exact:true}).first().waitFor();await page.getByRole('link',{name:'Поиск',exact:true}).click();console.log('PASS GosVet real React navigation and seeded date');
+  await page.getByRole('article',{name:'Рекс',exact:true}).getByRole('button',{name:'Начать новый приём'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Контрольный осмотр',exact:true}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Создать приём'}).click();
+  await page.getByText('Причина: Контрольный осмотр',{exact:false}).waitFor();
+  console.log('PASS GosVet explicit appointment reason');
   await page.setViewportSize({width:390,height:844});
   for(const p of ['', 'appforge/','reliable-jobs/','enterprise-ai/','gosvet/']){
     await page.goto(base+p);
