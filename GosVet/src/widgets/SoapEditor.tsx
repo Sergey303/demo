@@ -37,8 +37,15 @@ export function SoapEditor({
   const selectedTags = appointment.complaintTags ?? [];
   const visit = useMemo(()=>getVisitAssistant(appointment,species),[appointment,species]);
   return (
-    <Card title="Карточка приёма">
+    <Card title="Карточка приёма" className="soap-card">
       <div className="stack">
+        {!readOnly && <nav aria-label="Разделы карточки приёма" className="soap-navigation">
+          {rows.map(row=><button key={row.key} type="button" className="soap-jump" onClick={()=>{
+            const target=document.getElementById(`soap-${row.key}`);
+            target?.focus({preventScroll:true});target?.scrollIntoView({block:"center"});
+          }}><i className={appointment[row.key].trim()?"pi pi-check-circle":"pi pi-circle"} aria-hidden="true"/>{row.label}</button>)}
+          <button type="button" className="soap-jump" onClick={()=>{const review=document.querySelector<HTMLElement>(".visit-review");review?.focus({preventScroll:true});review?.scrollIntoView({block:"center"});}}>Проверка · {visit.filled}/4</button>
+        </nav>}
         {requiredForVetis && !readOnly && (
           <div className="vetis-required-hint">
             <i className="pi pi-info-circle" aria-hidden="true" />

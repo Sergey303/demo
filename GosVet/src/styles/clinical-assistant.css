@@ -70,3 +70,24 @@
 .visit-differences {border-left:3px solid var(--primary-color);padding:.5rem .65rem;font-size:.8rem;background:var(--surface-card);}
 .visit-differences ul {margin:.3rem 0;padding-left:1rem;}
 @media(max-width:620px){.visit-evidence-columns {grid-template-columns:1fr;}}
+.soap-navigation {display:flex;flex-wrap:wrap;gap:.35rem;padding:0 0 .65rem;border-bottom:1px solid var(--surface-border);}
+.soap-jump {display:inline-flex;align-items:center;gap:.3rem;background:var(--surface-card);color:var(--text-color);border:1px solid var(--surface-border);border-radius:6px;min-height:34px;font:inherit;font-size:.79rem;padding:.3rem .55rem;cursor:pointer;}
+.soap-jump .pi-check-circle {color:var(--primary-color);}
+.soap-jump:focus-visible {outline:2px solid var(--primary-color);outline-offset:2px;}
+.soap-row textarea {scroll-margin-top:8rem;}
+.clinical-assistant {margin:.55rem 0 .6rem;padding:.65rem;}
+.clinical-section {padding:.55rem;}
+.clinical-assistant .clinical-note {line-height:1.35;}
+.clinical-common {margin-top:.3rem;}
+.clinical-saved-answers {border-top:1px solid var(--surface-border);margin-top:.35rem;padding-top:.2rem;}
+.visit-assistant {padding:.5rem .65rem;}
+.visit-assistant[open] {padding:.65rem;}
+.visit-assistant summary {min-height:28px;line-height:1.7;}
+.clinical-answer-options button,.clinical-tag {min-height:34px;}
+@media(max-width:620px){.clinical-answer-options button,.clinical-tag,.soap-jump {min-height:40px;}.soap-navigation {gap:.25rem;}}
+@media(min-width:761px){
+  .appointment-hero .appointment-summary {grid-template-columns:minmax(0,1fr) auto;gap:.4rem .8rem;}
+  .appointment-hero .appointment-summary-details {grid-column:1;grid-row:1 / span 2;}
+  .appointment-hero .appointment-summary>.status-chip {grid-column:2;grid-row:1;justify-self:end;}
+  .appointment-hero .appointment-summary-actions {grid-column:2;grid-row:2;justify-self:end;align-self:end;}
+}

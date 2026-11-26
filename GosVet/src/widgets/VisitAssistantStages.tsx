@@ -15,7 +15,7 @@ export function ExamAssistant({result,observations,onChange}:ExamProps) {
         onClick={()=>onChange(o.id,observations[o.id]===option.value?null:option.value)}>{option.label}</button>)}
     </div>
   </li>;
-  return <details className="visit-assistant" open>
+  return <details className="visit-assistant">
     <summary>Помощник · осмотр <span className="clinical-count">{result.recordedObservations}/{result.activeObservations.length}</span></summary>
     <p className="clinical-note">Учебные пункты по текущим гипотезам. Отмечайте только то, что действительно наблюдалось; выбор не заменяет описание осмотра.</p>
     {result.activeObservations.length>0?<ul className="visit-observation-list">{result.activeObservations.map(render)}</ul>:<p className="clinical-note">Нет связанных учебных пунктов. Заполните осмотр самостоятельно.</p>}
@@ -23,8 +23,8 @@ export function ExamAssistant({result,observations,onChange}:ExamProps) {
   </details>;
 }
 export function AssessmentAssistant({result}:{result:Result}) {
-  return <details className="visit-assistant" open>
-    <summary>Помощник · сопоставление гипотез</summary>
+  return <details className="visit-assistant">
+    <summary>Помощник · сопоставление гипотез <span className="clinical-count">{result.evidence.length}</span></summary>
     <p className="clinical-note">Сопоставление учебных признаков, а не диагностический рейтинг. Отсутствие признака не исключает заболевание.</p>
     {result.evidence.length===0?<p className="clinical-note">Нет совпадений в учебном наборе. Диагноз определяет врач.</p>:
       <div className="visit-evidence-list">{result.evidence.map(h=><div className="visit-evidence" key={h.id} data-evidence-id={h.id}>
@@ -39,8 +39,8 @@ export function AssessmentAssistant({result}:{result:Result}) {
   </details>;
 }
 export function PlanAssistant({result}:{result:Result}) {
-  return <details className="visit-assistant" open>
-    <summary>Помощник · план</summary>
+  return <details className="visit-assistant">
+    <summary>Помощник · план <span className="clinical-count">{result.planTopics.length+2}</span></summary>
     <p className="clinical-note">Учебные подсказки для формулировки плана. Конкретные обследования, назначения и сроки выбирает врач.</p>
     <ul className="visit-plan-list">
       {result.planTopics.map(topic=><li key={topic}>{topic}</li>)}
@@ -50,8 +50,8 @@ export function PlanAssistant({result}:{result:Result}) {
   </details>;
 }
 export function VisitReview({result}:{result:Result}) {
-  const goTo=(field:SoapField)=>document.getElementById(`soap-${field}`)?.focus();
-  return <section className="visit-assistant visit-review" aria-label="Проверка полноты записи">
+  const goTo=(field:SoapField)=>{const target=document.getElementById(`soap-${field}`);target?.focus({preventScroll:true});target?.scrollIntoView({block:"center"});};
+  return <section className="visit-assistant visit-review" tabIndex={-1} aria-label="Проверка полноты записи">
     <div className="visit-review-header"><strong>Перед завершением · проверка записи</strong><span className="clinical-count">{result.filled}/4 полей</span></div>
     <p className="clinical-note">Не блокирует завершение. Проверяет только наличие текста и явно отмеченные расхождения, а не медицинскую правильность.</p>
     {result.missing.length>0?<div className="visit-missing"><span>Не заполнено:</span>{result.missing.map(f=><button key={f.key} type="button" className="clinical-text-button" onClick={()=>goTo(f.key)}>{f.label} ↗</button>)}</div>:<p className="clinical-note">Во всех четырёх полях есть текст; полнота содержания не проверена.</p>}
