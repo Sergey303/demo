@@ -14,6 +14,12 @@ commercial customer.
 > The generator itself is in a separate private
 > [AppForge repository](https://github.com/Sergey303/AppForge).
 
+## Commercial demonstration scope
+
+[DEMO_PRODUCT_BRIEF.md](DEMO_PRODUCT_BRIEF.md) separates the currently verified
+customer registry from the proposed connected client/request/task journey.
+The commercial offer is custom application development, not generator licensing.
+
 ## The generated 80/20 baseline
 
 | Input / layer | What AppForge produced |
