@@ -49,3 +49,24 @@
 .clinical-question-priority { display:flex; align-items:center; flex-wrap:wrap; gap:.3rem; font-size:.72rem; color:var(--text-color-secondary,var(--text-color)); margin-bottom:.3rem; }
 .clinical-next-question { padding:.55rem; border:1px solid color-mix(in srgb,var(--primary-color) 50%,var(--surface-border)); border-radius:8px; background:color-mix(in srgb,var(--primary-color) 5%,var(--surface-card)); }
 .clinical-next-label { background:var(--primary-color); color:var(--primary-color-text); padding:.15rem .35rem; border-radius:4px; font-weight:600; }
+.visit-assistant {margin-top:.65rem;padding:.7rem;border:1px solid var(--surface-border);border-radius:9px;background:color-mix(in srgb,var(--primary-color) 3%,var(--surface-card));min-width:0;}
+.visit-assistant summary {cursor:pointer;font-weight:600;font-size:.88rem;}
+.visit-assistant summary .clinical-count {margin-left:.4rem;}
+.visit-assistant p {margin:.4rem 0;}
+.visit-observation-list,.visit-plan-list {list-style:none;padding:0;margin:.35rem 0;display:grid;gap:.5rem;font-size:.82rem;}
+.visit-observation {border-bottom:1px solid var(--surface-border);padding:.35rem 0 .5rem;}
+.visit-observation:last-child {border-bottom:0;}
+.visit-evidence-list {display:grid;gap:.5rem;}
+.visit-evidence {border:1px solid var(--surface-border);border-radius:7px;background:var(--surface-card);padding:.6rem;font-size:.82rem;overflow-wrap:anywhere;}
+.visit-evidence>small {display:block;margin:.25rem 0;}
+.visit-evidence-columns {display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.3rem 0;}
+.visit-evidence-columns h5 {font-size:.77rem;margin:.1rem 0;}
+.visit-evidence-columns p,.visit-evidence-columns ul {font-size:.77rem;margin:.3rem 0;padding-left:0;list-style:none;}
+.visit-evidence-columns li+li {margin-top:.35rem;}
+.visit-evidence-columns small,.visit-differences small {display:block;font-size:.72rem;color:var(--text-color-secondary,var(--text-color));}
+.visit-plan-list {list-style:disc;padding-left:1.1rem;}
+.visit-review-header {display:flex;align-items:center;justify-content:space-between;gap:.35rem;flex-wrap:wrap;font-size:.88rem;}
+.visit-missing {display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:.78rem;}
+.visit-differences {border-left:3px solid var(--primary-color);padding:.5rem .65rem;font-size:.8rem;background:var(--surface-card);}
+.visit-differences ul {margin:.3rem 0;padding-left:1rem;}
+@media(max-width:620px){.visit-evidence-columns {grid-template-columns:1fr;}}

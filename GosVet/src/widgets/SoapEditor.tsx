@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Card } from "primereact/card";
 import { InputTextarea } from "primereact/inputtextarea";
 import type { Appointment, SoapField } from "../entities/types";
@@ -5,6 +6,8 @@ import { vetisRequiredSoapError } from "../entities/vetisValidation";
 import { useDemoStore } from "../app/context";
 import { complaintTags } from "../entities/clinicalDemo";
 import { ClinicalAssistant, ClinicalAnswerSummary } from "./ClinicalAssistant";
+import { getVisitAssistant } from "../entities/clinicalStages";
+import { ExamAssistant, AssessmentAssistant, PlanAssistant, VisitReview, ExamSummary } from "./VisitAssistantStages";
 
 type Props = {
   appointment: Appointment;
@@ -32,6 +35,7 @@ export function SoapEditor({
 }: Props) {
   const { dispatch } = useDemoStore();
   const selectedTags = appointment.complaintTags ?? [];
+  const visit = useMemo(()=>getVisitAssistant(appointment,species),[appointment,species]);
   return (
     <Card title="Карточка приёма">
       <div className="stack">
@@ -89,9 +93,14 @@ export function SoapEditor({
                 <ClinicalAssistant key={appointment.id} anamnesis={appointment.complaint} tags={selectedTags} species={species} answers={appointment.clinicalAnswers ?? {}}
                   onAnswer={(questionId,answer)=>dispatch({type:"set_clinical_answer",appointmentId:appointment.id,questionId,answer})} />}
             </>}
+            {row.key === "soapObjective" && (readOnly ? <ExamSummary appointment={appointment}/> :
+              <ExamAssistant result={visit} observations={appointment.clinicalObservations??{}} onChange={(observationId,value)=>dispatch({type:"set_clinical_observation",appointmentId:appointment.id,observationId,value})}/>)}
+            {!readOnly && row.key === "soapAssessment" && <AssessmentAssistant result={visit}/>}
+            {!readOnly && row.key === "soapPlan" && <PlanAssistant result={visit}/>}
             </div>
           );
         })}
+        {!readOnly && <VisitReview result={visit}/>}
       </div>
     </Card>
   );

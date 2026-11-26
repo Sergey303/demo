@@ -1,5 +1,6 @@
 import type { AppState } from "./state";
 import { isClinicalQuestionId, isClinicalAnswer } from "../entities/clinicalDemo.ts";
+import { isObservationId, isObservationValue } from "../entities/clinicalStages.ts";
 
 const STORAGE_KEY = "gosvetclinic-demo-state-v1";
 const VERSION = 2;
@@ -22,6 +23,7 @@ const rowValidators: Record<string, (row: Row) => boolean> = {
     "complaint", "soapObjective", "soapAssessment", "soapPlan"]) &&
     (row.complaintTags === undefined || (Array.isArray(row.complaintTags) && row.complaintTags.length <= 12 && row.complaintTags.every(value => typeof value === "string" && value.length <= 80))) &&
     (row.clinicalAnswers === undefined || (object(row.clinicalAnswers) && Object.entries(row.clinicalAnswers).every(([id,value])=>isClinicalQuestionId(id) && isClinicalAnswer(value)))) &&
+    (row.clinicalObservations === undefined || (object(row.clinicalObservations) && Object.entries(row.clinicalObservations).every(([id,value])=>isObservationId(id) && isObservationValue(value)))) &&
     optionalText(row.startedAt) &&
     member(row.status, ["draft", "in_progress", "completed_internal", "requires_external_attention", "completed_with_external_success"]) &&
     (row.vetisStatus === undefined || member(row.vetisStatus, ["not_started", "queued", "sending", "sent", "fill_error"])),

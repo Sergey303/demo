@@ -100,6 +100,39 @@ try {
   await complaint.fill('Рвота второй день');
   assert.equal(await byHistory.locator('[data-hypothesis-id=digestive]').getByText('Больше внимания',{exact:false}).count(),0);
   console.log('PASS GosVet reversible answer-driven ordering, explanations, retained inactive answers and reload');
+  const review=page.getByRole('region',{name:'Проверка полноты записи'});
+  await review.getByText('1/4 полей',{exact:true}).waitFor();
+  await review.getByRole('button',{name:'Осмотр ↗',exact:true}).click();
+  assert.equal(await page.locator('#soap-soapObjective').evaluate(el=>document.activeElement===el),true);
+  const stoolQuestion=questions.getByRole('group',{name:'Есть ли жидкий стул?'});
+  if(!await stoolQuestion.count()) await questions.getByRole('button',{name:/Ещё вопросы/}).click();
+  await stoolQuestion.getByRole('button',{name:'Да',exact:true}).click();
+  const stoolExam=page.getByRole('group',{name:'Жидкий стул наблюдался во время приёма'});
+  await stoolExam.getByRole('button',{name:'Не наблюдалось',exact:true}).click();
+  const abdomen=page.getByRole('group',{name:'Болезненность при обследовании живота'});
+  await abdomen.getByRole('button',{name:'Наблюдалось',exact:true}).click();
+  await review.getByText('Уточнить различия между анамнезом и осмотром',{exact:true}).waitFor();
+  const digestive=page.locator('[data-evidence-id=digestive]');
+  await digestive.getByText('Болезненность при обследовании живота',{exact:false}).waitFor();
+  await digestive.getByText('Жидкий стул наблюдался во время приёма — не наблюдалось',{exact:false}).waitFor();
+  await page.getByText('Обосновать необходимость дальнейшего обследования ЖКТ',{exact:true}).waitFor();
+  assert.equal(await page.locator('#soap-soapObjective').inputValue(),'');
+  assert.equal(await page.locator('#soap-soapAssessment').inputValue(),'');
+  await page.locator('#soap-soapObjective').fill('Учебные наблюдения');
+  await page.locator('#soap-soapAssessment').fill('Оценка врача');
+  await page.locator('#soap-soapPlan').fill('План врача');
+  await review.getByText('4/4 полей',{exact:true}).waitFor();
+  await page.reload();
+  assert.equal(await stoolExam.getByRole('button',{name:'Не наблюдалось',exact:true}).getAttribute('aria-pressed'),'true');
+  await review.getByText('Уточнить различия между анамнезом и осмотром',{exact:true}).waitFor();
+  await stoolExam.getByRole('button',{name:'Не оценено',exact:true}).click();
+  assert.equal(await review.getByText('Уточнить различия между анамнезом и осмотром',{exact:true}).count(),0);
+  await stoolExam.getByRole('button',{name:'Не оценено',exact:true}).click();
+  await abdomen.getByRole('button',{name:'Наблюдалось',exact:true}).click();
+  await stoolQuestion.getByRole('button',{name:'Да',exact:true}).click();
+  for(const id of ['soapObjective','soapAssessment','soapPlan'])await page.locator('#soap-'+id).fill('');
+  console.log('PASS GosVet stages, provenance, completeness, differences, persistence and no automatic SOAP edits');
+
   await page.getByRole('button',{name:'+ Зуд',exact:true}).click();
   await page.getByRole('button',{name:'+ Диарея',exact:true}).click();
   await byHistory.getByText('Дерматологические заболевания (в том числе аллергические)',{exact:true}).waitFor();
@@ -125,6 +158,8 @@ try {
   assert.equal(await page.locator('.clinical-answer-options [aria-pressed=true]').count(),0);
   await page.locator('#soap-complaint').fill('Кашель');
   await page.getByRole('group',{name:'Есть ли выделения из носа?'}).getByRole('button',{name:'Нет',exact:true}).click();
+  await page.getByRole('group',{name:'Выделения из носа при осмотре'}).getByRole('button',{name:'Не наблюдалось',exact:true}).click();
+
   page.once('dialog',dialog=>dialog.accept());
   await page.getByRole('button',{name:'Завершить приём',exact:true}).click();
   await page.getByRole('region',{name:'Ответы владельца'}).getByText('Нет',{exact:true}).waitFor();
@@ -132,6 +167,9 @@ try {
   await page.reload();
   await page.getByRole('region',{name:'Ответы владельца'}).getByText('Нет',{exact:true}).waitFor();
   assert.equal(await page.locator('.clinical-answer-options button').count(),0);
+  await page.getByRole('region',{name:'Наблюдения осмотра'}).getByText('Не наблюдалось',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('region',{name:'Проверка полноты записи'}).count(),0);
+
   console.log('PASS GosVet answers remain readable after completion and reload, isolated per patient');
   await page.goto(base+'gosvet/app.html#/appointment/demo-003');
   assert.equal(await page.getByRole('complementary',{name:'Подсказки ИИ'}).count(),0);

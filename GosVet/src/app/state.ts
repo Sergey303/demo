@@ -1,3 +1,4 @@
+import { isObservationId, isObservationValue, type ObservationValue } from "../entities/clinicalStages";
 import { complaintTags, isClinicalQuestionId, isClinicalAnswer, type ClinicalAnswer } from "../entities/clinicalDemo";
 import {
   actions,
@@ -67,6 +68,7 @@ export const initialState: AppState = {
 type Action =
   | { type: "select_context"; clinicId: string; role: Role }
   | { type: "select_theme"; theme: PrimeThemeKey }
+  | { type: "set_clinical_observation"; appointmentId: string; observationId: string; value: ObservationValue | null }
   | { type: "set_clinical_answer"; appointmentId: string; questionId: string; answer: ClinicalAnswer | null }
   | { type: "toggle_complaint_tag"; appointmentId: string; tag: string }
   | { type: "update_soap"; appointmentId: string; field: SoapField; value: string }
@@ -122,6 +124,16 @@ export function reducer(state: AppState, action: Action): AppState {
     if (exists) return state;
     const item = { id: `dict-${Date.now()}`, code: "vaccine" as const, name: action.value, scope: "clinic" as const };
     return { ...state, dictionaries: [...state.dictionaries, item] };
+  }
+  if (action.type === "set_clinical_observation") {
+    const appointment=state.appointments.find(item=>item.id===action.appointmentId);
+    if (!appointment || !isObservationId(action.observationId) ||
+        (action.value!==null && !isObservationValue(action.value)) ||
+        (!["draft","in_progress","requires_external_attention"].includes(appointment.status) && appointment.vetisStatus!=="fill_error")) return state;
+    const observations={...appointment.clinicalObservations};
+    if(action.value===null) delete observations[action.observationId];
+    else observations[action.observationId]=action.value;
+    return {...state,appointments:state.appointments.map(item=>item.id===appointment.id?{...item,clinicalObservations:observations}:item)};
   }
   if (action.type === "set_clinical_answer") {
     const appointment = state.appointments.find(item=>item.id===action.appointmentId);

@@ -56,6 +56,7 @@ export type Appointment = {
   complaint: string;
   complaintTags?: string[];
   clinicalAnswers?: import("./clinicalDemo").ClinicalAnswers;
+  clinicalObservations?: import("./clinicalStages").ClinicalObservations;
   soapObjective: string;
   soapAssessment: string;
   soapPlan: string;
