@@ -8,9 +8,11 @@ A small runnable demonstration of the engineering concepts behind robust async b
 
 [COMMERCIAL-BRIEF.md](COMMERCIAL-BRIEF.md) describes the customer journey and
 service offer; [DEMO_PRODUCT_BRIEF.md](DEMO_PRODUCT_BRIEF.md) specifies the
-proposed P1 browser experience. [ACCEPTANCE-SAMPLE.md](ACCEPTANCE-SAMPLE.md)
+P1 browser experience. [ACCEPTANCE-SAMPLE.md](ACCEPTANCE-SAMPLE.md)
 is a labeled example of a bounded verification report. These documents do
-not claim implementation or new live test results.
+not claim new live test results. P1 was accepted on 2026-11-27; see
+[P1-ACCEPTANCE.md](P1-ACCEPTANCE.md) for browser, live API/PG and review
+evidence, including the remaining fault-injection boundaries.
 
 ## The invariant
 

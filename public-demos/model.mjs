@@ -1,29 +1,43 @@
-export function newJobs() {
+// Shared text-job simulator. No network, persistence or real locks.
+export function newJobs({protectedKeys=true}={}) {
   const jobs = new Map();
-  let next = 1;
+  let next = 1, clock = 0;
+  const copy = j => j ? {...j} : null;
+  const byKey = key => [...jobs.values()].find(j=>j.key===key);
+  function stepId(id, action) {
+    const job = jobs.get(id);
+    if (!job || job.state !== 'queued' || !['rollback','failure','success'].includes(action)) return null;
+    if (action === 'rollback') return copy(job);
+    clock=Math.max(clock,job.nextAttemptAt);
+    if (action === 'failure') {
+      job.attempts++;
+      job.lastError='DemoHandlerException';
+      if (job.attempts === 5) {
+        job.state='failed'; job.nextAttemptAt='max';
+      } else job.nextAttemptAt=clock+2**(job.attempts-1);
+    } else {
+      job.state='done';job.words=job.text.trim().split(/\s+/).length;
+      job.processedAt=clock;job.lastError=null;
+    }
+    return copy(job);
+  }
   return {
-    submit(key, text) {
-      if (!key.trim() || !text.trim()) return { status: 400 };
-      const old = jobs.get(key);
-      if (old) return old.text === text ? {status:200, job:{...old}} : {status:409};
-      const job = {id: 'JOB-' + String(next++).padStart(3,'0'), text, state:'queued', attempts:0};
-      jobs.set(key, job);
-      return {status:202, job:{...job}};
+    submit(key, text, {rollback=false}={}) {
+      if (!key.trim() || !text.trim()) return {status:400};
+      const old = protectedKeys ? byKey(key) : null;
+      if (old) return old.text === text ? {status:200, job:copy(old)} : {status:409};
+      if (rollback) return {status:null};
+      const id='JOB-'+String(next).padStart(3,'0');
+      const job={id,eventId:'EV-'+String(next++).padStart(3,'0'),key,text,state:'queued',
+        attempts:0,nextAttemptAt:clock,processedAt:null,lastError:null};
+      jobs.set(id,job);
+      return {status:202,job:copy(job)};
     },
-    step(key, action) {
-      const job = jobs.get(key);
-      if (!job || job.state !== 'queued') return null;
-      if (action === 'rollback') return {...job};
-      if (action === 'failure') {
-        job.attempts++;
-        if (job.attempts === 5) job.state = 'failed';
-      } else if (action === 'success') {
-        job.state = 'done';
-        job.words = job.text.trim().split(/\s+/).length;
-      }
-      return {...job};
-    },
-    list: () => [...jobs.values()].map(j=>({...j}))
+    step(key,action) {return stepId(byKey(key)?.id,action);},
+    stepId,
+    get:id=>copy(jobs.get(id)),
+    list:()=>[...jobs.values()].map(copy),
+    clock:()=>clock
   };
 }
 export function newAdmin() {

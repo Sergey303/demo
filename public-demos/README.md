@@ -42,7 +42,7 @@ noindex,follow; the commercial service pages remain the SEO landing pages.
 | Клиенты, заявки и задачи | /demos/appforge/ | guide, screenshots and separate technical evidence | bespoke business applications |
 | Linked workflow | /demos/appforge/workflow/ | Russian manager, dispatcher and executor workspaces, generated contracts + local adapter | linked customer/request/task workflow |
 | AppForge generated UI | /demos/appforge/generated/ | original generated Customer page + isolated local transport | direct link into original UI |
-| Reliable Jobs | /demos/reliable-jobs/ | in-browser model of API and outbox behavior | reliable integrations / architecture |
+| Reliable Jobs | /demos/reliable-jobs/ | accepted P1 sender/receiver comparison, failure scenarios and CTO evidence | reliable integrations / architecture |
 | Enterprise AI | /demos/enterprise-ai/ | recorded Qwen answer replay + deterministic grant scenarios + original video | corporate knowledge search / controlled AI |
 
 All sample data are synthetic. GosVet stores state locally in browser storage;
@@ -73,6 +73,7 @@ concurrency or retry timing; inspect the original API/worker tests.
 
 Before a public release, review actual media for publication permission, run the
 browser smoke on the deployed HTTPS mount and verify website links.
+Reliable Jobs P1 acceptance and separate real API/PG evidence: [P1-ACCEPTANCE.md](../dotnet-outbox/P1-ACCEPTANCE.md).
 The provided workflow template builds an artifact only; it does not publish or alter Pages. It is intentionally inactive: the current GitHub OAuth credential lacks workflow scope. To enable it, an authorized maintainer should copy public-demos.workflow.yml.example to .github/workflows/public-demos.yml.
 
 ## Коммерческие сценарии и карточки Engineering

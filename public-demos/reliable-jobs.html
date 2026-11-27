@@ -1,0 +1,34 @@
+<section class="panel rj-intro">
+  <h2>Ответ не пришёл. Отправлять снова?</h2>
+  <p>CRM отправляет заявку в сервис обработки. Ответ может потеряться уже после принятия.</p>
+  <p class="notice">Учебная модель в браузере: без API, PostgreSQL и реальной CRM.</p>
+  <div class="rj-operation"><strong>Заявка SR-1042 — Проверка насоса</strong><span id="rj-progress" role="status"></span></div>
+  <div class="rj-next"><p id="rj-hint" role="status" tabindex="-1"></p><button type="button" id="rj-primary"></button><div id="rj-extras" class="rj-actions"></div></div>
+  <div class="rj-controls"><label for="rj-scenario">Сценарий</label><select id="rj-scenario"></select><button id="rj-reset" class="secondary" type="button">Сбросить</button></div>
+  <p id="rj-comparison" class="rj-comparison" role="status"></p>
+  <p class="muted" id="rj-assumption">Сравнение на одинаковых действиях. Без защиты — намеренно упрощённая модель, не испытание другого продукта. ID учебные.</p>
+  <div id="rj-lanes" class="rj-lanes"></div>
+  <div id="rj-external" hidden><h3>Граница внешнего эффекта</h3><p>Сервис мог выполнить действие, но ответ потерялся. Локальная транзакция не подтверждает факт внешнего действия. Нужны договор идемпотентности получателя, запрос статуса или сверка. Компенсация — отдельная операция.</p><p><strong>Требует проверки.</strong> Гарантированно безопасный повтор не установлен.</p></div>
+  <div class="actions"><a class="button" href="../../?service=release#contact">Проверить одну вашу операцию</a><a href="../../?service=diagnostics#contact">Описать ошибку</a></div>
+  <p class="muted">Возврат к Engineering: форма только готовит текст обращения.</p>
+</section>
+<section class="panel">
+  <details id="rj-tech">
+    <summary>Технические подробности и доказательства</summary>
+    <p class="notice">BROWSER-MODEL: порядок событий условный, clock виртуальный, JOB/EV — учебные ID. Здесь не выполняются SQL, locks, сетевые запросы или реальные замеры. jobs/outbox — две проекции одной модели, не независимые таблицы: они иллюстрируют инвариант, а не проверяют PostgreSQL.</p>
+    <div class="rj-flow">Отправитель → POST /jobs → PostgreSQL (T1 commit) → Worker (T2 commit) → GET</div>
+    <details open><summary>Состояние и трасса</summary><div id="rj-state"></div></details>
+    <details><summary>Контракт и границы транзакций</summary><div id="rj-contract"></div>
+      <p><strong>T1:</strong> уникальный ключ, INSERT ON CONFLICT, ReadCommitted; job и outbox в одной транзакции. POST 202 — новый ID, 200 — уже принят, 409 — конфликт hash; не означает done. GET требует известный ID и возвращает состояние.</p>
+      <p><strong>T2:</strong> FOR UPDATE SKIP LOCKED удерживает row lock до commit/rollback; второй worker пропускает занятую строку. Commit результата и processed_at вместе. Не гарантирует FIFO/fairness, однократный вызов обработчика или внешнего API.</p>
+      <p>Подтверждённый rollback T1: 0 job / 0 outbox. T2 rollback: прежнее committed состояние. При неизвестном исходе commit T1 возможны 0/0 или 1/1; T2 — queued или done после успешного handler. Потеря соединения не доказывает rollback.</p>
+      <p>1–4 зафиксированные ошибки: виртуальные задержки 1/2/4/8 секунд. Пятая: failed, next_attempt_at=max, processed_at=NULL. Повтор POST не перезапускает failed. При откате SQL бюджет ошибок не расходуется.</p>
+    </details>
+    <details id="rj-evidence"><summary>Матрица доверия I01–I10</summary><p>Исторические проверки 05.11.2026 и отдельный повтор 27.11.2026 на изолированной PostgreSQL 17. SOURCE — видимое в коде, UNIT — чистая логика, PG-PRIMITIVE — отдельные таблицы PostgreSQL, HTTP-E2E — API/worker/БД, BROWSER-MODEL — эта симуляция, NOT TESTED — не доказано.</p><div id="rj-matrix"></div>
+      <p>Исторический smoke: 20 запросов через пул из 10 потоков; один ID, 409 и WordCount=3 / SHA-256 через GET. Не 20 одновременно активных соединений; SQL counts, processed_at и число ответов 202 не проверялись историческим smoke. Повтор 27.11: дополнительно SQL подтвердил 1 job, 1 outbox и 1 done с result, processed_at и attempts=0. Это итоговый снимок, не счётчик записей результата. 12/12 xUnit, включая две PostgreSQL primitive и два AudioIdentity теста (вне текстового сценария). Целевые fault injection и terminal exhaustion реального worker не проверены.</p>
+      <p><a href="https://github.com/Sergey303/demo/blob/main/dotnet-outbox/ACCEPTANCE-SAMPLE.md">Образец протокола проверки одной операции</a> · <a href="https://github.com/Sergey303/demo/blob/main/dotnet-outbox/README.md">Исторические результаты и ограничения</a></p>
+    </details>
+    <p>Для вашей операции согласуем границу commit, область и срок хранения ключа, способ сверки внешнего эффекта, тестовый стенд и критерии приёмки. Outbox не универсален; иногда достаточно уникального бизнес-ключа и безопасного повтора в одной БД.</p>
+  </details>
+</section>
+<section class="panel"><h2>Что получите при заказе проверки</h2><p>Одна операция, согласованные точки отказа и ожидаемый эффект. Протокол с тем, что видит отправитель и что записано у получателя, фактическими результатами, PASS/FAIL/NOT TESTED, доказательствами и рекомендацией. Исправление и регрессия — отдельно, если не вошли в согласованный объём.</p><a class="button" href="../../?service=release#contact">Проверить одну вашу операцию</a></section>
