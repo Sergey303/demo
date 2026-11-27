@@ -79,7 +79,8 @@ HTTP-запросов с реальным API и PostgreSQL, общий ID, 409 
 результата, сравнение с явно упрощённой моделью без защиты.
 [Коммерческий сценарий](../dotnet-outbox/COMMERCIAL-BRIEF.md),
 [продуктовая спецификация](../dotnet-outbox/DEMO_PRODUCT_BRIEF.md),
-[образец протокола](../dotnet-outbox/ACCEPTANCE-SAMPLE.md).
+[образец протокола](../dotnet-outbox/ACCEPTANCE-SAMPLE.md),
+[технический режим](../dotnet-outbox/TECHNICAL-JOURNEY.md).
 Не рекламировать P1 до приёмки. Не обещать exactly-once внешних
 эффектов, SLA или production security; не публиковать API/БД.
 
