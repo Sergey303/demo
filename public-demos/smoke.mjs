@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { workflowSmoke } from './workflow-smoke.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -62,6 +63,7 @@ try {
   await page.getByText('Alfa Service (sample)',{exact:true}).first().waitFor();
   assert.equal(await page.getByRole('row').filter({hasText:'Generated edited'}).count(),0);
   console.log('PASS original generated AppForge React with local transport CRUD and reset');
+  await workflowSmoke(page,base);
 
   await page.goto(base+'reliable-jobs/');await click('submit');await has('log','202 · JOB-001');await click('submit');await has('log','200 · JOB-001');await page.locator('#payload').fill('changed');await click('submit');await has('log','409');await click('rollback');await has('jobs','попыток: 0');await click('success');await has('jobs','done');await click('reset');await click('submit');for(let i=0;i<5;i++)await click('failure');await has('jobs','failed');console.log('PASS Reliable Jobs simulator');
   await page.goto(base+'enterprise-ai/');await has('answer','within 30 days');await has('provenance','Qwen3');await page.locator('#doc').uncheck();assert.equal(await page.locator('#sources li').count(),1);await page.locator('#audio').uncheck();await has('answer','Нет разрешённых');assert.equal(await page.locator('#sources li').count(),0);await page.locator('#doc').check();await page.locator('#scenario').selectOption('unknown');assert.equal(await page.locator('#sources li').count(),0);assert.equal((await context.request.get(base+'enterprise-ai/qwen.mp4')).status(),200);console.log('PASS Enterprise replay and grants');

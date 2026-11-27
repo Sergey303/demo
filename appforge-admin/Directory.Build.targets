@@ -8,4 +8,8 @@
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'BusinessOperationsAdmin.Persistence'">
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
+  <!-- Explicit opt-in for the linked-workflow acceptance build. No generated source edits. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'BusinessOperationsAdmin.Persistence' And '$(BusinessWorkflowP1)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)workflow-live/*.cs" />
+  </ItemGroup>
 </Project>

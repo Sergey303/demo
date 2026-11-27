@@ -1,0 +1,11 @@
+import { createRoot } from "react-dom/client";
+import { PrimeReactProvider } from "primereact/api";
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import { configureHttpClient } from "./generated-ts/runtime/httpClient";
+import { createWorkflowClient } from "./workflowClient";
+import { WorkflowApp } from "./workflowApp";
+import "./workflow.css";
+configureHttpClient(createWorkflowClient());
+createRoot(document.getElementById("root")!).render(<PrimeReactProvider value={{inputStyle:"filled",ripple:false}}><WorkflowApp/></PrimeReactProvider>);

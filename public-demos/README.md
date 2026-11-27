@@ -39,7 +39,8 @@ noindex,follow; the commercial service pages remain the SEO landing pages.
 | Catalog | /demos/ | static | choose scenario |
 | GosVet | /demos/gosvet/ | original working React prototype | business systems / complex workflows / simulated AI assistant |
 | GosVet appointment | /demos/gosvet/app.html#/appointment/demo-001 | original working React prototype | deep link into editable workflow |
-| AppForge | /demos/appforge/ | original generated Customer React + local preview adapter, lightweight simulator and live evidence | internal tools / backoffice |
+| Клиенты, заявки и задачи | /demos/appforge/ | guide, screenshots and separate technical evidence | bespoke business applications |
+| Linked workflow | /demos/appforge/workflow/ | Russian manager, dispatcher and executor workspaces, generated contracts + local adapter | linked customer/request/task workflow |
 | AppForge generated UI | /demos/appforge/generated/ | original generated Customer page + isolated local transport | direct link into original UI |
 | Reliable Jobs | /demos/reliable-jobs/ | in-browser model of API and outbox behavior | reliable integrations / architecture |
 | Enterprise AI | /demos/enterprise-ai/ | recorded Qwen answer replay + deterministic grant scenarios + original video | corporate knowledge search / controlled AI |
@@ -50,7 +51,7 @@ AppForge generated backend, worker, PostgreSQL or LLM is run in the public
 bundle. No exactly-once external effects, production IAM, performance SLA or
 guarantee of factual LLM answers are claimed.
 
-AppForge covers Customer CRUD only. The main preview uses the original
+The accepted P1 linked workflow uses generated field components, DTOs and transport contracts with a consumer workflow shell and memory-only adapter. The separate technical Customer CRUD preview uses the original
 generated React page, forms, table, query hooks and contracts in a temporary
 build tree; a dedicated transport adapter implements the known customer routes
 in memory. The staged durable executor is also substituted with a memory-only
@@ -61,6 +62,7 @@ simulator remains an additional lightweight scenario. The original browser/SQL
 acceptance and screenshot remain linked. The generated UI is English and its
 preview adapter does not claim parity with all server validation or durable
 idempotency. Build staging uses a directory symlink; run on Linux/RDC or CI.
+See [P1 acceptance](../appforge-admin/workflow-live/ACCEPTANCE.md) for the separate generated API/PostgreSQL test, concurrency boundary and user acceptance. The public workflow is not connected to that server.
 
 Enterprise replay returns the recorded Qwen answer only for the original
 two-source refund scenario; source snippets in the browser are illustrative

@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "kind": "generated HTTP API + disposable PostgreSQL",
+  "checks": [
+    "generated login and isolated PostgreSQL",
+    "invalid FK rejected",
+    "idempotent create replay",
+    "O12 invalid actions rejected, unchanged",
+    "completion and result stored together",
+    "O13 reopen preserves result",
+    "parent deletion denied",
+    "generated list endpoints retain relations",
+    "PostgreSQL independently confirms state/result/assignee",
+    "two concurrent distinct-key writes reached database lock",
+    "one concurrent write wins and stale write conflicts",
+    "stale task has explicit conflict code",
+    "winner receipt committed, losing receipt rolled back",
+    "winner replay returns original result",
+    "race preserves winner state and result"
+  ],
+  "limitations": [
+    "controlled server read-to-write race; no client revision or general concurrency guarantee",
+    "demo identities not ACL",
+    "no live browser or production deployment claim"
+  ]
+}
