@@ -4,6 +4,14 @@
 
 A small runnable demonstration of the engineering concepts behind robust async business operations: **REST API, PostgreSQL transactions, idempotent ingestion, durable outbox, competing consumers via SKIP LOCKED, bounded retry and deterministic handler**.
 
+## Commercial demonstration scope
+
+[COMMERCIAL-BRIEF.md](COMMERCIAL-BRIEF.md) describes the customer journey and
+service offer; [DEMO_PRODUCT_BRIEF.md](DEMO_PRODUCT_BRIEF.md) specifies the
+proposed P1 browser experience. [ACCEPTANCE-SAMPLE.md](ACCEPTANCE-SAMPLE.md)
+is a labeled example of a bounded verification report. These documents do
+not claim implementation or new live test results.
+
 ## The invariant
 
 A POST creates a job **and** its outbox event in one transaction. If that transaction fails, neither remains. Reusing the same idempotency key and payload returns the existing job ID; reusing the key with a different payload returns **409 Conflict**.
