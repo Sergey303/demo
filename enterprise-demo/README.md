@@ -6,6 +6,13 @@
 
 [**Watch final evidence answer E2E (MP4)**](media/enterprise-answer-real.mp4) · [Unified search video](media/enterprise-search-real.mp4) · [Watch real audio E2E (MP4)](media/enterprise-ai-real-whisper.mp4) · [Watch real document E2E (MP4)](media/enterprise-document-live.mp4) · [Document screenshot](media/enterprise-document-live.png)
 
+## Commercial demonstration
+
+[COMMERCIAL-BRIEF.md](COMMERCIAL-BRIEF.md) defines the buyer and bounded offer;
+[DEMO_PRODUCT_BRIEF.md](DEMO_PRODUCT_BRIEF.md) specifies the proposed P1 public
+experience; [PILOT-ACCEPTANCE.md](PILOT-ACCEPTANCE.md) is a sample acceptance
+contract, not a new benchmark. Historical evidence remains separate.
+
 ## User journey
 
 Open `http://127.0.0.1:4173/dashboard/enterprise-ai`. Choose a **small local WAV** (44–262,144 bytes), submit it and observe an actual `202 Accepted` and UUID. A separately running Python worker takes the job from PostgreSQL, runs local Whisper/ONNX inference and stores a timestamped transcript. The page polls the real `GET /jobs/{id}`, showing `queued`, `done` or `failed`; no "processing" state is invented. Repeating the same file and key should return `200 already-accepted` with the **same UUID**. The API now **removes embedding vectors** from authorized `GET /jobs/{id}` responses for both WAV and document jobs, retaining them only in PostgreSQL for later search.
