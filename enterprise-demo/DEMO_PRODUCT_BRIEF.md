@@ -5,6 +5,8 @@ COMMERCIAL-BRIEF.md. Существующие источники: README.md,
 EVIDENCE-2026-11-09-QWEN.md, EP11-LIVE-QWEN-2026-11-15.md,
 public-demos/build.py, model.mjs, ui.mjs, smoke.mjs.
 Не изменять GosVet, AppForge, Reliable Jobs или live API в P1.
+Техническая спецификация: [TECHNICAL-JOURNEY.md](TECHNICAL-JOURNEY.md),
+включая ET01–ET08 и критерии качества будущего пилота.
 
 ## 1. Цель
 
@@ -19,9 +21,11 @@ public-demos/build.py, model.mjs, ui.mjs, smoke.mjs.
 ## 2. Набор данных и уровни подтверждения
 
 Набор A — существующий исторический пример 09.11:
-refund-policy.md, quote “Customers can request a refund within 30 days.”,
-символы 26–72 (как в протоколе); refund-audio.wav, quote
-“Customers can request a refund within thirty days.”, 0.00–3.00 с.
+refund-policy.md, quote “Customers may request a refund within 30 days.”,
+символы 26–72; refund-audio.wav, quote
+“Customers can request a refund within 30 days.”, 0.00–3.00 с.
+Сверено по реальному скриншоту media/enterprise-generated-real.png;
+не использовать неточные прежние строки публичной модели.
 Qwen-ответ дословно из протокола. Два разрешённых источника, тот же
 вопрос и исходные параметры — единственный случай воспроизведения
 записанного ответа. Перевод на русский отдельно подписать «Перевод».
@@ -108,7 +112,7 @@ regression и browser model. Исторические тесты не выдав
 
 ## 5. P1 приёмка и публикация
 
-Проверить EA01–EA12, отрицательные состояния, отсутствие чужих
+Проверить EA01–EA12 и ET01–ET08, отрицательные состояния, отсутствие чужих
 цитат в видимом выводе, reset/cancel, клавиатуру, мобильный 390px,
 вложенный mount и CTA. Отсутствие неожиданных network requests;
 историческое видео по явному действию, не autoplay.

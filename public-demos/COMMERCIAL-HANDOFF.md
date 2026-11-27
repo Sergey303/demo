@@ -126,7 +126,8 @@ EP11-LIVE-QWEN-2026-11-15.md. Цитаты не доказывают семан�
 наборы A/B/C и provenance каждого результата.
 [Коммерческий сценарий](../enterprise-demo/COMMERCIAL-BRIEF.md),
 [спецификация](../enterprise-demo/DEMO_PRODUCT_BRIEF.md),
-[шаблон пилота](../enterprise-demo/PILOT-ACCEPTANCE.md).
+[шаблон пилота](../enterprise-demo/PILOT-ACCEPTANCE.md),
+[технический режим](../enterprise-demo/TECHNICAL-JOURNEY.md).
 После приёмки обновить карточки и скриншоты, не менять другие демо.
 
 ## Общая публикация
